@@ -14,6 +14,19 @@ except ImportError:
     xlrd = None
 
 
+
+class Abort(Exception):
+
+    def __init__(self, *args):
+        msg = args[0] if args else None
+        self.msg = msg
+        self.message = msg
+
+    def __str__(self):
+        return self.msg.encode('utf-8', 'ignore') if self.msg else ''
+
+
+
 class CommonJSONEncoder(json.JSONEncoder):
     
     def default(self, obj):

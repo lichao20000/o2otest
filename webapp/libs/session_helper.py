@@ -10,8 +10,8 @@ import functools
 from flask import request, redirect, abort
 from flask import render_template, make_response
 from utils import json_dumps
-from privs import Priv
-from user import usersvc
+#from privs import Priv
+#from user import usersvc
 import config
 
 

@@ -27,13 +27,12 @@ app.debug = True
 blueprints = (
 
     # 首页
-    #('views.pp_bp', ''),
+    ('index_views.app_bp', ''),
 
     # 静态文件版本化路径映射
   #  ('static_views.static_bp', '/s'),
 
    
-    # 个人主页
     ('user.views.user_bp', '/user'),
     ('user.api_views.api_bp', '/user/api'),
     ('user.login_views.login_bp','/u'),
@@ -41,7 +40,7 @@ blueprints = (
     )
 
 
-blueprints = []
+#blueprints = []
 
 for mod_path, mount_point in blueprints:
     parts = mod_path.split('.')
@@ -57,11 +56,6 @@ urls = [ {'url':u.rule, 'methods':list(u.methods)}  for u in rules]
 
 def get_all_urls():
     return urls
-
-@app.route('/')
-def index():
-    return 'wtf ...' 
-
 
 
 if __name__ == '__main__':

@@ -1,0 +1,40 @@
+.suffix{
+    color: #ccc;
+    border: 1px solid #ddd;
+    border-radius: 2px;
+    padding: 1px;
+    background: #e8e8e8;
+  }
+
+
+
+.login-paper{
+    max-width: 400px;
+    margin: 50px auto;
+    margin-top: 100px;
+    padding: 20px;
+    text-align: center;
+}
+
+
+div.text-center{
+  text-align: center;
+}
+
+
+div.tab{
+  min-height: 220px;
+  box-sizing: border-box;
+}
+
+div.auth2{
+  padding-top: 120px;
+}
+
+.copy-right{
+  color: #8a8a8a;
+  margin-top: 10px;
+  padding-top: 10px;
+  box-sizing: border-box;
+  display: block;
+}
