@@ -10,7 +10,7 @@ import functools
 from flask import request, redirect, abort
 from flask import render_template, make_response
 from utils import json_dumps
-#from privs import Priv
+from privs import Priv
 #from user import usersvc
 import config
 
@@ -56,8 +56,8 @@ def auth_required(*args, **kargs):
             else:
                 return
             privs = user.privileges
-            # print privs
-            # print priv_required
+            print privs
+            print priv_required
             if not priv_required.fullfilled_by(privs):
                 abort(403)
                 return

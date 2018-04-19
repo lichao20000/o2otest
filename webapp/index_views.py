@@ -20,15 +20,33 @@ from utils import _int, _float, _date, _int_default
 
 
 app_bp = Blueprint('app_bp', __name__, template_folder='templates')
+from user.privs import PRIV_ADMIN_CHECK, PRIV_PLAN
 
 
 
 @app_bp.route('/', methods=['GET'])
-@jview
+@jview('index.html')
+@auth_required
 def index():
     user = request.environ['user']
-    print user
-    return 'wtf'
+    return {}
+
+@app_bp.route('/test1', methods=['GET'])
+@auth_required(priv=PRIV_ADMIN_CHECK)
+@jview('index.html')
+def test1():
+    user = request.environ['user']
+    return {}
+
+
+
+@app_bp.route('/test', methods=['GET'])
+@auth_required(priv=PRIV_PLAN)
+@jview('index.html')
+def test():
+    user = request.environ['user']
+    return {}
+
 
 
 @app_bp.route('/favicon.ico', methods=['GET'])

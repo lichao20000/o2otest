@@ -13,10 +13,6 @@
     <script type="text/javascript">
       (function(obj){
       if(typeof window != 'undefined'){
-        window.auth2_uri='{{auth2_uri}}';
-        window.redirect_uri='{{redirect_uri}}';
-        window.client_id= '{{client_id}}';
-        window.response_type= '{{response_type}}';
       }
       })(this ? this : (module ? module.exports:{}))
     </script>
@@ -24,10 +20,9 @@
 
  <body >
       <div>
-        <div id='divLogin'></div>
-        <script type="text/javascript" src="/static/build/login.js"></script>
+        <div id='divIndex'></div>
+        <script type="text/javascript" src="/static/build/index.js"></script>
       </div>
  </body>
 
 </html>
-

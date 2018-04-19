@@ -24,6 +24,7 @@ import json
 from ui import jview, json_view
 from utils import _int, _float, _date, _int_default, Abort
 import requests
+import usersvc
 
 
 login_bp = Blueprint('login_bp', __name__, template_folder='templates')
@@ -78,6 +79,9 @@ def oauth2():
         user = request.environ['user']
         user.user_id = user_info['uni_email']
         user.user_info = user_info
+        #usersvc.update_local_user_info(user_info)
+        privs = usersvc.get_user_privs (user.user_id) 
+        user.privs = privs or []
         user.save_to_session()
         return redirect('/')
     except Abort, e:

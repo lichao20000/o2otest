@@ -12,4 +12,12 @@ if _updir not in sys.path:
 
 
 
+def get_user_privs(user_id):
+    privs = {
+            'user_id': 'wangy1214',
+            'privs': ['PRIV_PLAN'],
+            }   
+    return privs['privs']
+
+
 
