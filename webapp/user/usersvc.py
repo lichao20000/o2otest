@@ -20,4 +20,9 @@ def get_user_privs(user_id):
     return privs['privs']
 
 
-
+def get_bcmaanger_info(uni_email):
+    return {
+            'uni_email':'wangy1214',
+            'user_name': u'汪阳',
+            'mobile': '18620011607'
+            }

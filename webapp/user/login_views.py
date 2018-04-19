@@ -25,6 +25,8 @@ from ui import jview, json_view
 from utils import _int, _float, _date, _int_default, Abort
 import requests
 import usersvc
+import random
+import time
 
 
 login_bp = Blueprint('login_bp', __name__, template_folder='templates')
@@ -33,6 +35,9 @@ login_bp = Blueprint('login_bp', __name__, template_folder='templates')
 @login_bp.route('/login/', methods=['GET'])
 @jview('login/login.html')
 def login_():
+    user = request.environ['user']
+    if user.authenticated:
+        return redirect('/')
     return {
             'title': 'Login',
             'response_type': 'code',
@@ -89,6 +94,84 @@ def oauth2():
     return msg
 
 
+@login_bp.route('/msg_code.json', methods=['GET', 'POST'])
+@jview
+def get_msg_code():
+    args = request.args
+    if request.method == 'POST':
+        args = request.form
+    msg_phone = args.get('phone','')
+    uni_email = args.get('uni_email','')
+    user = request.environ['user']
+    result, msg, msg_code = False, '', None
+    try:
+        if user.authenticated:
+            raise Abort(u'您已经登入.')
+        if not msg_phone or not uni_email:
+            raise Abort(u'无效的手机号码或集团邮箱')
+        if user.msg_time and time.time() - user.msg_time < 120:
+            raise Abort(u'操作太过频繁，请稍后再试')
+        user_info = usersvc.get_bcmaanger_info(uni_email)
+        #if not user_info or user_info['mobile'] != msg_phone:
+            #raise Abort(u'机号码或集团邮箱不存在')
+        msg_code = str(random.random())[2:8]
+        print msg_code
+        user.msg_code = msg_code
+        user.msg_time = time.time()
+        user.msg_phone = msg_phone
+        user.msg_email = uni_email
+        user.save_to_session()
+        # send_msg()   # TODO
+        result = True
+    except Abort, e:
+        msg = e.msg
+    return {'result':result ,
+            'msg': msg ,
+           # 'msg_code': msg_code if result else None
+            }
+
+
+
+
+
+
+@login_bp.route('/login_validate.json', methods=['GET', 'POST'])
+@jview
+def login_json():
+    args = request.args
+    if request.method == 'POST':
+        args = request.form
+    msg_code = args.get('msg_code','')
+    result, msg = False, ''
+    user = request.environ['user']
+    try:
+        if not user.msg_code or not user.msg_email or not user.msg_time \
+                or time.time() - user.msg_time > 60*5:
+            raise Abort(u'请重新获取验证码.')
+        if not msg_code:
+            raise Abort(u'无效的验证码.')
+        print msg_code, user.msg_code 
+        if user.msg_code != msg_code:
+            raise Abort(u'请输入正确的验证码.')
+        user_info = usersvc.get_bcmaanger_info(user.msg_email)
+        privs = usersvc.get_user_privs(user.msg_email)
+        user.user_id = user_info['uni_email']
+        user.user_info = user_info
+        user.privs = privs or []
+        user.msg_code = None
+        user.msg_phone = None
+        user.msg_time = None
+        user.msg_email = None
+        user.save_to_session()
+        result = True
+    except Abort, e:
+        msg = e.msg
+    return {'result': result,
+            'msg' : msg, }
+
+
+
+ 
 
 
 

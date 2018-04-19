@@ -341,12 +341,12 @@ class SessionUser(object):
     _keys = ('user_id', 
              'user_name',
              'user_info',
-
-             'current_section',
-             'current_section_name',
-
              'privs',
-             'admin_privs',)
+             'msg_code',
+             'msg_phone',
+             'msg_time',
+             'msg_email'
+             )
 
     def __str__(self):
         return '<SessionUser ' \

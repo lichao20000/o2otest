@@ -10,12 +10,9 @@ import TextField from 'material-ui/TextField';
 import Divider from 'material-ui/Divider';
 import {Tabs, Tab} from 'material-ui/Tabs';
 import Snackbar from 'material-ui/Snackbar';
+import CircularProgress from 'material-ui/CircularProgress';
 
 //import { InputLabel, InputAdornment } from 'material-ui/Input';
-
-
-
-
 
 
 class Login extends React.Component{
@@ -23,12 +20,15 @@ class Login extends React.Component{
     constructor(props){
         super(props);
         this.state ={
-            usernameErr: false,
-            pwdErr: false,
+            usernameErr:true,
+            pwdErr: true,
             username:'',
-            password:'',
+            password:'', //  here is phone num
             btnAble: true,
             msg: '',
+            loading: false, 
+            loading2: false,
+            gotCode: false,// got code 
         }
     }
 
@@ -36,7 +36,41 @@ class Login extends React.Component{
 
     }
 
-    login(e){
+    checkMsgCode(e){
+      this.setState({loading2:true})
+      let {msg_code} = this.state;
+      axios({
+            url: '/u/login_validate.json' ,
+            transformRequest:[ function(data, headers) {
+                let _data =  []
+                for(let k in data){
+                    _data.push(k+'='+ data[k])
+                }
+                return  _data.join('&')
+            }
+            ],
+            data: {'msg_code':msg_code, },
+            method: 'post',
+            responseType:'json',
+        }).then( (resp) =>{
+            if(resp.status == 200){
+                 if(resp.data.result){
+                    window.location = '/'
+                 }else{
+                  this.setState({ 
+                    loading2: false,
+                    msg: resp.data.msg
+                  })
+                 }
+            }else{
+                this.setState({msg: '请求出错!'})
+            }
+        })
+
+
+    }
+
+    getMsgCode(e){
         let {username, password}  = this.state
         if(''==username ){
             this.setState({usernameErr: true})
@@ -46,8 +80,9 @@ class Login extends React.Component{
             this.setState({pwdErr: true})
             return 
         }
+        this.setState({loading: true})
         axios({
-            url: '/admin/login.json' ,
+            url: '/u/msg_code.json' ,
             transformRequest:[ function(data, headers) {
                 let _data =  []
                 for(let k in data){
@@ -56,18 +91,17 @@ class Login extends React.Component{
                 return  _data.join('&')
             }
             ],
-            data: {'username': username,
-                'password': password, },
+            data: {'uni_email': username,
+                    'phone': password, },
             method: 'post',
             responseType:'json',
         }).then( (resp) =>{
             if(resp.status == 200){
-
-                if(!resp.data.result){
-                    this.setState({msg: resp.data.msg})
-                }else{
-                    window.location = '/admin'
-                }
+                  this.setState({ 
+                    gotCode: !!resp.data.result,
+                    loading: false,
+                    msg: resp.data.msg
+                  })
             }else{
                 this.setState({msg: '请求出错!'})
             }
@@ -93,8 +127,8 @@ class Login extends React.Component{
 
 
     render(){
-        let {usernameErr, pwdErr, username, password, msg} = this.state;
-        let {btnAble} = this.state;
+        let {gotCode,loading,loading2, usernameErr, pwdErr, username, password, msg} = this.state;
+        let {btnAble, msg_code} = this.state;
 
         return (
             <div>
@@ -104,16 +138,17 @@ class Login extends React.Component{
                             <img src='/static/images/O2O-128x128.png'/>
                         </div>
                         <Tabs > 
-                            <Tab label='OAuth2认证'>
+                            <Tab label='OAuth2认证' disabled={loading||gotCode}>
                                 <div className ='tab auth2 text-center'>
                                     <RaisedButton label="登入" primary={true}
                                         disabled ={!btnAble}
                                         onClick={(event) => this.oauth2(event)}/>
                                 </div>
                             </Tab>
-                            <Tab label='短信认证'>
+                            <Tab label='短信认证' disabled={loading||gotCode}>
                                 <div className='text-center tab' >
                                     <TextField
+                                        disabled={loading || gotCode}
                                         style={{width: 126, display:'inline-block' }}
                                         hintText="集团邮箱"
                                         floatingLabelText="集团邮箱"
@@ -125,14 +160,36 @@ class Login extends React.Component{
                                     <br/>
                                     <TextField
                                         hintText="手机号"
+                                        disabled={loading || gotCode}
                                         floatingLabelText="手机号"
                                         value={password}
                                         onChange = {(event,newValue) => this.setState({password:newValue, pwdErr: newValue==''})}
                                     />
                                     <br/>
-                                    <RaisedButton label="获取验证码" primary={true}  
-                                        disabled ={!btnAble}
-                                        onClick={(event) => this.auth2(event)}/>
+                                    { loading ?
+                                      <CircularProgress size={40} thickness={3} />:
+                                      !gotCode&&
+                                      <RaisedButton label="获取验证码" primary={true}  
+                                        disabled ={usernameErr ||pwdErr }
+                                        onClick={this.getMsgCode.bind(this)}/>
+                                    }
+                                    {
+                                      gotCode&&
+                                      <div>
+                                        <TextField
+                                          hintText="验证码"
+                                          disabled = {loading2}
+                                          style={{width: 80, display:'inline-block' ,marginRight: 10 }}
+                                          value={msg_code}
+                                          onChange = {(event,newValue) => this.setState({msg_code:newValue, msgCodeErr: newValue==''})} />
+                                        <RaisedButton label="验证"  primary={true}  
+                                          disabled = {loading2}
+                                          style={{width: 80, display:'inline-block' }}
+                                          onClick={this.checkMsgCode.bind(this)}/>
+                                      </div>
+                                    }
+
+
                                 </div>
 
                             </Tab>

@@ -35,7 +35,7 @@ session_force_use_redis = False
 
 import os
 
-domain = 'salse.gz.gd.unicom.local'
+domain = 'sales.gz.gd.unicom.local'
 
 if os.environ.get('LOGNAME') in ['yantz', 'wy']:
     pg_main = pg_local

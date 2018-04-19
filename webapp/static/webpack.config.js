@@ -1,7 +1,7 @@
 module.exports = {
     entry: {
-//        'login': './login/login.jsx'
-          'index'  : './index.jsx'
+          'login': './login/login.jsx',
+          'index'  : './index.jsx',
     },
     output: {
         path: __dirname,
