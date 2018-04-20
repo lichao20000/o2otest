@@ -42,10 +42,11 @@ def test1():
 
 @app_bp.route('/test', methods=['GET'])
 @auth_required(priv=PRIV_PLAN)
-@jview('index.html')
+@jview
 def test():
     user = request.environ['user']
-    return {}
+    print user.privs
+    return user.user_info
 
 
 

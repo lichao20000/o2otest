@@ -17,6 +17,18 @@
 }
 
 
+.setting-paper{
+    max-width: 400px;
+    margin: 50px auto;
+    margin-top: 100px;
+    padding: 20px;
+    text-align: center;
+    min-height: 300px;
+}
+
+
+
+
 div.text-center{
   text-align: center;
 }
@@ -38,3 +50,17 @@ div.auth2{
   box-sizing: border-box;
   display: block;
 }
+
+
+.inline{
+  display: inline-block;
+}
+
+.w100{
+  width: 50px; 
+}
+.w300{
+  width: 200px; 
+}
+
+

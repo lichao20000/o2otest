@@ -72,6 +72,9 @@ def set_sales_info():
         if not _depart:
             raise Abort(u'设置的渠道和区分错误')
         result = usersvc.set_user_sales_info(user.user_id, channel_id, sales_depart_id)
+        if result:
+            user.user_info = usersvc.get_user_local_info(user.user_id)
+            user.save_to_session()
     except Abort, e:
         msg = e.msg
     return {'result': result, 'msg': msg}

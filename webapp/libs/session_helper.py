@@ -56,8 +56,6 @@ def auth_required(*args, **kargs):
             else:
                 return
             privs = user.privileges
-            print privs
-            print priv_required
             if not priv_required.fullfilled_by(privs):
                 abort(403)
                 return
@@ -91,8 +89,6 @@ def auth_required(*args, **kargs):
                 # raise Abort(u'需要登录。')
                 # return redirect('/u/login/?path=%s' % request.path)
                 return js_redirect()
-        
-            # pri_check(user, k_args)
             result_chk = pri_check(user, k_args)
             if result_chk:
                 return result_chk

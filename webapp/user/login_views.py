@@ -46,6 +46,9 @@ def login_():
             'client_id':  config.OAuth2['client_id'],#'o2o_sales'
             } 
 
+
+
+
 @login_bp.route('/oauth2/')
 @jview
 def oauth2():
@@ -81,13 +84,21 @@ def oauth2():
         if not user_info:
             raise Abort(u'认证失败(获取用户数据出错)')
         ## 到此认证成功
+        usersvc.set_user_base_info({
+            'user_id': user_info['uni_email'],
+            'user_name': user_info['full_name'],
+            'mobile': user_info['mobile']
+            })
+
+        user_local_info = usersvc.get_user_local_info(user_info['uni_email']) 
         user = request.environ['user']
+        user_user_name = user_info['full_name']
         user.user_id = user_info['uni_email']
-        user.user_info = user_info
-        #usersvc.update_local_user_info(user_info)
-        privs = usersvc.get_user_privs (user.user_id) 
-        user.privs = privs or []
+        user.privs =  user_local_info['privs'] or []
+        user.user_info = user_local_info # user_info 存储本地表读取的用户信息
         user.save_to_session()
+        if not user.user_info['channel_id'] or not user.user_info['sales_depart_id']:
+            return redirect('/user/setting/')
         return redirect('/')
     except Abort, e:
         msg = e.msg
@@ -172,7 +183,6 @@ def login_json():
 
 
  
-
 
 
 

@@ -341,7 +341,10 @@ class SessionUser(object):
     _keys = ('user_id', 
              'user_name',
              'user_info',
+
              'privs',
+             'admin_privs',
+
              'msg_code',
              'msg_phone',
              'msg_time',
@@ -412,6 +415,7 @@ class SessionUser(object):
         privs = []
         privs.extend(self.privs if self.privs else [])
         privs.extend(self.admin_privs if self.admin_privs else [])
+        print self.privs, 'wtf....'
         return privs
 
     def has(self, priv):

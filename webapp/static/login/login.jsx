@@ -1,6 +1,4 @@
 
-
-
 import Paper from 'material-ui/paper';
 import darkBaseTheme from 'material-ui/styles/baseThemes/darkBaseTheme';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
