@@ -21,6 +21,8 @@
   },
   "mode": "development",
   "dependencies": {
-    "babel-loader": "^7.1.4"
+    "babel-loader": "^7.1.4",
+    "react-router": "^4.2.0",
+    "react-router-dom": "^4.2.2"
   }
 }

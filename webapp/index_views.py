@@ -17,6 +17,7 @@ import config
 import json
 from ui import jview, json_view
 from utils import _int, _float, _date, _int_default
+from user.menu import func_menu
 
 
 app_bp = Blueprint('app_bp', __name__, template_folder='templates')
@@ -25,29 +26,14 @@ from user.privs import PRIV_ADMIN_CHECK, PRIV_PLAN
 
 
 @app_bp.route('/', methods=['GET'])
-@jview('index.html')
+@jview('sales.html')
 @auth_required
+@func_menu()
 def index():
     user = request.environ['user']
-    return {}
-
-@app_bp.route('/test1', methods=['GET'])
-@auth_required(priv=PRIV_ADMIN_CHECK)
-@jview('index.html')
-def test1():
-    user = request.environ['user']
-    return {}
-
-
-
-@app_bp.route('/test', methods=['GET'])
-@auth_required(priv=PRIV_PLAN)
-@jview
-def test():
-    user = request.environ['user']
-    print user.privs
-    return user.user_info
-
+    if not user.user_info['channel_id'] or not user.user_info['sales_depart_id']:
+        return redirect('/user/setting/')
+    return {'title': u''}
 
 
 @app_bp.route('/favicon.ico', methods=['GET'])
@@ -56,7 +42,7 @@ def favicon():
     if not os.path.isfile(_path):
         return abort(404)
     return send_file(_path,
-                     mimetype='image/x-icon',
+                     mimetype='image/png',
                      cache_timeout=3600*24,
                      add_etags=True,
                      conditional=True)

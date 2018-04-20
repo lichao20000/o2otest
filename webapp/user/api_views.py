@@ -24,8 +24,19 @@ import json
 from ui import jview, json_view
 from utils import _int, _float, _date, _int_default, Abort
 import usersvc
+from menu import items as menus
 
 api_bp = Blueprint('user_api_bp', __name__, template_folder='templates')
+
+@api_bp.route('/menus.json', methods=['POST', 'GET'])
+@auth_required
+@jview
+def menus():
+    u'''
+    获取菜单 
+    '''
+    return usersvc.get_channels()
+
 
 
 

@@ -92,7 +92,7 @@ def oauth2():
 
         user_local_info = usersvc.get_user_local_info(user_info['uni_email']) 
         user = request.environ['user']
-        user_user_name = user_info['full_name']
+        user.user_name = user_info['full_name']
         user.user_id = user_info['uni_email']
         user.privs =  user_local_info['privs'] or []
         user.user_info = user_local_info # user_info 存储本地表读取的用户信息
@@ -138,7 +138,7 @@ def get_msg_code():
         msg = e.msg
     return {'result':result ,
             'msg': msg ,
-           # 'msg_code': msg_code if result else None
+            'msg_code': msg_code if result else None
             }
 
 
@@ -165,10 +165,21 @@ def login_json():
         if user.msg_code != msg_code:
             raise Abort(u'请输入正确的验证码.')
         user_info = usersvc.get_bcmaanger_info(user.msg_email)
-        privs = usersvc.get_user_privs(user.msg_email)
+
+        usersvc.set_user_base_info({
+            'user_id': user_info['uni_email'],
+            'user_name': user_info['full_name'],
+            'mobile': user_info['mobile']
+            })
+
+
+        user.user_name = user_info['full_name']
         user.user_id = user_info['uni_email']
-        user.user_info = user_info
-        user.privs = privs or []
+        user_local_info = usersvc.get_user_local_info(user_info['uni_email']) 
+
+        user.privs =  user_local_info['privs'] or []
+        user.user_info = user_local_info
+
         user.msg_code = None
         user.msg_phone = None
         user.msg_time = None

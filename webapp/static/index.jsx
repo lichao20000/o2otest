@@ -14,7 +14,7 @@ import ContentDrafts from 'material-ui/svg-icons/content/drafts';
 
 
 
-class Index extends React.Component{
+class Menu extends React.Component{
     constructor(props){
         super(props); 
         this.state = {
@@ -92,9 +92,6 @@ class Index extends React.Component{
                         <AppBar title="o2o促销管理" 
                             onLeftIconButtonClick={ (event)=>{this.setState({showMenu:!showMenu})}}
                             style = {{'position': 'fixed', 'top': 0, 'left': 0}} />
-                        <Paper style={{ left:showMenu?'260px': '5px', 'position':'fixed', overflow:'auto',
-                            top:'70px', 'height': '100%','right': '0', 'right':'5px' }}>
-                        </Paper>
                     </div>
                 </div>
             </MuiThemeProvider>)
@@ -102,8 +99,9 @@ class Index extends React.Component{
     }
 }
 
+export.default  = 1
 
-ReactDOM.render(<Index/> , document.getElementById('divIndex'))
+ReactDOM.render(<Menu/> , document.getElementById('menu'))
 
 
 
