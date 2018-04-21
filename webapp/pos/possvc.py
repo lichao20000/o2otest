@@ -16,7 +16,7 @@ import config
 
 
 def get_pos_list(q=None, pos_id=None, channel_id=None,
-                    sales_depart_id=None, deleted = -1):
+                    sales_depart_ids=None, deleted = -1):
     u'''
     deleted = -1 全部
     '''
@@ -26,26 +26,29 @@ def get_pos_list(q=None, pos_id=None, channel_id=None,
         cur = conn.cursor()
         sql = (
                ''' 
-               select * from t_sales_pos 
+               select p.* , ch.channel_name, d.sales_depart_name
+               from t_sales_pos p
+               left join t_sales_channel ch on p.channel_id = ch.channel_id
+               left join t_sales_depart d on p.sales_depart_id = d.sales_depart_id
                where  1= 1
                ''',
-               ' ' if deleted == -1 else ' and deleted =%(deleted)s ',
-               'and channel_id=%(channel_id)s  ' if channel_id else ' ',
+               ' ' if deleted == -1 else ' and p.deleted =%(deleted)s ',
+               'and p.channel_id=%(channel_id)s  ' if channel_id else ' ',
                '''
-               and sales_depart_id=%(sales_depart_id)s  
+               and p.sales_depart_id=any(%(sales_depart_ids)s) 
                '''
-               if sales_depart_id else ' ',
-               'and pos_id = %(pos_id)s ' if pos_id else ' ',
+               if sales_depart_ids else ' ',
+               'and p.pos_id = %(pos_id)s ' if pos_id else ' ',
                u'''
-               and (pos_name like %(q)s
-                 or pos_address like %(q)s)
+               and (p.pos_name like %(q)s
+                 or p.pos_address like %(q)s)
                ''' if q  else ' ',
                 )
         args = {
                 'q' : '%%%s%%'%q if q else '',
                 'pos_id': pos_id,
                 'channel_id': channel_id,
-                'sales_depart_id': sales_depart_id,
+                'sales_depart_ids': sales_depart_ids,
                 'deleted': deleted ,
                 }
         #print ''.join(sql) % args
@@ -155,6 +158,7 @@ def update_pos(pos_info):
         cur = conn.cursor()
         keys = (
                 'pos_type',
+                'deleted',
                 'sales_id', 
                 'pos_name',
                 'pos_address', 
@@ -170,7 +174,7 @@ def update_pos(pos_info):
                 items.append(' %s=%%(%s)s '%(key,key))
         sql = [''' update t_sales_pos set update_time=current_timestamp,''',
                 ','.join(items),
-                ''' where deleted = 0 and pos_id = %(pos_id)s ''']
+                ''' where  pos_id = %(pos_id)s ''']
         cur.execute(''.join(sql), pos_info)
         conn.commit()
         return cur.rowcount == 1

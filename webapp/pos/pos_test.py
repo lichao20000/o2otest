@@ -45,7 +45,7 @@ class UserTest(unittest.TestCase):
         self.assertTrue(len(pos_id)==1)
         pos_id = possvc.get_pos_list(channel_id=pos_q[0]['channel_id'])
         self.assertTrue(len(pos_id)>=1)
-        pos_id = possvc.get_pos_list(sales_depart_id=pos_q[0]['sales_depart_id'])
+        pos_id = possvc.get_pos_list(sales_depart_ids=[pos_q[0]['sales_depart_id']])
         self.assertTrue(len(pos_id)>=1)
         pos_del = possvc.get_pos_list(deleted = 0)
         self.assertTrue(len(pos_del)>=1)
