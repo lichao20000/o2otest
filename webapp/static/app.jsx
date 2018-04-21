@@ -66,9 +66,9 @@ const Topics = ({ match }) =>{
 ReactDOM.render((
   <Router>
     <Menu>
-        <Route path="/about" component={About}/>
-        <Route path="/home" component={Home} />
-        <Route path="/topics" component={Topics} />
+        <Route path="/plan/arrange/" component={About}/>
+        <Route path="/plan/history/" component={Home} />
+        <Route path="/user/mine" component={Topics} />
     </Menu>
   </Router>
 ), document.getElementById('app'))

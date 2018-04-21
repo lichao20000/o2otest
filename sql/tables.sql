@@ -105,14 +105,43 @@ create table t_sales_user(
 
 
 -- 促销点
-create table t_sales_pos{ 
-    pos_id integer primary key, -- 促销点 ID 本地
+-- drop table t_sales_pos
+CREATE EXTENSION postgis;
+
+create sequence seq_t_sales_pos;
+-- drop table t_sales_pos
+create table t_sales_pos (
+    pos_id integer primary key default nextval('seq_t_sales_pos'), -- 促销点 ID 本地
     pos_type  varchar(10) , -- 美宜佳， 711
-    sale_id  varchar(30), -- 促销点ID  导入
+    sales_id  varchar(30), -- 促销点ID  导入
     pos_name varchar(100),
     pos_address  text,
-    pos_depart varchar(20)
-}
+    channel_id integer,  -- 渠道
+    sales_depart_id integer, -- 区分
+    pos_unit varchar(100), -- 责任单元
+    pos_code varchar(60), -- 代码点
+    geo_data GEOMETRY(Point,4326),
+    deleted integer,
+    update_time timestamp,
+    create_time timestamp default current_timestamp,
+    update_user_id varchar(60),
+    create_user_id varchar(60)
+);
+
+
+insert into t_sales_pos
+(pos_type, sales_id, pos_name, pos_address, channel_id, sales_depart_id)
+values
+('美宜佳', 'A580', '测试美宜佳', '天河区中山大道西141', 1, 4),
+('711xxx', 'B580', '测试xxxax1', '白云钟落潭bbbb村子 ', 1, 4),
+('固定点', 'F580', 'what hhah ', '越秀llll啦啦啦啦啦 ', 1, 5),
+('美宜佳', 'A180', 's凑凑 a 下', '海珠嗨hi 啊 hi 阿海', 1, 6)
+;
+
+
+
+
+
 
 
 
