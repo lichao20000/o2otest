@@ -31,15 +31,15 @@ def get_pos_list():
         args = request.form
     user = request.environ['user']
     q  = args.get('q', '') 
+    pos_id = _int(args.get('pos_id',''))
     deleted = args.get('deleted','')
     deleted = -1 if not deleted.isdigit() else _int(deleted)
     channel_id = user.user_info['channel_id'] 
     charge_departs = user.user_info['charge_departs']
     rows = possvc.get_pos_list(q=q, channel_id=channel_id, 
+                        pos_id = pos_id,
                         sales_depart_ids=charge_departs, deleted=deleted)
-    return {
-            'rows': rows
-            }
+    return rows
  
 
 

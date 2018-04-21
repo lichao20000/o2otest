@@ -8,7 +8,6 @@ import Paper from 'material-ui/Paper';
 import {List, ListItem, makeSelectable} from 'material-ui/List';
 let SelectableList = makeSelectable(List);
 
-
 import Subheader from 'material-ui/Subheader';
 import ContentSend from 'material-ui/svg-icons/content/send';
 import ActionGrade from 'material-ui/svg-icons/action/grade';
@@ -17,28 +16,6 @@ import ContentDrafts from 'material-ui/svg-icons/content/drafts';
 
 
 import { Link } from 'react-router-dom'
-/*
-                         <ListItem primaryText="促销排产" 
-                                leftIcon={<ContentInbox />}
-                                initiallyOpen={true}
-                                primaryTogglesNestedList={true}
-                                disabled={true}
-                                nestedItems={[
-                                    <ListItem
-                                        key={1}
-                                        primaryText="排产"
-                                        leftIcon={<ActionGrade />}
-                                    />,
-                                    <ListItem
-                                        key={2}
-                                        primaryText="历史排产"
-                                        leftIcon={<ContentSend />}
-                                    />
-                                ]}
-                            />
-
-*/
-
 let Item = (props)=>{
   return (
     <ListItem 
@@ -110,8 +87,13 @@ class Menu extends React.Component{
                         style = {{'position': 'fixed', 'top': 0, 'left': 0}} 
                             onLeftIconButtonClick={ (event)=>{this.setState({showMenu:!showMenu})}}/>
 
-                        <Paper style={{ left:showMenu?'260px': '5px', 'position':'fixed', overflow:'auto',
-                          top:'70px', 'height': '100%','right': '0', 'right':'5px' }}>
+                        <Paper style={{ left:showMenu?'260px': '5px', 
+                            position:'fixed', overflow:'auto',
+                            top:'0px', 'height': '100%','right': '0',
+                            paddingTop:70 ,
+                            paddingBottom:70 ,
+                            boxSizing:'border-box',
+                            right:'5px' }}>
                         {this.props.children}
                       </Paper>
                     </div>

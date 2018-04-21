@@ -86,9 +86,15 @@ def get_user_local_info(user_id):
         conn = pg.connect(**config.pg_main)
         cur = conn.cursor()
         sql = ''' 
-                select u.*, d.charge_departs from t_sales_user  u
+                select u.*, d.charge_departs , d.charge_departs_info,
+                    dd.sales_depart_name, ch.channel_name
+                from t_sales_user  u
                     left join v_sales_depart d
                 on u.sales_depart_id  = d.sales_depart_id
+                    left join t_sales_depart dd
+                on u.sales_depart_id  = dd.sales_depart_id
+                    left join t_sales_channel ch
+                on u.channel_id= ch.channel_id
                      where user_id = %s
                      '''
         cur.execute(sql,(user_id,))
