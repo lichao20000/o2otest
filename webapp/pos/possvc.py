@@ -15,7 +15,7 @@ import config
 
 
 
-def get_pos_list(q=None, pos_id=None, channel_id=None,
+def get_pos_list(q=None, pos_id=None, channel_id=None,  pos_type=None,
                     sales_depart_ids=None, deleted = -1):
     u'''
     deleted = -1 全部
@@ -29,7 +29,7 @@ def get_pos_list(q=None, pos_id=None, channel_id=None,
                select p.* , ch.channel_name, d.sales_depart_name
                from t_sales_pos p
                left join t_sales_channel ch on p.channel_id = ch.channel_id
-               left join t_sales_depart d on p.sales_depart_id = d.sales_depart_id
+            left join t_sales_depart d on p.sales_depart_id = d.sales_depart_id
                where  1= 1
                ''',
                ' ' if deleted == -1 else ' and p.deleted =%(deleted)s ',
@@ -38,6 +38,7 @@ def get_pos_list(q=None, pos_id=None, channel_id=None,
                and p.sales_depart_id=any(%(sales_depart_ids)s) 
                '''
                if sales_depart_ids else ' ',
+               ' and pos_type = %(pos_type)s ' if pos_type else '',
                'and p.pos_id = %(pos_id)s ' if pos_id else ' ',
                u'''
                and (p.pos_name like %(q)s
@@ -50,8 +51,9 @@ def get_pos_list(q=None, pos_id=None, channel_id=None,
                 'channel_id': channel_id,
                 'sales_depart_ids': sales_depart_ids,
                 'deleted': deleted ,
+                'pos_type':  pos_type,
                 }
-        #print ''.join(sql) % args
+        print ''.join(sql) % args
         cur.execute(''.join(sql), args) 
         rows = pg.fetchall(cur)
         return rows

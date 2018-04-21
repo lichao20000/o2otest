@@ -32,13 +32,22 @@ def get_pos_list():
     user = request.environ['user']
     q  = args.get('q', '') 
     pos_id = _int(args.get('pos_id',''))
+    pos_type = args.get('pos_type','')
+    sales_depart_id = _int(args.get('sales_depart_id',''))
+
     deleted = args.get('deleted','')
     deleted = -1 if not deleted.isdigit() else _int(deleted)
+
     channel_id = user.user_info['channel_id'] 
     charge_departs = user.user_info['charge_departs']
+        
+    if sales_depart_id :
+        ids = [sales_depart_id] if sales_depart_id in charge_departs else []
+    else:
+        ids = charge_departs
     rows = possvc.get_pos_list(q=q, channel_id=channel_id, 
-                        pos_id = pos_id,
-                        sales_depart_ids=charge_departs, deleted=deleted)
+                        pos_id = pos_id, pos_type=pos_type,
+                        sales_depart_ids=ids, deleted=deleted)
     return rows
  
 

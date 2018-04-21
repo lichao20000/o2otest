@@ -20,6 +20,10 @@ class SalesPosition extends React.Component{
           loading: false,
           sending: false,
           query: '',
+          sales_depart_id:null,
+          pos_type: null,
+          deleted: true,
+          undeleted: true,
           rows: [],
           errMsg:'',
         }
@@ -31,17 +35,20 @@ class SalesPosition extends React.Component{
 
     getData(){
       this.setState({loading: true})
+      let {sales_depart_id, pos_type, query, deleted, undeleted} = this.state;
+      query = query==''?null: query;
+      let args = {sales_depart_id, pos_type, query};
       axios({
           url: '/pos/api/get_pos_list.json' ,
           transformRequest:[ function(data, headers) {
               let _data =  []
               for(let k in data){
-                  _data.push(k+'='+ data[k])
+                  _data.push(k+'='+ (data[k]==null?'':data[k]))
               }
               return  _data.join('&')
           }
           ],
-          //data: {'msg_code':msg_code, },
+          data: args,
           method: 'post',
           responseType:'json',
       }).then( (resp) =>{
@@ -59,17 +66,86 @@ class SalesPosition extends React.Component{
     }
 
     render(){
-      let {loading, sending, rows } = this.state;
+      let {loading, sending, rows,
+        query, deleted, undelted, sales_depart_id,pos_type,
+      } = this.state;
       let headers = ['系统ID','类型', '促销点ID', '门店名称', '门店地址', 
         //'渠道',
         //<TableRowColumn>{r.channel_name}</TableRowColumn>
         '区分', '单元', '责任人','代码点', '坐标' ]
+      let sales_departs = (((window.NS||{}).userInfo||{})
+                          .user_info||{}).charge_departs_info||[];
       return (
         <div>
+          <div style={{padding:'0px 20px'}}>
+            <div> 筛选条件： </div>
+            <div style={{display:'inline-block' ,  verticalAlign:'middle', }}>
+            <label style={{fontSize:12,color:'rgba(0, 0, 0, 0.3)'}}>生效 </label>
+            <Toggle style ={{display:'inline-block' ,width:100}}/>
+            </div>
+            <div style={{display:'inline-block', marginRight:20}}>
+              <label style={{fontSize:12,
+                    color:'rgba(0, 0, 0, 0.3)'}}>区分</label>
+              <SelectField
+                value={sales_depart_id}
+                onChange = {(e,i,sales_depart_id)=>{
+                      this.setState({sales_depart_id})}}
+                labelStyle={{fontSize:12, lineHeight:4, textAlign:'center'}}
+                style ={{display:'inline-block' ,
+                    lineHeight: 24,
+                    verticalAlign:'middle',
+                    width:150,
+                    height:40,}} >
+                <MenuItem  value={null} primaryText={'请选择'} />
+                {
+                  sales_departs.map((d, i)=>(
+                     <MenuItem key ={'f-'+i} value={d.sales_depart_id} 
+                      primaryText={d.sales_depart_name} />
+                  ))
+                }
+              </SelectField>
+   
+            </div>
+          <div style={{display:'inline-block', marginRight:20}}>
+            <label style={{fontSize:12,
+                    color:'rgba(0, 0, 0, 0.3)'}}>类型</label>
+            <SelectField
+                value={pos_type}
+                onChange = {(e,i,pos_type)=>{this.setState({pos_type})}}
+                labelStyle={{fontSize:12, lineHeight:4, textAlign:'center'}}
+                style ={{display:'inline-block' ,
+                    lineHeight: 24,
+                    verticalAlign:'middle',
+                    width:150,
+                    height:40,}} >
+                <MenuItem  value={null} primaryText={'请选择'} />
+                {
+                  ['美宜佳', '7 11', '固定点'].map((t, idx)=>(
+                    <MenuItem key ={idx} value={t} primaryText={t} />
+                  ))
+                }
+            </SelectField>
+          </div>
+           <TextField hintText="门店名称/地址"
+              value = {query}
+              onChange = {(e,query)=>{this.setState({query})}}
+              style ={{display:'inline-block' ,
+                    fontSize: 14,
+                    verticalAlign:'middle',
+                    width:150,
+                    height:40,}} />
+            <RaisedButton label="查找" primary={true}
+              onClick = {this.getData.bind(this)}
+              disabled ={loading}
+              style ={{ height:30,
+                  width: 50 ,
+                  marginLeft: 20
+              }} />
+
+     
+          </div>
         { loading ? <CircularProgress size={40} thickness={3} />:
           <div>
-          <div>
-          </div>
           <Table fixedHeader={false} displaySelectAll={false}>
           <TableHeader displaySelectAll={false} adjustForCheckbox={false}> 
           <TableRow>
@@ -171,7 +247,7 @@ class SalesPositionManager extends React.Component{
 
 
   getData(){
-   this.setState({loading: true})
+    this.setState({loading: true})
     axios({
           url: '/pos/api/get_pos_list.json' ,
           transformRequest:[ function(data, headers) {
@@ -217,7 +293,6 @@ class SalesPositionManager extends React.Component{
     let style = { margin: 12, float:'right'};
     let sales_departs = (((window.NS||{}).userInfo||{})
                           .user_info||{}).charge_departs_info||[];
-    console.info(sales_departs)
     return( 
     <div style={{padding: 20}}> 
       <TextField
