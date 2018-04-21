@@ -29,7 +29,7 @@ def get_pos_list(q=None, pos_id=None, channel_id=None,
                select * from t_sales_pos 
                where  1= 1
                ''',
-               ' ' if deleted == -1 else ' and deleted =%(deletd)s ',
+               ' ' if deleted == -1 else ' and deleted =%(deleted)s ',
                'and channel_id=%(channel_id)s  ' if channel_id else ' ',
                '''
                and sales_depart_id=%(sales_depart_id)s  
@@ -89,9 +89,13 @@ def add_pos(pos_info):
         for k in keys:
             if k not in pos_info:
                 args[k] = None
+        sql = "select nextval('seq_t_sales_pos')"
+        cur.execute(sql)
+        args['pos_id'] = cur.fetchone()[0]
         sql = '''
             insert into t_sales_pos
             (
+                pos_id,
                 pos_type,
                 sales_id, 
                 pos_name,
@@ -103,6 +107,7 @@ def add_pos(pos_info):
                 ---geo_data,
                 create_user_id
             ) values(
+                %(pos_id)s,
                 %(pos_type)s,
                 %(sales_id)s, 
                 %(pos_name)s,
@@ -117,28 +122,58 @@ def add_pos(pos_info):
             '''
         cur.execute(sql, args)
         conn.commit()
+        return args['pos_id'] if cur.rowcount == 1 else None
+    finally:
+        if cur: cur.close()
+        if conn: conn.close()
+
+
+
+def del_pos(pos_id, user_id=None):
+    conn, cur = None, None
+    try:
+        conn = pg.connect(**config.pg_main)
+        cur = conn.cursor()
+        sql = '''
+            update t_sales_pos
+            set deleted = 1 , update_time = current_timestamp,
+                update_user_id = %s
+                where deleted = 0 and pos_id = %s
+            '''
+        cur.execute(sql, (user_id,pos_id,))
+        conn.commit()
         return cur.rowcount == 1
     finally:
         if cur: cur.close()
         if conn: conn.close()
 
 
-
-def del_pos(self):
+def update_pos(pos_info):
     conn, cur = None, None
     try:
-        conn = pg.connect(**pg.main)
+        conn = pg.connect(**config.pg_main)
         cur = conn.cursor()
-    finally:
-        if cur: cur.close()
-        if conn: conn.close()
-
-
-def update_pos(self):
-    conn, cur = None, None
-    try:
-        conn = pg.connect(**pg.main)
-        cur = conn.cursor()
+        keys = (
+                'pos_type',
+                'sales_id', 
+                'pos_name',
+                'pos_address', 
+                'channel_id', 
+                'sales_depart_id',
+                'pos_unit',
+                'pos_code',
+                'geo_data',
+                'create_user_id' ,)
+        items = []
+        for key in pos_info:
+            if key in keys:
+                items.append(' %s=%%(%s)s '%(key,key))
+        sql = [''' update t_sales_pos set update_time=current_timestamp,''',
+                ','.join(items),
+                ''' where deleted = 0 and pos_id = %(pos_id)s ''']
+        cur.execute(''.join(sql), pos_info)
+        conn.commit()
+        return cur.rowcount == 1
     finally:
         if cur: cur.close()
         if conn: conn.close()
