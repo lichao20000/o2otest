@@ -16,7 +16,7 @@ import config
 
 
 def get_pos_list(q=None, pos_id=None, channel_id=None,  pos_type=None,
-                    sales_depart_ids=None, deleted = -1):
+                    pos_name=None,sales_depart_ids=None, deleted = -1):
     u'''
     deleted = -1 全部
     '''
@@ -38,6 +38,7 @@ def get_pos_list(q=None, pos_id=None, channel_id=None,  pos_type=None,
                and p.sales_depart_id=any(%(sales_depart_ids)s) 
                '''
                if sales_depart_ids else ' ',
+               ' and p.pos_name=%(pos_name)s ' if pos_name else '',
                ' and pos_type = %(pos_type)s ' if pos_type else '',
                'and p.pos_id = %(pos_id)s ' if pos_id else ' ',
                u'''
@@ -48,6 +49,7 @@ def get_pos_list(q=None, pos_id=None, channel_id=None,  pos_type=None,
         args = {
                 'q' : '%%%s%%'%q if q else '',
                 'pos_id': pos_id,
+                'pos_name': pos_name,
                 'channel_id': channel_id,
                 'sales_depart_ids': sales_depart_ids,
                 'deleted': deleted ,

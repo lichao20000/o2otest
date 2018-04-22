@@ -1,6 +1,8 @@
 import { HashRouter as Router, Route, Link } from 'react-router-dom'
 import Menu from './menu'
-import {SalesPosition , SalesPositionManager }from './pos/sales-position'
+import {SalesPosition , 
+  NewPosition,
+  SalesPositionManager }from './pos/sales-position'
 
 
 const Home = () => (
@@ -57,6 +59,7 @@ ReactDOM.render((
         <Route path="/plan/arrange/" component={About}/>
         <Route path="/plan/history/" component={Home} />
         <Route path="/pos/manager/" exact component={SalesPosition} />
+        <Route path="/pos/new" exact component={NewPosition} />
         <Route path="/pos/manager/:pos_id" component={SalesPositionManager}/>
         <Route path="/user/mine" component={Topics} />
     </Menu>

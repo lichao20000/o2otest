@@ -33,6 +33,8 @@ def get_pos_list():
     q  = args.get('q', '') 
     pos_id = _int(args.get('pos_id',''))
     pos_type = args.get('pos_type','')
+    pos_name  = args.get('pos_name','')
+
     sales_depart_id = _int(args.get('sales_depart_id',''))
 
     deleted = args.get('deleted','')
@@ -47,6 +49,7 @@ def get_pos_list():
         ids = charge_departs
     rows = possvc.get_pos_list(q=q, channel_id=channel_id, 
                         pos_id = pos_id, pos_type=pos_type,
+                        pos_name =pos_name,
                         sales_depart_ids=ids, deleted=deleted)
     return rows
  
@@ -112,6 +115,7 @@ def update_pos():
 def add_pos():
     u'''
     添加,  
+    todo: 负责人信息
     '''
     keys = ( 'pos_type', 'sales_id',
             'pos_name', 'pos_address', 
@@ -133,6 +137,9 @@ def add_pos():
     try: 
         if not items.get('pos_name'):
             raise Abort(u'促销点名称不能为空.')
+        name_check = possvc.get_pos_list(pos_name=items.get('pos_name'))
+        if name_check:
+            raise Abort(u'促销点名称已存在.')
         items['sales_depart_id']  = _int(items.get('sales_depart_id',''))
         if not items['sales_depart_id']:
             raise Abort(u'请指定正确的区分信息.')
