@@ -36,8 +36,8 @@ def get_saler_list():
     page_size = _int(args.get('page_size',''))
     page_size = page_size if page_size>0 else 100
     mobile = args.get('mobile','')
-    deleted = _int(args.get('deleted',''))
-    deleted = None if deleted == -1 else deleted
+    deleted = args.get('deleted','')
+    deleted = None if not deleted.isdigit() else _int(deleted)
     user = request.environ['user']
     channel_id = user.user_info['channel_id']
     charge_departs = user.user_info['charge_departs']

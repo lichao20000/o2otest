@@ -3,6 +3,9 @@ import Menu from './menu'
 import {SalesPosition , 
   NewPosition,
   SalesPositionManager }from './pos/sales-position'
+import { SalerList } from './saler/saler'
+import { SalerEditor } from './saler/saler-editor'
+import { NewSaler } from './saler/saler-new'
 
 
 const Home = () => (
@@ -61,6 +64,9 @@ ReactDOM.render((
         <Route path="/pos/manager/" exact component={SalesPosition} />
         <Route path="/pos/new" exact component={NewPosition} />
         <Route path="/pos/manager/:pos_id" component={SalesPositionManager}/>
+        <Route path="/saler/manager" exact component={SalerList} />
+        <Route path="/saler/manager/:mobile" component={SalerEditor}/>
+        <Route path="/saler/new" exact component={NewSaler} />
         <Route path="/user/mine" component={Topics} />
     </Menu>
   </Router>

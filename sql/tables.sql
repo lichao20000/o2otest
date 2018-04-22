@@ -101,6 +101,18 @@ create table t_sales_user(
 );
 
 
+CREATE OR REPLACE VIEW public.v_sales_depart AS
+ SELECT d.sales_depart_id,
+    d.sales_depart_name,
+    d.parent_id,
+    d.channel_id,
+    d.last_update_time,
+    d.last_udpate_user_id,
+    ( SELECT array_agg(sd.sales_depart_id) || d.sales_depart_id
+           FROM t_sales_depart sd
+          WHERE sd.parent_id = d.sales_depart_id) AS charge_departs
+   FROM t_sales_depart d;
+
 
 
 
@@ -137,6 +149,23 @@ values
 ('固定点', 'F580', 'what hhah ', '越秀llll啦啦啦啦啦 ', 1, 5),
 ('美宜佳', 'A180', 's凑凑 a 下', '海珠嗨hi 啊 hi 阿海', 1, 6)
 ;
+
+
+
+-- 促销人员表
+-- drop table t_sales_saler
+create table t_sales_saler (
+    mobile varchar(11) primary key,
+    saler_name varchar(100),
+    channel_id integer,
+    sales_depart_id integer , -- 可以为空 不做限定
+    unit varchar(60),
+    deleted int default 0 , -- 状态位
+    create_user_id varchar(60),
+    create_time timestamp default current_timestamp,
+    last_update_user_id varchar(60),
+    update_time timestamp
+)
 
 
 
