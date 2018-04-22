@@ -49,8 +49,8 @@ def get_pos_list():
         ids = charge_departs
     rows = possvc.get_pos_list(q=q, channel_id=channel_id, 
                         pos_id = pos_id, pos_type=pos_type,
-                        pos_name =pos_name,
-                        sales_depart_ids=ids, deleted=deleted)
+                        pos_name =pos_name, sales_depart_ids=ids,
+                        deleted=deleted)
     return rows
  
 

@@ -38,6 +38,7 @@ blueprints = (
     ('user.login_views.login_bp','/u'),
 
     ('pos.api_views.api_bp','/pos/api'),
+    ('saler.api_views.api_bp','/saler/api'),
 
     )
 
