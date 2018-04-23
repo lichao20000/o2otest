@@ -171,7 +171,9 @@ def update_pos(pos_info):
                 'pos_unit',
                 'pos_code',
                 'geo_data',
-                'create_user_id' ,)
+                'pos_man',
+                'pos_man_mobile',
+                'update_user_id' ,)
         items = []
         for key in pos_info:
             if key in keys:

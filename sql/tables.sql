@@ -146,8 +146,10 @@ create table t_sales_pos (
     sales_depart_id integer, -- 区分
     pos_unit varchar(100), -- 责任单元
     pos_code varchar(60), -- 代码点
+    pos_man varchar(60), --负责任姓名,
+    pos_man_mobile varchar(11), --负责任手机号码,
     geo_data GEOMETRY(Point,4326),
-    deleted integer,
+    deleted integer default 0,
     update_time timestamp,
     create_time timestamp default current_timestamp,
     update_user_id varchar(60),

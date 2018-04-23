@@ -6,7 +6,40 @@ import copy
 from utils import json_dumps
 
 
-items = [{
+items = [ {
+        'label': u'首页',
+        'url': '/'
+        }, {
+        'label': u'促销点',
+        'items': [{
+            'label':'促销点查询' ,
+            'url': '/pos/scan'
+            },{
+            'label':'促销点管理' ,
+            'url': '/pos/manager/',
+            'priv': PRIV_ADMIN_POS | PRIV_ADMIN_SUPER,
+            },{
+            'label':'促销点批量导入' ,
+            'url': '/pos/import/',
+            'priv': PRIV_ADMIN_POS | PRIV_ADMIN_SUPER,
+                }
+            ]
+        },{
+        'label': u'促销人员',
+        'items': [{
+             'label':'促销人员查询' ,
+            'url': '/saler/scan'
+            },{
+            'label':'促销人员管理' ,
+            'url': '/saler/manager/',
+            'priv': PRIV_ADMIN_POS | PRIV_ADMIN_SUPER,
+            },{
+            'label':'促销人员批量导入' ,
+            'url': '/pos/import/',
+            'priv': PRIV_ADMIN_POS | PRIV_ADMIN_SUPER,
+                }
+            ]
+       } ,{
         'label': u'促销排产',
         'open': True,
         'icon': 'ActionGrade',

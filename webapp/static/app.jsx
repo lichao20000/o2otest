@@ -1,16 +1,18 @@
 import { HashRouter as Router, Route, Link } from 'react-router-dom'
 import Menu from './menu'
-import {SalesPosition , 
-  NewPosition,
-  SalesPositionManager }from './pos/sales-position'
+import {SalesPosition  } from './pos/sales-position'
+import {SalesPositionManager } from './pos/sales-editor'
+import { NewPosition}  from './pos/sales-new'
 import { SalerList } from './saler/saler'
 import { SalerEditor } from './saler/saler-editor'
 import { NewSaler } from './saler/saler-new'
+import { PosImport} from './pos/pos-batch'
 
 
 const Home = () => (
   <div>
-    <h2>Home</h2>
+    <h2>统计信息</h2>
+    待开发，敬请期待
   </div>
 )
 
@@ -59,11 +61,13 @@ const Topics = ({ match }) =>{
 ReactDOM.render((
   <Router>
     <Menu>
+        <Route path="/"  exact component={Home}/>
         <Route path="/plan/arrange/" component={About}/>
         <Route path="/plan/history/" component={Home} />
         <Route path="/pos/manager/" exact component={SalesPosition} />
-        <Route path="/pos/new" exact component={NewPosition} />
         <Route path="/pos/manager/:pos_id" component={SalesPositionManager}/>
+        <Route path="/pos/new" exact component={NewPosition} />
+        <Route path="/pos/import" exact component={PosImport} />
         <Route path="/saler/manager" exact component={SalerList} />
         <Route path="/saler/manager/:mobile" component={SalerEditor}/>
         <Route path="/saler/new" exact component={NewSaler} />

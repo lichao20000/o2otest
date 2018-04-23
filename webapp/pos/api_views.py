@@ -68,7 +68,7 @@ def update_pos():
     '''
     keys = ( 'pos_type', 'sales_id', 'pos_name', 'pos_address', 
                 #'channel_id',
-                'sales_depart_id', 'deleted',
+                'sales_depart_id', 'deleted', 'pos_man', 'pos_man_mobile',
                 'pos_unit', 'pos_code', 'geo_data', )
     args = request.args
     if request.method == 'POST':
@@ -77,19 +77,22 @@ def update_pos():
     result, msg = False, ''
     user = request.environ['user']
     try:
+        if not pos_id:
+            raise Abort(u'pos_id invalid.')
         items =  {}
         for k in keys:
             val = args.get(k, '') 
             if val :
-                if k in ('channel_id', 'sales_depart_id'):
+                if k in ('sales_depart_id',):
                     val = _int(val)
                 if not val:
                     raise Abort(u'%s invalid' % k)
                 items[k] = val
-        if not pos_id:
-            raise Abort(u'pos_id invalid.')
         if not len(items.keys()):
             raise Abort(u'请指定更新字段.')
+        mobile = items.get('pos_man_mobile') 
+        if mobile and (len(mobile)!=11  or not mobile.isdigit()):
+            raise Abort(u'手机号码不正确.')
         pos = possvc.get_pos_list(pos_id = pos_id) 
         if not pos:
             raise Abort(u'更新项不存在.')
@@ -117,8 +120,7 @@ def add_pos():
     添加,  
     todo: 负责人信息
     '''
-    keys = ( 'pos_type', 'sales_id',
-            'pos_name', 'pos_address', 
+    keys = ( 'pos_type', 'sales_id', 'pos_name', 'pos_address', 'pos_man','pos_man_mobile',
                 #'channel_id', 'deleted',
                 'sales_depart_id', 'pos_unit', 'pos_code', 'geo_data', )
     args = request.args
@@ -137,6 +139,11 @@ def add_pos():
     try: 
         if not items.get('pos_name'):
             raise Abort(u'促销点名称不能为空.')
+        if not items.get('pos_man'):
+            raise Abort(u'促销负责任不能为空.')
+        mobile = items.get('pos_man_mobile')
+        if not mobile or len(mobile)!=11  or not mobile.isdigit():
+            raise Abort(u'请提供正确的手机号.')
         name_check = possvc.get_pos_list(pos_name=items.get('pos_name'))
         if name_check:
             raise Abort(u'促销点名称已存在.')
