@@ -92,10 +92,11 @@ CREATE OR REPLACE VIEW public.v_sales_depart AS
     d.last_udpate_user_id,
     ( SELECT array_agg(sd.sales_depart_id) || d.sales_depart_id
            FROM t_sales_depart sd
-          WHERE sd.parent_id = d.sales_depart_id) AS charge_departs
+          WHERE sd.parent_id = d.sales_depart_id) AS charge_departs,
+    ( SELECT array_agg(row_to_json(sd.*)) || row_to_json(d.*)
+           FROM t_sales_depart sd
+          WHERE sd.parent_id = d.sales_depart_id) AS charge_departs_info
    FROM t_sales_depart d;
-
-
 
 
 --- 用户表
