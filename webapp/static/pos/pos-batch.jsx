@@ -15,6 +15,8 @@ import MenuItem from 'material-ui/MenuItem';
 import Checkbox from 'material-ui/Checkbox';
 import {RadioButton, RadioButtonGroup} from 'material-ui/RadioButton';
 import IconButton from 'material-ui/IconButton';
+import HardwareKeyboardArrowRight from 'material-ui/svg-icons/hardware/keyboard-arrow-right'   ;
+import HardwareKeyboardArrowLeft from 'material-ui/svg-icons/hardware/keyboard-arrow-left';
 let AL = HardwareKeyboardArrowLeft;
 let AR = HardwareKeyboardArrowRight;
 
@@ -36,6 +38,10 @@ class PosImport extends React.Component{
 
     onChange(){
     
+    }
+
+    onChoose(){
+         
     }
 
     render(){
@@ -64,8 +70,12 @@ class PosImport extends React.Component{
                         ))
                     }
                 </SelectField>
-                 
-                <IconButton style={{top:64, left:-25, padding:0, zIndex:4}}><AR/></IconButton> 
+                <div>
+                    <input ref='fileExcl' type='file' id='file' style={{display:'none'}}/>
+                    <RaisedButton  primary={true} label='选择文件'
+                        onClick = {(e)=>{ console.info(this.refs); this.refs['fielExcl'].click(e)}}
+                    /> 
+                </div>
             </div>
         )
 
