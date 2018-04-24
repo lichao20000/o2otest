@@ -32,13 +32,12 @@ import {blue500, red500, greenA200} from 'material-ui/styles/colors';
 
 
 
-class PosImport extends React.Component{
+class SalerImport extends React.Component{
     constructor(props){
         super(props); 
         let user_info = (((window.NS||{}).userInfo||{}).user_info||{});
         this.state = {
           sales_depart_id : user_info['sales_depart_id'],
-          pos_type: null,
           file: null,
           file_name: '',
           sending: false,
@@ -103,15 +102,15 @@ class PosImport extends React.Component{
 
     onCommit(){ // 确定提交了
         this.setState({showConfirm: false, sending: true})
-        let {rows, sales_depart_id, pos_type} = this.state;
+        let {rows, sales_depart_id,} = this.state;
         let args = rows.filter((r)=>(r.status==3));
         axios({
-              url: '/pos/api/pos_import.json' ,
+              url: '/saler/api/saler_import.json' ,
               transformRequest:[ function(data, headers) { let _data =  []
                   for(let k in data){ _data.push(k+'='+ data[k]) }
                   return  _data.join('&')
               } ],
-              data: {rows: JSON.stringify(args), pos_type},
+              data: {rows: JSON.stringify(args), sales_depart_id,},
               method: 'post',
               responseType:'json',
           }).then( (resp) =>{
@@ -130,27 +129,23 @@ class PosImport extends React.Component{
     }
 
     onCheck(){
-      let {rows, user_info}= this.state;
+      let {rows, }= this.state;
 
       rows.map((r)=>{
-            if(!r.data[0] || !r.data[4] || !r.data[6] || !r.data[7]) {
+            if(!r.data[0] || !r.data[1] ) {
                 r.status = 4
                 r.msg = '必填项.'
             }
-            if( r.data[7].toString().length !=11 
-                          || !r.data[7].toString().match(/^\d+$/)){
+            if(!r.data[0] || r.data[0].toString().length !=11 
+                          || !r.data[0].toString().match(/^\d+$/)){
                 r.status = 4
                 r.msg = '手机号.'
             }
-          if(r.data[0] && user_info.charge_departs.indexOf(r.data[0])==-1){
-                r.status = 4
-                r.msg = '无权区分ID.'
-          }
         })
     this.setState({sending:true, rows})
     let args = rows.filter((r)=>(r.status==1));
     axios({
-          url: '/pos/api/check_import.json' ,
+          url: '/saler/api/check_import.json' ,
           transformRequest:[ function(data, headers) { let _data =  []
               for(let k in data){ _data.push(k+'='+ data[k]) }
               return  _data.join('&')
@@ -183,8 +178,7 @@ class PosImport extends React.Component{
 
     renderRows(){
       let {rows, read, sending}  = this.state;
-      let headers = ['序号',' ','区分ID','单元'	,'促销点ID','代码点','门店名称','门店地址',
-              '负责人姓名','负责人电话'];
+      let headers = ['序号',' ','手机号', '姓名','单元'];
       let iconStyle ={verticalAlign:'middle', marginRight:'5'}
       return (
        <div style={{    overflow: 'hidden', }}>
@@ -218,11 +212,6 @@ class PosImport extends React.Component{
                 <TableRowColumn>{r.data[0]}</TableRowColumn>
                 <TableRowColumn>{r.data[1]}</TableRowColumn>
                 <TableRowColumn>{r.data[2]}</TableRowColumn>
-                <TableRowColumn>{r.data[3]}</TableRowColumn>
-                <TableRowColumn>{r.data[4]}</TableRowColumn>
-                <TableRowColumn>{r.data[5]}</TableRowColumn>
-                <TableRowColumn>{r.data[6]}</TableRowColumn>
-                <TableRowColumn>{r.data[7]}</TableRowColumn>
               </TableRow>
                 )})
               }
@@ -235,7 +224,7 @@ class PosImport extends React.Component{
         let user_info = (((window.NS||{}).userInfo||{}).user_info||{});
         let sales_departs = user_info.charge_departs_info;
         let {read, percentCompleted, rows, errMsg, fileName,
-                showConfirm, sales_depart_id, pos_type,
+                showConfirm, sales_depart_id,
                 checked, checkResult, sending,} = this.state;
         return (
             <div style={{padding:'30px 20px' }}>
@@ -248,8 +237,7 @@ class PosImport extends React.Component{
                     onChange={this.fuck}
                     floatingLabelFixed={true} />
                 <Divider />
-                {
-                    /*
+
                 <SelectField
                     floatingLabelText="区分"
                     value = {sales_depart_id}
@@ -260,21 +248,8 @@ class PosImport extends React.Component{
                                 primaryText={d.sales_depart_name} />
                         ))
                     }
-                </SelectField>
-                */
-                }
-              <SelectField
-                      floatingLabelText="类型"
-                      value = {pos_type}
-                        onChange = {(e,idx,pos_type)=>(this.setState({pos_type}))}>
-                      {
-                        ['美宜佳', '7 11', '固定点'].map((t, idx)=>(
-                        <MenuItem key ={idx} value={t} primaryText={t} />
-                        ))
-                      }
-                  </SelectField>
-
-              <div>
+                    </SelectField>
+                    <div>
                     <input ref='fileExcel' type='file' id='file' 
                     onChange={this.onChoose.bind(this)}
                     style={{display:'none'}}/>
@@ -287,31 +262,18 @@ class PosImport extends React.Component{
                     style={{fontSize:12, color:'#888',display:'inline-block', width:60, textAlign:'center'}}>
                 {percentCompleted}%</div>]
                     :<RaisedButton  primary={true} label='选择文件'
-                        disabled = {!pos_type}
                         onClick = {(e)=>{ this.refs['fileExcel'].click(e)}}
                     /> 
               }
               <label style={{fontSize:14, color:'#333'}}> {fileName} </label>
                   <div>
-                  <label style={{fontSize:14, color:'#880'}}>导入说明 </label>
+                  <label style={{fontSize:14, color:'#88'}}>导入说明 </label>
                   <div style={{fontSize:14, color:'#f00'}}>
                      请按照以下图片显示要求提供导入的excel表(系统只读第一个sheet,第一行为表头)
-                    <a href='/static/images/import-pos-tips.png'
+                    <a href='/static/images/import-saler-tips.png'
                     target='_blank' >点我看大图</a>
                   </div>
-                  <div className='import-pos-tips'> </div>
-                  <div>
-                    <label style={{fontSize:14, color:'#888'}}>区分对应ID</label>
-                    {user_info.charge_departs_info.map((d,idx)=>{
-                        return (
-                            <div key = {idx}>
-                                <label style={{fontSize:14, color:'#333'}}>{d.sales_depart_name}</label>
-                                <label style={{fontSize:14, color:'#333',marginLeft:20}}>{d.sales_depart_id}</label>
-                        </div>
-                        )
-                    })
-                    }
-                  </div>
+                  <div className='import-saler-tips'> </div>
                   </div>
                 </div>
               {
@@ -384,5 +346,5 @@ class PosImport extends React.Component{
     }
 }
 
-exports.PosImport = PosImport
+exports.SalerImport = SalerImport
 

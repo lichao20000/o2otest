@@ -11,10 +11,12 @@ items = [ {
         'url': '/'
         }, {
         'label': u'促销点',
-        'items': [{
-            'label':'促销点查询' ,
-            'url': '/pos/scan'
-            },{
+        'items': [
+           # {
+           # 'label':'促销点查询' ,
+           # 'url': '/pos/scan'
+           # },
+            {
             'label':'促销点管理' ,
             'url': '/pos/manager/',
             'priv': PRIV_ADMIN_POS | PRIV_ADMIN_SUPER,
@@ -26,58 +28,68 @@ items = [ {
             ]
         },{
         'label': u'促销人员',
-        'items': [{
-             'label':'促销人员查询' ,
-            'url': '/saler/scan'
-            },{
+        'items': [
+           # {
+           #  'label':'促销人员查询' ,
+           # 'url': '/saler/scan'
+           # },
+            {
             'label':'促销人员管理' ,
             'url': '/saler/manager/',
-            'priv': PRIV_ADMIN_POS | PRIV_ADMIN_SUPER,
+            'priv': PRIV_ADMIN_SALE| PRIV_ADMIN_SUPER,
             },{
             'label':'促销人员批量导入' ,
-            'url': '/pos/import/',
-            'priv': PRIV_ADMIN_POS | PRIV_ADMIN_SUPER,
+            'url': '/saler/import/',
+            'priv': PRIV_ADMIN_SALE| PRIV_ADMIN_SUPER,
                 }
             ]
-       } ,{
-        'label': u'促销排产',
-        'open': True,
-        'icon': 'ActionGrade',
-        'priv': PRIV_PLAN | PRIV_ADMIN_ANY ,
-        'items': [{
-            'label': u'排产',
-            'url': '/plan/arrange/',
-            'priv': PRIV_PLAN | PRIV_ADMIN_ANY ,
-            }, {
-            'label': u'排产历史',
-            'url': '/plan/history/',
-            'priv': PRIV_PLAN | PRIV_ADMIN_ANY ,
-            } ],
-        } , {
+       } ,
+       # {
+       # 'label': u'促销排产',
+       # 'open': True,
+       # 'icon': 'ActionGrade',
+       # 'priv': PRIV_PLAN | PRIV_ADMIN_ANY ,
+       # 'items': [{
+       #     'label': u'排产',
+       #     'url': '/plan/arrange/',
+       #     'priv': PRIV_PLAN | PRIV_ADMIN_ANY ,
+       #     }, {
+       #     'label': u'排产历史',
+       #     'url': '/plan/history/',
+       #     'priv': PRIV_PLAN | PRIV_ADMIN_ANY ,
+       #     } ],
+       # } , 
+       {
         'label': u'管理',
         'priv': PRIV_ADMIN_ANY,
-        'open': True,
-        'icon': 'fa-user',
-        'items': [{
-            'label': u'排产审核',
-            'url': '/plan/check/',
-            'priv': PRIV_ADMIN_CHECK | PRIV_ADMIN_SUPER,
-            }, {
-            'label': u'促销点管理',
-            'url': '/pos/manager/',
-            'priv': PRIV_ADMIN_POS | PRIV_ADMIN_SUPER,
-            } , {
-                'label': u'促销人员管理',
-                'url': '/saler/manager/',
-                'priv': PRIV_ADMIN_SALE | PRIV_ADMIN_SUPER,
-            },{
-                'label': u'权限管理',
-                'url': '/sys/manager/',
-                'priv':  PRIV_ADMIN_SUPER,
-                },]
-         },{
-        'label': u'我',
-        'url': '/user/mine/',
+        'items': [
+            {'label': '切换' ,   
+              'priv':  PRIV_ADMIN_SUPER,
+              'url': '/admin/switch' 
+             },
+
+           # {
+           # 'label': u'排产审核',
+           # 'url': '/plan/check/',
+           # 'priv': PRIV_ADMIN_CHECK | PRIV_ADMIN_SUPER,
+           # }, {
+           # 'label': u'促销点管理',
+           # 'url': '/pos/manager/',
+           # 'priv': PRIV_ADMIN_POS | PRIV_ADMIN_SUPER,
+           # } , {
+           #     'label': u'促销人员管理',
+           #     'url': '/saler/manager/',
+           #     'priv': PRIV_ADMIN_SALE | PRIV_ADMIN_SUPER,
+           # },{
+           #     'label': u'权限管理',
+           #     'url': '/sys/manager/',
+           #     'priv':  PRIV_ADMIN_SUPER,
+           #     },
+            ]
+         },
+      {
+        'label': u'退出',
+        'url': '/login_out/',
         }
 ]
 

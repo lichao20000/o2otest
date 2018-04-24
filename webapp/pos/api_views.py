@@ -157,3 +157,105 @@ def add_pos():
     except Abort, e:
         msg = e.msg
     return {'result': result, 'pos_id': pos_id, 'msg': msg}
+
+
+
+def _check(rows):
+    names = []
+    for row in rows:
+        if type(row) != dict:
+            raise Abort(u'请提供JSON格式数据.(type error) ')
+        if row.get('status') != 1:
+           continue 
+        data = row.get('data',[] )
+        if not type(data)==list or not data or not len(data)>=8:
+            row['status'] = 4
+            row['msg'] = u'数据不完整.'
+            continue 
+        if data[4]=='' or not data[6] or not data[7] or not data[0]:
+            row['status'] = 4
+            row['msg'] = u'必填项.'
+            continue 
+        if not str(data[7]).isdigit() or len(str(data[7])) !=11:
+            row['status'] = 4
+            row['msg'] = u'手机号.'
+            continue 
+        if data[4] in names:
+            row['status'] = 4
+            row['msg'] = u'名称重复(excel).'
+            continue
+        names.append(data[4]) 
+        if possvc.get_pos_list(pos_name=data[4]):
+            row['status'] = 4
+            row['msg'] = u'名称已存在.'
+            continue
+        row['status'] = 3 
+
+
+
+@api_bp.route('/check_import.json', methods=['POST', 'GET'])
+@auth_required(priv=PRIV_ADMIN_POS)
+@jview
+def checkimport():
+    args = request.args
+    if request.method == 'POST':
+        args = request.form
+    rows = args.get('rows','')
+    result, msg  = False, ''
+    try:
+    # 单元	促销点ID	代码点	门店名称	门店地址	负责人姓名	负责人电话
+        rows = json.loads(rows)
+        _check(rows)
+        result = True
+    except  ValueError, e: 
+        msg = u'请提供JSON格式数据.(loads error) '
+        rows = None
+    except Abort,e :
+        msg = e.msg
+        rows = None
+    return {'result': result, 'msg': msg, 'rows': rows}
+
+
+
+
+@api_bp.route('/pos_import.json', methods=['POST', 'GET'])
+@auth_required(priv=PRIV_ADMIN_POS)
+@jview
+def pos_import():
+    args = request.args
+    if request.method == 'POST':
+        args = request.form
+    user = request.environ['user']
+    channel_id = user.user_info['channel_id'] 
+    charge_departs = user.user_info['charge_departs']
+
+    rows = args.get('rows','')
+    sales_depart_id = _int(args.get('sales_depart_id', ''))
+    pos_type = args.get('pos_type','')
+    result, msg, cnt  = False, '' , 0
+    # 单元	促销点ID	代码点	门店名称	门店地址	负责人姓名	负责人电话
+    try:
+        if not pos_type :
+            raise Abort(u'请指定类型.')
+        rows = json.loads(rows)
+        _check(rows) 
+        rows = filter(lambda r :r.get('status')==3, rows)
+        datas = [r['data'][:8] for r in rows]
+        keys = ['sales_depart_id','pos_unit', 'sales_id', 'pos_code', 
+                'pos_name', 'pos_address', 'pos_man', 'pos_man_mobile'] 
+        datas = [dict(zip(keys, d))   for d in datas]
+        for d in datas:
+            d['create_user_id'] = user.user_id
+            d['channel_id'] = channel_id
+            d['pos_type'] = pos_type
+        result =  possvc.pos_import(datas)
+        cnt = len(datas)
+    except  ValueError, e: 
+        msg = u'请提供JSON格式数据.(loads error) '
+    except Abort,e :
+        msg = e.msg
+    return {'result': result, 'msg': msg, 'cnt': cnt}    
+        
+
+
+

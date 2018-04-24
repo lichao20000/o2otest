@@ -159,3 +159,105 @@ def update_saler():
             } 
  
 
+
+def _check(rows):
+    mobiles = []
+    for row in rows:
+        if type(row) != dict:
+            raise Abort(u'请提供JSON格式数据.(type error) ')
+        if row.get('status') != 1:
+           continue 
+        data = row.get('data',[] )
+        if not type(data)==list or not data or not len(data)>=3:
+            row['status'] = 4
+            row['msg'] = u'数据不完整.'
+            continue 
+        if  not data[0] or not data[1]:
+            row['status'] = 4
+            row['msg'] = u'必填项.'
+            continue 
+        if not str(data[0]).isdigit() or len(str(data[0])) !=11:
+            row['status'] = 4
+            row['msg'] = u'手机号.'
+            continue 
+        if data[0] in mobiles:
+            row['status'] = 4
+            row['msg'] = u'手机号重复(excel).'
+            continue
+        mobiles.append(data[0]) 
+        saler, _ = salersvc.get_saler_list(mobile=str(data[0]))
+        if saler:    
+            row['status'] = 4
+            row['msg'] = u'手机号已存在.'
+            continue
+        row['status'] = 3
+ 
+
+
+@api_bp.route('/check_import.json', methods=['POST', 'GET'])
+@auth_required(priv=PRIV_ADMIN_SALE)
+@jview
+def checkimport():
+    args = request.args
+    if request.method == 'POST':
+        args = request.form
+    rows = args.get('rows','')
+    result, msg  = False, ''
+    try:
+        rows = json.loads(rows)
+        _check(rows)
+        result = True
+    except  ValueError, e: 
+        msg = u'请提供JSON格式数据.(loads error) '
+        rows = None
+    except Abort,e :
+        msg = e.msg
+        rows = None
+    return {'result': result, 'msg': msg, 'rows': rows}
+
+
+
+@api_bp.route('/saler_import.json', methods=['POST', 'GET'])
+@auth_required(priv=PRIV_ADMIN_SALE)
+@jview
+def pos_import():
+    args = request.args
+    if request.method == 'POST':
+        args = request.form
+    user = request.environ['user']
+    channel_id = user.user_info['channel_id'] 
+    charge_departs = user.user_info['charge_departs']
+
+    rows = args.get('rows','')
+    sales_depart_id = _int(args.get('sales_depart_id', ''))
+    result, msg, cnt  = False, '' , 0
+
+    try:
+        if not sales_depart_id :
+            raise Abort(u'请指定区分')
+        if sales_depart_id not in charge_departs:
+            raise Abort(u'您无权添加数据到该区分.')
+        rows = json.loads(rows)
+        _check(rows) 
+        rows = filter(lambda r :r.get('status')==3, rows)
+        datas = [r['data'][:3] for r in rows]
+        keys = ['mobile', 'saler_name', 'unit'] 
+        datas = [dict(zip(keys, d))   for d in datas]
+        for d in datas:
+            d['create_user_id'] = user.user_id
+            d['sales_depart_id'] = sales_depart_id
+            d['channel_id'] = channel_id
+        result = salersvc.saler_import(datas)
+        cnt = len(datas)
+    except  ValueError, e: 
+        msg = u'请提供JSON格式数据.(loads error) '
+    except Abort,e :
+        msg = e.msg
+    return {'result': result, 'msg': msg, 'cnt': cnt}    
+        
+
+
+
+
+
+

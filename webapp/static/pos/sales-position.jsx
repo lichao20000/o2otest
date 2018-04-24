@@ -73,10 +73,8 @@ class SalesPosition extends React.Component{
       let {loading, sending, rows,
         query, deleted, undeleted, sales_depart_id,pos_type,
       } = this.state;
-      let headers = ['系统ID','类型', '促销点ID', '门店名称', '门店地址', 
-        //'渠道',
-        //<TableRowColumn>{r.channel_name}</TableRowColumn>
-        '区分', '单元', '责任人','代码点', '坐标' ]
+      let headers = ['系统ID','类型', '促销点ID', '门店名称', '门店地址', '代码点',
+        '区分', '单元', '责任人','责任人电话'  ]
       let sales_departs = (((window.NS||{}).userInfo||{})
                           .user_info||{}).charge_departs_info||[];
       return (
@@ -210,11 +208,11 @@ class SalesPosition extends React.Component{
                 <TableRowColumn>{r.sales_id}</TableRowColumn>
                 <TableRowColumn>{r.pos_name}</TableRowColumn>
                 <TableRowColumn>{r.pos_address}</TableRowColumn>
+                <TableRowColumn>{r.pos_code}</TableRowColumn>
                 <TableRowColumn>{r.sales_depart_name}</TableRowColumn>
                 <TableRowColumn>{r.pos_unit}</TableRowColumn>
-                <TableRowColumn>{r.create_user_id}</TableRowColumn>
-                <TableRowColumn>{r.pos_code}</TableRowColumn>
-                <TableRowColumn>{r.geo_data}</TableRowColumn>
+                <TableRowColumn>{r.pos_man}</TableRowColumn>
+                <TableRowColumn>{r.pos_man_mobile}</TableRowColumn>
               </TableRow>
                 )})
               }

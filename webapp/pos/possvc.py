@@ -80,8 +80,7 @@ def add_pos(pos_info):
     try:
         conn = pg.connect(**config.pg_main)
         cur = conn.cursor()
-        keys = (
-                'pos_type',
+        keys = ('pos_type',
                 'sales_id', 
                 'pos_name',
                 'pos_address', 
@@ -89,6 +88,8 @@ def add_pos(pos_info):
                 'sales_depart_id',
                 'pos_unit',
                 'pos_code',
+                'pos_man',
+                'pos_man_mobile',
                 'geo_data',
                 'create_user_id' ,)
         args = {}
@@ -111,6 +112,8 @@ def add_pos(pos_info):
                 sales_depart_id,
                 pos_unit,
                 pos_code,
+                pos_man,
+                pos_man_mobile,
                 ---geo_data,
                 create_user_id
             ) values(
@@ -123,6 +126,8 @@ def add_pos(pos_info):
                 %(sales_depart_id)s,
                 %(pos_unit)s,
                 %(pos_code)s,
+                %(pos_man)s,
+                %(pos_man_mobile)s,
                 ---geo_data,
                 %(create_user_id)s
             ) 
@@ -199,15 +204,32 @@ def export_pos(self):
         if conn: conn.close()
 
 
-def import_pos(self):
+def pos_import(rows):
     conn, cur = None, None
     try:
-        conn = pg.connect(**pg.main)
+        conn = pg.connect(**config.pg_main)
         cur = conn.cursor()
+        sql = '''
+            insert into t_sales_pos
+            (
+                pos_id, pos_type, sales_id, 
+                pos_name, pos_address, channel_id,
+                sales_depart_id, pos_unit, pos_code, 
+                pos_man, pos_man_mobile, create_user_id
+            ) values(
+                nextval('seq_t_sales_pos'), %(pos_type)s, %(sales_id)s, 
+                %(pos_name)s, %(pos_address)s, %(channel_id)s, 
+                %(sales_depart_id)s, %(pos_unit)s, %(pos_code)s,
+                %(pos_man)s, %(pos_man_mobile)s, %(create_user_id)s
+            ) 
+            '''
+        cur.executemany(sql, rows)
+        result = cur.rowcount == len(rows)
+        if result:
+            conn.commit()
+        return  result 
     finally:
         if cur: cur.close()
         if conn: conn.close()
-
-
 
 

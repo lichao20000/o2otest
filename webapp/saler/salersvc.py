@@ -97,6 +97,30 @@ def add_saler(saler):
         if conn: conn.close()
 
 
+def saler_import(rows):
+    conn, cur = None, None
+    try:
+        conn = pg.connect(**config.pg_main)
+        cur = conn.cursor()
+        sql = ''' 
+            insert into t_sales_saler (
+                mobile, saler_name, channel_id,
+                sales_depart_id, unit, create_user_id
+            )values(
+                %(mobile)s, %(saler_name)s, %(channel_id)s, 
+                %(sales_depart_id)s, %(unit)s, %(create_user_id)s
+            )
+                '''
+        cur.executemany(sql,rows)
+        if cur.rowcount == len(rows):
+            conn.commit()
+        return cur.rowcount == len(rows)
+    finally:
+        if cur: cur.close()
+        if conn: conn.close()
+
+
+
 def update_saler(saler):
     u'''
     mobile is must

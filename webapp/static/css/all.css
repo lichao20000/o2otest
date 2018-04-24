@@ -71,3 +71,13 @@ div.auth2{
   background-repeat: no-repeat;
 }
 
+
+
+.import-saler-tips{
+  background-image:url('/static/images/import-saler-tips.png');
+  width: 100%;
+  height: 300px;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+

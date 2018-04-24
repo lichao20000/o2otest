@@ -25,6 +25,7 @@ from ui import jview, json_view
 from utils import _int, _float, _date, _int_default, Abort
 import usersvc
 from menu import items as menus
+from privs import PRIV_ADMIN_SUPER
 
 api_bp = Blueprint('user_api_bp', __name__, template_folder='templates')
 
@@ -47,7 +48,11 @@ def get_channel():
     u'''
     获取渠道信息
     '''
-    return usersvc.get_channels()
+    args= request.args
+    if request.method == 'POST':
+        args = request.form
+    top =True if  args.get('top', '') else False
+    return usersvc.get_channels(top)
 
 
 
@@ -76,6 +81,39 @@ def set_sales_info():
             raise Abort(u'已设置过渠道和区分信息（修改请联系管理人员）')
         # 检查渠道和区分对应关系
         channels = usersvc.get_channels()
+        _channel = [c for c in channels if c['channel_id']==channel_id]
+        if not _channel:
+            raise Abort(u'设置的渠道不存在')
+        _depart = [ d for d in _channel[0]['departs']  if d['sales_depart_id'] ==sales_depart_id]
+        if not _depart:
+            raise Abort(u'设置的渠道和区分错误')
+        result = usersvc.set_user_sales_info(user.user_id, channel_id, sales_depart_id)
+        if result:
+            user.user_info = usersvc.get_user_local_info(user.user_id)
+            user.save_to_session()
+    except Abort, e:
+        msg = e.msg
+    return {'result': result, 'msg': msg}
+
+
+@api_bp.route('/admin_set_info.json', methods=['POST', 'GET'])
+@auth_required(priv=PRIV_ADMIN_SUPER)
+@jview
+def admin_set_info():
+    u'''
+    管理员设置渠道
+    '''
+    args = request.args
+    if request.method == 'POST':
+        args = request.form
+    channel_id = _int(args.get('channel_id','')  )
+    sales_depart_id = _int(args.get('sales_depart_id','')  )
+    user = request.environ['user']
+    result, msg = False, ''
+    try:
+        if not channel_id or not sales_depart_id: 
+            raise Abort(u'无效渠道id或区分id')
+        channels = usersvc.get_channels(top=True)
         _channel = [c for c in channels if c['channel_id']==channel_id]
         if not _channel:
             raise Abort(u'设置的渠道不存在')

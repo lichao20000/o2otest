@@ -7,6 +7,9 @@ import { SalerList } from './saler/saler'
 import { SalerEditor } from './saler/saler-editor'
 import { NewSaler } from './saler/saler-new'
 import { PosImport} from './pos/pos-batch'
+import { SalerImport } from './saler/saler-batch'
+import { LoginOut } from './user/login-out'
+import { AdminSwitch} from './user/admin-switch'
 
 
 const Home = () => (
@@ -64,14 +67,19 @@ ReactDOM.render((
         <Route path="/"  exact component={Home}/>
         <Route path="/plan/arrange/" component={About}/>
         <Route path="/plan/history/" component={Home} />
+        <Route path="/login_out/" component={LoginOut} />
+
         <Route path="/pos/manager/" exact component={SalesPosition} />
         <Route path="/pos/manager/:pos_id" component={SalesPositionManager}/>
         <Route path="/pos/new" exact component={NewPosition} />
         <Route path="/pos/import" exact component={PosImport} />
+
         <Route path="/saler/manager" exact component={SalerList} />
         <Route path="/saler/manager/:mobile" component={SalerEditor}/>
         <Route path="/saler/new" exact component={NewSaler} />
-        <Route path="/user/mine" component={Topics} />
+        <Route path="/saler/import" exact component={SalerImport} />
+
+        <Route path="/admin/switch" component={AdminSwitch} />
     </Menu>
   </Router>
 ), document.getElementById('app'))

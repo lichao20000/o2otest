@@ -48,6 +48,15 @@ def login_():
 
 
 
+@login_bp.route('/login_out.json', methods=['GET'])
+@jview
+def login_out():
+    user = request.environ['user']
+    user.clear()
+    return { } 
+
+
+
 
 @login_bp.route('/oauth2/')
 @jview
