@@ -71,8 +71,8 @@ OAuth2 = dict(
     client_secret = '5774b10f439a11e8b837001a640940be',
     auth_uri = '%s:%s/u/oauth2/' % (domain,port),
     auth2_uri = 'http://gz.gd.unicom.local/open/oauth2/auth/',
-    token_uri = 'http://gz.gd.unicom.local/open/oauth2/token.json',
-    info_uri =  'http://gz.gd.unicom.local/open/oauth2/user_info.json'
+    token_uri = 'http://auth.gz.gd.unicom.local/open/oauth2/token.json',
+    info_uri =  'http://auth.gz.gd.unicom.local/open/oauth2/user_info.json'
     )
         
         
