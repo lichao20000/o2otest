@@ -1,7 +1,6 @@
 #-*- coding: utf-8 -*-
 
 import psycopg2 as pg
-from psycopg2.extensions import make_dsn
 
 
 
