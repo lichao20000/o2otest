@@ -171,6 +171,24 @@ create table t_sales_saler (
 )
 
 
+create sequence seq_t_sales_plan;
+-- drop table  t_sales_plan;
+create table t_sales_plan(
+    plan_id int default nextval('seq_t_sales_plan') primary key,
+    channel_id integer not null,
+    sales_depart_id integer not null,
+    pos_id integer not null,
+    saler_mobiles  varchar(11),
+    sales_date varchar(8) not null, -- 8位日期
+    saler_cnt int,
+    remark text,
+    create_user_id varchar(60),
+    create_time timestamp default current_timestamp,
+    audit_user_id varchar(60),
+    update_time timestamp,
+    status integer --1 待审核2 审核通过 4 审核不通过5 通过后取消,6 删除
+);
+
 
 
 
