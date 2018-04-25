@@ -278,7 +278,7 @@ class SessionStorageImpdByFile(object):
 
 
 if config._debug_ and not config.session_force_use_redis:
-    print  ' * Session uses qlite....'
+    print  ' * Session uses sqlite....'
     class SessionStorage(SessionStorageImpdBySqlite): pass
 else:
     print  ' * Session user redis....'

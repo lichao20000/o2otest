@@ -50,15 +50,17 @@ def get_local_ip():
 session_storage = session_storage_production
 pg_main = pg_production
 #domain = 'sales.gz.gd.unicom.local'
-domain = get_local_ip()
+
+domain = '132.97.135.12'
 port = 9020
-_debug_ = True
+_debug_ = False
 session_force_use_redis = False
 
 
 
 if os.environ.get('LOGNAME') in ['yantz', 'wy']:
     pg_main = pg_local
+    domain = get_local_ip()
     _debug_ = True
 
 
