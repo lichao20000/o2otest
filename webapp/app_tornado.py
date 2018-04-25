@@ -9,6 +9,9 @@ if _dir not in sys.path:
 
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
+import tornado
+from tornado.wsgi import WSGIContainer
+
 
 
 from app import app
@@ -20,10 +23,9 @@ if __name__ == '__main__':
     _argv = sys.argv[1:]
     if _argv and _argv[0].isdigit():
         port = int(_argv[0])
-
-    #app.wsgi_app = AccessControlMiddleware(app.wsgi_app,
-    #                                       allow_headers=['set-session-id'])
+    sockets = tornado.netutil.bind_sockets(port)
+    tornado.process.fork_processes(0)
     app.wsgi_app = SessionMiddleware(app.wsgi_app)
-    http_server = HTTPServer(app)
-    http_server.listen(port)
-    IOLoop.instance().start()
+    server = HTTPServer(WSGIContainer(app))
+    server.add_sockets(sockets)
+    IOLoop.current().start()

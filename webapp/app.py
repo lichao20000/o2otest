@@ -46,6 +46,7 @@ blueprints = (
 
 #blueprints = []
 
+app.wsgi_app = SessionMiddleware(app.wsgi_app)
 for mod_path, mount_point in blueprints:
     parts = mod_path.split('.')
     _path = '.'.join(parts[:-1])
@@ -69,7 +70,6 @@ if __name__ == '__main__':
         port = int(_argv[0])
         config.port = port
     host = ('0.0.0.0', port)
-    app.wsgi_app = SessionMiddleware(app.wsgi_app)
     app.run(host=host[0], port=host[1], debug=True)
 
 
