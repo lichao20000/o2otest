@@ -17,6 +17,7 @@ for k in del_keys:
 from flask import Flask
 from ui import jview, json_view
 from session import SessionMiddleware
+import config
 
 
 app = Flask(__name__, template_folder='templates')
@@ -62,10 +63,11 @@ def get_all_urls():
 
 
 if __name__ == '__main__':
-    port = 9020
     _argv = sys.argv[1:]
+    port = config.port
     if _argv and _argv[0].isdigit():
         port = int(_argv[0])
+        config.port = port
     host = ('0.0.0.0', port)
     app.wsgi_app = SessionMiddleware(app.wsgi_app)
     app.run(host=host[0], port=host[1], debug=True)

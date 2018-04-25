@@ -21,7 +21,7 @@ import sqlite3
 
 
 COOKIE_NAME = 'o2osalesssid'
-DOMAIN_COOKIE_NAME = 'ztunissid'
+DOMAIN_COOKIE_NAME = 'unissid'
 DOMAIN = '.gz.gd.unicom.local'
 
 def _create_redis_pool():
@@ -38,11 +38,12 @@ def _create_redis_pool():
 
 class SessionStorageImpdByRedis(object):
 
-    pool = _create_redis_pool()
+    #pool = _create_redis_pool()
 
     def __init__(self, ttl=None):
         self.pool = self.__class__.pool
-        self.conn = redis.Redis(connection_pool=self.pool)
+        #self.conn = redis.Redis(connection_pool=self.pool)
+        self.conn = redis.form_url('redis://redis:6379/2')
         self.TTL = ttl or 3600 * 24 * 3 # 3 days
 
     def clear(self, session_id):
@@ -277,10 +278,10 @@ class SessionStorageImpdByFile(object):
 
 
 if config._debug_ and not config.session_force_use_redis:
-    print  ' * Session usesqlite....'
+    print  ' * Session uses qlite....'
     class SessionStorage(SessionStorageImpdBySqlite): pass
 else:
-    print  ' * Session user edis....'
+    print  ' * Session user redis....'
     class SessionStorage(SessionStorageImpdByRedis): pass
 
 

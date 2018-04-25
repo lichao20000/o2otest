@@ -1,6 +1,8 @@
 #-*- coding: utf-8 -*-
 
 import psycopg2 as pg
+from psycopg2.extensions import make_dsn
+
 
 
 def to_utf8(obj, encoding='utf-8'):
@@ -31,25 +33,39 @@ class _WrappedCursor(pg._psycopg.cursor):
         self.close()
 
 
-class _WrappedConn(pg._psycopg.connection):
+def get_conn_class(schema):
 
-    def __init__(self, *args, **kargs):
-        super(_WrappedConn, self).__init__(*args, **kargs)
+    class _WrappedConn(pg._psycopg.connection):
 
-    def __enter__(self):
-        return self
+        def __init__(self, *args, **kargs):
+            self.schema= schema
+            super(_WrappedConn, self).__init__(*args,**kargs)
 
-    def __exit__(self, t, v, tb):
-        self.close()
+        def __enter__(self):
+            return self
 
-    def cursor(self, *args, **kargs):
-        kargs['cursor_factory'] = _WrappedCursor
-        return super(_WrappedConn, self).cursor(*args, **kargs)
+        def __exit__(self, t, v, tb):
+            self.close()
+
+        def cursor(self, *args, **kargs):
+            kargs['cursor_factory'] = _WrappedCursor
+            cur = super(_WrappedConn, self).cursor(*args, **kargs)
+            if self.schema:
+                cur.execute("set search_path to %s" %(self.schema))
+            return cur
+    return _WrappedConn
+
+    
 
 
 def connect(**kargs):
-    kargs['connection_factory'] = _WrappedConn
-    conn = pg.connect(**kargs)
+    schema = kargs.get('schema')
+    _kargs = {}
+    _kargs.update(kargs)
+    if 'schema' in _kargs:
+        del _kargs['schema']
+    _kargs['connection_factory'] = get_conn_class(schema)
+    conn = pg.connect(**_kargs)
     return conn
 
 
