@@ -65,15 +65,19 @@ def set_user_base_info(user_info):
         sql = '''
             insert into t_sales_user
                     (user_id, user_name, mobile ) 
-                values
-                    (%(user_id)s, %(user_name)s, %(mobile)s)
-            on conflict(user_id)
-                do 
-                update set user_name = %(user_name)s ,
+            select  %(user_id)s, %(user_name)s, %(mobile)s
+                from t_sales_user where not exists 
+                    (select 1 from t_sales_user where user_id=%(user_id)s)
+                    '''
+        cur.execute(sql, user_info)
+        if cur.rowcount!=1:
+            sql = ''' 
+                update t_sales_user  set user_name = %(user_name)s ,
                         mobile = %(mobile)s,
                         last_sync_time = current_timestamp
+                        where user_id = %(user_id)s
             '''
-        cur.execute(sql, user_info)
+            cur.execute(sql, user_info)
         conn.commit()
         return cur.rowcount == 1 
     finally:
@@ -114,27 +118,32 @@ def set_user_sales_info(user_id, channel_id, sales_depart_id, op_user_id=None):
     try:
         conn = pg.connect(**config.pg_main)
         cur = conn.cursor()
-        sql = ''' 
-             insert into t_sales_user
-                    (user_id, channel_id, sales_depart_id, 
-                        last_update_time, last_update_user_id)
-                values
-                    (%(user_id)s, %(channel_id)s, %(sales_depart_id)s, 
-                        current_timestamp, %(last_update_user_id)s)
-            on conflict(user_id)
-                do 
-                update set  channel_id = %(channel_id)s ,
-                        sales_depart_id = %(sales_depart_id)s,
-                        last_update_time = current_timestamp,
-                        last_update_user_id = %(last_update_user_id)s
-            '''
         args = {
                 'user_id': user_id,
                 'channel_id': channel_id,
                 'sales_depart_id': sales_depart_id,
                 'last_update_user_id': op_user_id
                 }
+        sql = ''' 
+                insert into t_sales_user
+                    (user_id, channel_id, sales_depart_id, 
+                        last_update_time, last_update_user_id)
+                select 
+                    %(user_id)s, %(channel_id)s, %(sales_depart_id)s, 
+                        current_timestamp, %(last_update_user_id)s
+                 where not exists 
+                        (select 1 from t_sales_user where user_id=%(user_id)s )
+                '''
         cur.execute(sql, args)
+        if cur.rowcount !=1:
+            sql = '''
+                    update t_sales_user set  channel_id = %(channel_id)s ,
+                        sales_depart_id = %(sales_depart_id)s,
+                        last_update_time = current_timestamp,
+                        last_update_user_id = %(last_update_user_id)s
+                    where user_id = %(user_id)s
+                        '''
+            cur.execute(sql, args)
         conn.commit()
         return cur.rowcount == 1
     finally:
