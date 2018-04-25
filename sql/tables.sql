@@ -83,7 +83,7 @@ select  d.*,
 from t_sales_depart d;
 */
 
-CREATE OR REPLACE VIEW public.v_sales_depart AS
+CREATE OR REPLACE VIEW v_sales_depart AS
  SELECT d.sales_depart_id,
     d.sales_depart_name,
     d.parent_id,
@@ -113,19 +113,6 @@ create table t_sales_user(
     last_update_time timestamp, --- chanenl depart privs 更新时间
     last_update_user_id varchar(60) -- 同上
 );
-
-
-CREATE OR REPLACE VIEW public.v_sales_depart AS
- SELECT d.sales_depart_id,
-    d.sales_depart_name,
-    d.parent_id,
-    d.channel_id,
-    d.last_update_time,
-    d.last_udpate_user_id,
-    ( SELECT array_agg(sd.sales_depart_id) || d.sales_depart_id
-           FROM t_sales_depart sd
-          WHERE sd.parent_id = d.sales_depart_id) AS charge_departs
-   FROM t_sales_depart d;
 
 
 
