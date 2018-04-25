@@ -44,7 +44,7 @@ class SessionStorageImpdByRedis(object):
     def __init__(self, ttl=None):
         #self.pool = self.__class__.pool
         #self.conn = redis.Redis(connection_pool=self.pool)
-        self.conn = redis.form_url('redis://redis:6379/2')
+        self.conn = redis.from_url('redis://redis:6379/2')
         self.TTL = ttl or 3600 * 24 * 3 # 3 days
 
     def clear(self, session_id):
