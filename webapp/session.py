@@ -25,6 +25,7 @@ DOMAIN_COOKIE_NAME = 'unissid'
 DOMAIN = '.gz.gd.unicom.local'
 
 def _create_redis_pool():
+    return 
     if 'unix_socket' in config.session_storage['redis']:
         _path = config.session_storage['redis']['unix_socket']
         return redis.ConnectionPool(
@@ -41,7 +42,7 @@ class SessionStorageImpdByRedis(object):
     #pool = _create_redis_pool()
 
     def __init__(self, ttl=None):
-        self.pool = self.__class__.pool
+        #self.pool = self.__class__.pool
         #self.conn = redis.Redis(connection_pool=self.pool)
         self.conn = redis.form_url('redis://redis:6379/2')
         self.TTL = ttl or 3600 * 24 * 3 # 3 days
