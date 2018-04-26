@@ -15,7 +15,7 @@ import json
 from ui import jview, json_view
 from utils import _int, _float, _date, _int_default, Abort
 import possvc
-from user.privs import PRIV_ADMIN_POS
+from user.privs import PRIV_ADMIN_POS, PRIV_ADMIN_SUPER
 
 api_bp = Blueprint('pos_api_bp', __name__, template_folder='templates')
 
@@ -56,7 +56,7 @@ def get_pos_list():
 
 
 @api_bp.route('/update_pos.json', methods=['POST', 'GET'])
-@auth_required(priv=PRIV_ADMIN_POS)
+@auth_required(priv=PRIV_ADMIN_POS|PRIV_ADMIN_SUPER)
 @jview
 def update_pos():
     u'''
@@ -113,7 +113,7 @@ def update_pos():
 
 
 @api_bp.route('/add_pos.json', methods=['POST', 'GET'])
-@auth_required(priv=PRIV_ADMIN_POS)
+@auth_required(priv=PRIV_ADMIN_POS|PRIV_ADMIN_SUPER)
 @jview
 def add_pos():
     u'''
@@ -194,7 +194,7 @@ def _check(rows):
 
 
 @api_bp.route('/check_import.json', methods=['POST', 'GET'])
-@auth_required(priv=PRIV_ADMIN_POS)
+@auth_required(priv=PRIV_ADMIN_POS|PRIV_ADMIN_SUPER)
 @jview
 def checkimport():
     args = request.args
@@ -219,7 +219,7 @@ def checkimport():
 
 
 @api_bp.route('/pos_import.json', methods=['POST', 'GET'])
-@auth_required(priv=PRIV_ADMIN_POS)
+@auth_required(priv=PRIV_ADMIN_POS|PRIV_ADMIN_SUPER)
 @jview
 def pos_import():
     args = request.args

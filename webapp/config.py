@@ -20,7 +20,6 @@ session_storage_production = {
             }
         }
 
-        print sql % user_info
 
 pg_production = {
         'host':'132.96.64.32',
