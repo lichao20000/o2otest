@@ -20,6 +20,7 @@ session_storage_production = {
             }
         }
 
+        print sql % user_info
 
 pg_production = {
         'host':'132.96.64.32',
@@ -60,7 +61,7 @@ session_force_use_redis = False
 
 
 if os.environ.get('LOGNAME') in ['yantz', 'wy']:
-    #pg_main = pg_local
+    pg_main = pg_local
     domain = get_local_ip()
     _debug_ = True
 
