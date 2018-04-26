@@ -93,12 +93,13 @@ def oauth2():
         if not user_info:
             raise Abort(u'认证失败(获取用户数据出错)')
         ## 到此认证成功
-        usersvc.set_user_base_info({
+        set_result = usersvc.set_user_base_info({
             'user_id': user_info['uni_email'],
             'user_name': user_info['full_name'],
             'mobile': user_info['mobile']
             })
-
+        if not set_result:
+            raise Abort(u'设置用户信息失败.')
         user_local_info = usersvc.get_user_local_info(user_info['uni_email']) 
         user = request.environ['user']
         user.user_name = user_info['full_name']
@@ -175,13 +176,13 @@ def login_json():
             raise Abort(u'请输入正确的验证码.')
         user_info = usersvc.get_bcmaanger_info(user.msg_email)
 
-        usersvc.set_user_base_info({
+        set_result =usersvc.set_user_base_info({
             'user_id': user_info['uni_email'],
             'user_name': user_info['full_name'],
             'mobile': user_info['mobile']
             })
-
-
+        if not set_result:
+            raise Abort(u'设置用户信息失败.')
         user.user_name = user_info['full_name']
         user.user_id = user_info['uni_email']
         user_local_info = usersvc.get_user_local_info(user_info['uni_email']) 

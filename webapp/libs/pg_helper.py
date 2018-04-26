@@ -50,7 +50,7 @@ def get_conn_class(schema):
             kargs['cursor_factory'] = _WrappedCursor
             cur = super(_WrappedConn, self).cursor(*args, **kargs)
             if self.schema:
-                cur.execute("set search_path to %s" %(self.schema))
+                cur.execute("set search_path to %s" %(self.schema,))
             return cur
     return _WrappedConn
 
