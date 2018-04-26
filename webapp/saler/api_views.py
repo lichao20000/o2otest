@@ -15,7 +15,7 @@ import json
 from ui import jview, json_view
 from utils import _int, _float, _date, _int_default, Abort
 import salersvc
-from user.privs import PRIV_ADMIN_SALE
+from user.privs import PRIV_ADMIN_SALE, PRIV_ADMIN_SUPER
 
 api_bp = Blueprint('saler_api_bp', __name__, template_folder='templates')
 
@@ -57,7 +57,7 @@ def get_saler_list():
 
 
 @api_bp.route('/add_saler.json', methods=['POST', 'GET'])
-@auth_required(priv=PRIV_ADMIN_SALE)
+@auth_required(priv=PRIV_ADMIN_SALE|PRIV_ADMIN_SUPER)
 @jview
 def add_saler():
     u'''
@@ -107,7 +107,7 @@ def add_saler():
 
 
 @api_bp.route('/update_saler.json', methods=['POST', 'GET'])
-@auth_required(priv=PRIV_ADMIN_SALE)
+@auth_required(priv=PRIV_ADMIN_SALE|PRIV_ADMIN_SUPER)
 @jview
 def update_saler():
     u'''
@@ -195,7 +195,7 @@ def _check(rows):
 
 
 @api_bp.route('/check_import.json', methods=['POST', 'GET'])
-@auth_required(priv=PRIV_ADMIN_SALE)
+@auth_required(priv=PRIV_ADMIN_SALE|PRIV_ADIN_SUPER)
 @jview
 def checkimport():
     args = request.args
@@ -218,7 +218,7 @@ def checkimport():
 
 
 @api_bp.route('/saler_import.json', methods=['POST', 'GET'])
-@auth_required(priv=PRIV_ADMIN_SALE)
+@auth_required(priv=PRIV_ADMIN_SALE|PRIV_ADIN_SUPER)
 @jview
 def pos_import():
     args = request.args
