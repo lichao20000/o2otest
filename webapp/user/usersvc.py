@@ -66,7 +66,7 @@ def set_user_base_info(user_info):
             insert into t_sales_user
                     (user_id, user_name, mobile ) 
             select  %(user_id)s, %(user_name)s, %(mobile)s
-                from t_sales_user where not exists 
+             where not exists 
                     (select 1 from t_sales_user where user_id=%(user_id)s)
                     '''
         cur.execute(sql, user_info)
