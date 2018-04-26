@@ -195,7 +195,7 @@ def _check(rows):
 
 
 @api_bp.route('/check_import.json', methods=['POST', 'GET'])
-@auth_required(priv=PRIV_ADMIN_SALE|PRIV_ADIN_SUPER)
+@auth_required(priv=PRIV_ADMIN_SALE|PRIV_ADMIN_SUPER)
 @jview
 def checkimport():
     args = request.args
@@ -218,7 +218,7 @@ def checkimport():
 
 
 @api_bp.route('/saler_import.json', methods=['POST', 'GET'])
-@auth_required(priv=PRIV_ADMIN_SALE|PRIV_ADIN_SUPER)
+@auth_required(priv=PRIV_ADMIN_SALE|PRIV_ADMIN_SUPER)
 @jview
 def pos_import():
     args = request.args
