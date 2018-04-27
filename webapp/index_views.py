@@ -69,5 +69,25 @@ def upload_file():
 
 
 
+# 临时解决方案
+from user.privs import PRIV_ADMIN, PRIV_ADMIN_SUPER
+@app_bp.route('/get_files.json', methods=['GET', 'POST'])
+@jview
+@auth_required(priv=PRIV_ADMIN | PRIV_ADMIN_SUPER)
+def get_files():
+    path = os.path.join('static', 'files')
+    files = []
+    for _,d, fs in os.walk(path):
+        for f in fs: 
+            _, ext = os.path.splitext(f)
+            if ext in ('.xls','.xlsx' ) :
+                files.append(f)
+    return files
+    
+
+
+
+
+
 
 
