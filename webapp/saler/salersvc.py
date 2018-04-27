@@ -54,7 +54,7 @@ def get_saler_list(q=None, mobile=None, mobiles=None,
                 'mobiles' : mobiles,
                 }        
         cur.execute(''.join(sql), args)
-        print ''.join(sql) % args
+        #print ''.join(sql) % args
         rows = pg.fetchall(cur)
         has_more = len(rows) > page_size
         result = rows[:-1] if has_more else rows, has_more

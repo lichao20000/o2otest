@@ -417,7 +417,7 @@ class SessionUser(object):
         privs = []
         privs.extend(self.privs if self.privs else [])
         privs.extend(self.admin_privs if self.admin_privs else [])
-        print self.privs, 'wtf....'
+        #print self.privs, 'wtf....'
         return privs
 
     def has(self, priv):

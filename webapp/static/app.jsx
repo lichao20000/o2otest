@@ -11,61 +11,14 @@ import { SalerImport } from './saler/saler-batch'
 import { LoginOut } from './user/login-out'
 import { AdminSwitch} from './user/admin-switch'
 import { Plan } from './plan/plan'
+import { HomeData} from './home'
 
-
-const Home = () => (
-  <div>
-    <h2>统计信息</h2>
-    待开发，敬请期待
-  </div>
-)
-
-const About = () => (
-  <div>
-    <h2>About</h2>
-  </div>
-)
-
-const Topic = ({ match }) => (
-  <div>
-    <h3>{match.params.topicId}</h3>
-  </div>
-)
-
-const Topics = ({ match }) =>{
-  console.info(match)
-  return(
-  <div>
-    <h2>Topics</h2>
-    <ul>
-      <li>
-        <Link to={`{match.url}/rendering`}>
-          Rendering with React
-        </Link>
-      </li>
-      <li>
-        <Link to={`${match.url}/components`}>
-          Components
-        </Link>
-      </li>
-      <li>
-        <Link to={`${match.url}/props-v-state`}>
-          Props v. State
-        </Link>
-      </li>
-    </ul>
-
-    <Route path={`${match.path}/:topicId`} component={Topic}/>
-    <Route exact path={match.path} render={() => (
-      <h3>Please select a topic.{match.pos_id}</h3>
-    )}/>
-  </div>) }
 
 
 ReactDOM.render((
   <Router>
     <Menu>
-        <Route path="/"  exact component={Home}/>
+        <Route path="/"  exact component={HomeData}/>
 
         <Route path="/pos/manager/" exact component={SalesPosition} />
         <Route path="/pos/manager/:pos_id" component={SalesPositionManager}/>
