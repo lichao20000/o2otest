@@ -164,7 +164,10 @@ class Plan extends React.Component{
         onSubmit={dates=>this.setState({dates})}
         minDate={new Date()}/>
       </div>
-      <h4 style={{fontSize:14, color:'#333'}}> 促销点</h4>
+      <div style={{fontSize:14}}>
+          <label style={{ marginRight: 20}}> 促销点 </label>
+          <a style ={{fontSize: 12}} href='/'>我的促销点(正在实现...) </a>
+      </div>
       <AsyncSelect
         value ={null}
         placeholder='输入 名称/位置 搜索'
@@ -178,7 +181,10 @@ class Plan extends React.Component{
           onChange = {e=>this.setState({posText:e.target.value})}
       />
       <Divider />
-      <h4 style={{fontSize:14, color:'#333'}}> 促销人员</h4>
+      <div style={{fontSize:14}}>
+          <label style={{color:'#333', marginRight: 20}}>  促销人员 </label>
+          <a  style={{fontSize:12}} href='/'>我的促销人员(正在实现...) </a>
+      </div>
       <AsyncSelect
         value={null}
         placeholder='输入 姓名/电话 搜索'
