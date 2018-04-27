@@ -53,14 +53,13 @@ pg_stand= pg_production_readonly
 domain = 'o2o.gz.gd.unicom.local'
 
 #domain = '132.97.135.12'
-port = 80
+port = 9020
 _debug_ = False
 session_force_use_redis = False
 
 
 
 if os.environ.get('LOGNAME') in ['yantz', 'wy']:
-    port = 9020
     pg_main = pg_local
     domain = get_local_ip()
     _debug_ = True
@@ -71,7 +70,7 @@ if os.environ.get('LOGNAME') in ['yantz', 'wy']:
 OAuth2 = dict( 
     client_id= 'o2o_sales' ,
     client_secret = '5774b10f439a11e8b837001a640940be',
-    auth_uri = '%s:%s/u/oauth2/' % (domain,port),
+    auth_uri = '%s:%s/u/oauth2/' % (domain,port if _debug_ else 80),
     auth2_uri = 'http://gz.gd.unicom.local/open/oauth2/auth/',
     token_uri = 'http://auth.gz.gd.unicom.local/open/oauth2/token.json',
     info_uri =  'http://auth.gz.gd.unicom.local/open/oauth2/user_info.json'
