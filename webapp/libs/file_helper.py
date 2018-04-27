@@ -1,7 +1,13 @@
 # -*- coding: utf-8  -*-
-
-
 import xlrd
+import xlwt
+import os
+import sys
+_dir = os.path.abspath(os.path.join(__file__, '..'))
+_updir = os.path.abspath(os.path.join(_dir, '..'))
+if _updir not in sys.path:
+    sys.path.insert(0, _updir)
+
 
 def excel_reader(file_path=None , book =None):
     w_book = None
@@ -21,4 +27,53 @@ def excel_reader(file_path=None , book =None):
         print e
     return result , rows
 
+
+def excel_write(file_name, rows, headers=None, sheet_name='sheet1'):
+    # headers = [('display_col': 'col_val_in_row_key')]
+    # if  headers  not none , headers'items  should be  containered
+    # by the item in the  rows  as the key
+    # if headers is none the display col is key
+    try:
+        book = xlwt.Workbook(encoding = 'ascii')
+        sheet = book.add_sheet(sheet_name)
+        if not headers:
+            headers = []
+            for row in rows:
+                for key in row:
+                    if key not in headers:
+                        headers.append(key)
+            headers = [(h, h) for h in headers]
+        for i, h in enumerate(headers):
+            sheet.write(0, i, h[0])
+        for row_num, r in enumerate(rows):
+            for col_num, h in enumerate(headers):
+                val = r.get(h[1],'')
+                sheet.write(row_num+1, col_num, val)
+        path, fname = os.path.split(file_name)
+        if not path:
+            path = _dir
+        book.save(os.path.join(path, fname))
+        return True
+    except Exception, e:
+        print e
+        return False
+
+
+            
+
+
+
+
+def test():
+    import config 
+    import pg_helper as pg
+    conn = pg.connect(**config.pg_main)
+    cur = conn.cursor()
+    cur.execute('select *from t_sales_depart')
+    rows = pg.fetchall(cur)
+    excel_write('fuck.xls',rows) 
+                                            
+
+if __name__ == '__main__':
+    test()
 
