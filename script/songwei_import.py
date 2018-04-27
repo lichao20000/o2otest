@@ -12,7 +12,7 @@ from libs import pg_helper as pg
 from datetime import datetime as dt
 import logging 
 import config
-
+import copy
 
 logging_config = { 
     'filename': os.path.join(_dir, 'songwei_import.log'),
@@ -28,7 +28,9 @@ logger = logging.getLogger('crawl-bot')
 def get_datas(sql, args=None):
     conn, cur = None, None
     try:
-        conn = pg.connect(**config.pg_stand)
+        _config = copy.deepcopy(config.pg_stand)
+        _config['schema'] ='public'
+        conn = pg.connect(**_config)
         cur = conn.cursor()
         cur.execute(sql, args) 
         rows = pg.fetchall(cur)
@@ -44,8 +46,8 @@ sqls = [{
 select 促销点类别,渠道类型,促销点名称,促销点地址,当前在现场促销人员,促销人员手机号码, substring(cast(当前时刻 as varchar) from 1 for 16)促销时间点  from  itd.ssw_o2o_every_time order by 渠道类型
     ''',
         }, 
-        {'name':u'显示名：促销人员实况--今日',
-         'sql': u'''
+        {'name':u'促销人员实况--今日',
+         'sql': '''
     select a.pos_type 促销点类别,a.channel_type 渠道类型,to_char(now(), 'YYYY-MM-DD')统计日期, a.pos_name 促销点名称,a.address 促销点地址,name 促销人员姓名, a.serial_number 促销人员手机号码 from (
 select distinct lng, lat, pos_type, pos_name, channel_type,address, area, channel_detail, person_duty, arrive_need,serial_number,name
 from (
@@ -105,6 +107,10 @@ def write(sqls=sqls):
 
 if __name__ == '__main__':
     #sqls = [{'sql': 'select *from t_sales_depart','name':'test.xls'}]
+    sql = '''
+    select 促销点类别,渠道类型,促销点名称,促销点地址,当前在现场促销人员,促销人员手机号码, substring(cast(当前时刻 as varchar) from 1 for 16)促销时间点      from  itd.ssw_o2o_every_time order by 渠道类型
+    '''
+    #rows = get_datas(sql)
     write(sqls)
 
   

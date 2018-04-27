@@ -16,7 +16,7 @@ def fetchall(cur, encoding='utf-8'):
     keys = map(lambda k: k[0].lower(), cur.description)
     rows = cur.fetchall()
     rows = map(lambda row: \
-                   dict(zip(keys, _to_utf8_row(row, encoding=encoding))), rows)
+                   dict(zip(_to_utf8_row(keys, encoding), _to_utf8_row(row, encoding=encoding))), rows)
     return rows
 
 
