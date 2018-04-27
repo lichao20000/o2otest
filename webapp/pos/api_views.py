@@ -30,7 +30,7 @@ def get_pos_list():
     if request.method == 'POST':
         args = request.form
     user = request.environ['user']
-    q  = args.get('q', '') 
+    q  = args.get('query', '')
     pos_id = _int(args.get('pos_id',''))
     pos_type = args.get('pos_type','')
     pos_name  = args.get('pos_name','')

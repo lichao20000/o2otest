@@ -81,3 +81,10 @@ div.auth2{
   background-repeat: no-repeat;
 }
 
+.multi-date input{
+  height: 2em;
+  font-size: 14px;
+  width: 100%;
+}
+
+

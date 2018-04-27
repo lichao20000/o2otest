@@ -14,6 +14,7 @@
     "babel-preset-react": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
     "material-ui": "^0.20.0",
+    "material-ui-superselectfield": "^1.9.2",
     "react": "^16.3.2",
     "react-dom": "^16.3.2",
     "webpack": "^4.6.0",
@@ -22,7 +23,9 @@
   "mode": "development",
   "dependencies": {
     "babel-loader": "^7.1.4",
+    "react-multiple-datepicker": "^0.1.0",
     "react-router": "^4.2.0",
-    "react-router-dom": "^4.2.2"
+    "react-router-dom": "^4.2.2",
+    "react-select": "^2.0.0-beta.2"
   }
 }
