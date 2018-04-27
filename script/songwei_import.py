@@ -1,6 +1,8 @@
 # -*- coding: utf-8  -*-
 import os
 import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 _dir = os.path.abspath(os.path.join(__file__, '..'))
 _updir = os.path.abspath(os.path.join(_dir, '..'))
 webapp = os.path.join(_updir, 'webapp')
@@ -42,9 +44,9 @@ def get_datas(sql, args=None):
 
 sqls = [{
         'name': u'促销人员实况--分时',
-        'sql':  u'''
+        'sql':  '''
 select 促销点类别,渠道类型,促销点名称,促销点地址,当前在现场促销人员,促销人员手机号码, substring(cast(当前时刻 as varchar) from 1 for 16)促销时间点  from  itd.ssw_o2o_every_time order by 渠道类型
-    ''',
+    '''.decode('utf-8'),
         }, 
         {'name':u'促销人员实况--今日',
          'sql': '''
