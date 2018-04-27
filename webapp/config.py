@@ -53,13 +53,14 @@ pg_stand= pg_production_readonly
 domain = 'o2o.gz.gd.unicom.local'
 
 #domain = '132.97.135.12'
-port = 9020
+port = 80
 _debug_ = False
 session_force_use_redis = False
 
 
 
 if os.environ.get('LOGNAME') in ['yantz', 'wy']:
+    port = 9020
     pg_main = pg_local
     domain = get_local_ip()
     _debug_ = True
