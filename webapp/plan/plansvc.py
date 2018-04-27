@@ -48,6 +48,56 @@ def get_plan_list(channel_id=None, sales_depart_id=None,
         if conn: conn.close()
     
 
+def add_plans(channel_id, sales_depart_id, create_user_id, plans):
+    conn, cur = None, None
+    try:
+        conn = pg.connect(**config.pg_main)
+        cur = conn.cursor()
+        keys = ( 'pos_id', 'saler_mobiles', 'sales_date', 
+                'saler_cnt', 'remark'  )
+        rows = []
+        for p in plans :
+            args ={
+                    'channel_id': channel_id,
+                    'sales_depart_id': sales_depart_id,
+                    'create_user_id': create_user_id,
+                    } 
+            for key in keys:
+                args[key] = p.get(key, None)
+            rows.append(args)
+        sql = '''
+            insert into t_sales_plan(
+                plan_id,
+                channel_id,
+                sales_depart_id,
+                pos_id,
+                saler_mobiles,
+                sales_date,
+                saler_cnt,
+                remark,
+                create_user_id
+            )values(
+                nextval('seq_t_sales_plan'),
+                %(channel_id)s,
+                %(sales_depart_id)s,
+                %(pos_id)s,
+                %(saler_mobiles)s,
+                %(sales_date)s,
+                %(saler_cnt)s,
+                %(remark)s,
+                %(create_user_id)s
+            )
+            '''
+        cur.executemany(sql, rows)
+        conn.commit()
+        return cur.rowcount
+    finally:
+        if cur: cur.close()
+        if conn: conn.close()
+
+
+
+
 def add_plan(plan_info):
     conn, cur = None, None
     try:

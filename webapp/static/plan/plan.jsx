@@ -35,7 +35,7 @@ class Plan extends React.Component{
       read:false,
       posText:'',
       salerText: '',
-      days:'',
+      saler_cnt:'',
       errMsg:'',
       dates:[],
     }
@@ -155,8 +155,8 @@ class Plan extends React.Component{
   }
 
   renderForm(){
-    let {tabid, imported, fileName, sending, salerText, days,
-        loading, posText ,errDays }= this.state
+    let {tabid, imported, fileName, sending, salerText,saler_cnt,
+        loading, posText ,errsaler_cnt }= this.state
     return (<div>
       <h4 style={{fontSize:14, color:'#333'}}> 促销时间</h4>
       <div className='multi-date'>
@@ -192,16 +192,16 @@ class Plan extends React.Component{
         onChange = {e=>this.setState({salerText:e.target.value})}
       />
       <Divider />
-      <h4 style={{fontSize:14, color:'#333'}}> 促销天数</h4>
-      <TextField hintText="促销天数"
-              value = {days}
-              errorText = {errDays}
-              onChange = {(e, days)=>{
-                let errDays = ''
-                if(!days.match(/^\d+$/)){
-                  errDays = '请填写正确的数字'
+      <h4 style={{fontSize:14, color:'#333'}}> 促销人数</h4>
+      <TextField hintText="促销人数"
+              value = {saler_cnt}
+              errorText = {errsaler_cnt}
+              onChange = {(e,saler_cnt)=>{
+                let errsaler_cnt = ''
+                if(!saler_cnt.match(/^\d+$/)){
+                  errsaler_cnt = '请填写正确的数字'
                 }
-                this.setState({days, errDays})
+                this.setState({saler_cnt, errsaler_cnt})
               }}
               style ={{display:'inline-block' ,
                     fontSize: 14,
@@ -237,7 +237,7 @@ class Plan extends React.Component{
       }
       <label style={{fontSize:14, color:'#333'}}> 
       {fileName} </label>
-
+      <div>正在全力实现中..... </div>
       </div>  )
   }
 
@@ -250,12 +250,12 @@ class Plan extends React.Component{
     }) 
   }
 
-  onNext(){
-  }
 
   renderRows(){
-    let { rows, imported} = this.state;
-    let headers = ['序号','促销点ID', '促销时间', '促销人员手机号']
+    let { rows, imported, checked} = this.state;
+    let headers = ['序号','','促销点系统ID',
+          '促销时间', '促销人员手机号', '促销人数']
+    let iconStyle ={verticalAlign:'middle', marginRight:'5'}
     return (
       <div style={{    overflow: 'hidden', }}>
         <Table fixedHeader={true} 
@@ -276,21 +276,44 @@ class Plan extends React.Component{
           showRowHover={true} >
            
           { rows.map((r, idx)=>{
-                return(
-              <TableRow key ={idx} style={{fontSize:12}}>
+            let _t = r.pos_id ;
+            let style = {}
+            if(checked && !!r.pos){
+              _t = _t  + ' ' +r.pos.pos_name
+            }else if(checked){
+              style = {'color': 'red'}
+            }
+            return(
+              <TableRow key ={idx} style={{fontSize:12}} key={idx}>
                 <TableRowColumn>
                   {r.status==1&& <ActionCheckCircle color='#ccc' style={iconStyle}/> }
                   {r.status==2&& <CircularProgress thickness={2} style={iconStyle} size={18}/>}
                   {r.status==3&& <ActionCheckCircle color='#0d0' style={iconStyle}/> }
                   {r.status==4&&  <AlertError color='red' style={iconStyle}/> }
-                  {r.idx+1}
+                  {idx+1}
                 </TableRowColumn>
                 <TableRowColumn >
                     <label style={{'color':'red', fontSize:10}}>{r.msg}</label> 
                 </TableRowColumn>
-                <TableRowColumn>{r['pos_id']}</TableRowColumn>
-                <TableRowColumn>{r['mobiles']}</TableRowColumn>
-                <TableRowColumn>{r['days']}</TableRowColumn>
+                <TableRowColumn><div style={style}>{_t}</div></TableRowColumn>
+                <TableRowColumn>{r['sales_date']}</TableRowColumn>
+                <TableRowColumn>
+                  { r['saler_mobiles'].map((m,i)=>{
+                    let salers = r.salers||[];
+                    let _mobiles = salers.map(s=>s.mobile)
+                    let t = m
+                    let style = {}
+                    if(checked && _mobiles.indexOf(m)>-1){
+                      m = m + ' ' + 
+                        salers.filter(s=>s.mobile==m)[0].saler_name
+                    }else if(checked){
+                      style = {'color': 'red'}
+                    }
+                    return (<div style = {style } key={i}>{m} </div>)
+                  })
+                  }
+                  </TableRowColumn>
+                <TableRowColumn>{r.saler_cnt}</TableRowColumn>
               </TableRow>
                 )})
               }
@@ -302,11 +325,11 @@ class Plan extends React.Component{
 
 
   getRows(){
-    let {posText,days ,salerText, dates, imported,
+    let {posText,saler_cnt,salerText, dates, imported,
       } = this.state;
     if(!imported){
-      if(!days || !days.match(/^\d+$/)){
-        this.setState({errDays:'请填写正确的数字'})
+      if(!saler_cnt|| !saler_cnt.match(/^\d+$/)){
+        this.setState({errsaler_cnt:'请填写正确的数字'})
         return false
       }
       let pos_ids = posText.split('\n').map((p)=>{
@@ -317,7 +340,7 @@ class Plan extends React.Component{
         let match = p.match(/^\d+/);
         return  match ? match[0]: 0 
       }).filter((i)=>(i && i.length==11 && !!i.match(/^\d+$/)))
-      let yymmdds = dates.map((d)=>{
+      let sales_dates = dates.map((d)=>{
         let mm = d.getMonth()+1
         mm = mm>9 ? mm: '0' + mm
         return ''.concat(d.getFullYear(),'')
@@ -339,21 +362,22 @@ class Plan extends React.Component{
       })
       saler_mobiles = _saler_mobiles
       pos_ids = _pos_ids
-      if(!pos_ids.length || !saler_mobiles.length || !yymmdds){
+      if(!pos_ids.length || !saler_mobiles.length || !sales_dates){
         let errMsg=!saler_mobiles.length ? '请正确填写促销人员手机号':''
-        errMsg=!yymmdds.length ? '请选择促销日期':errMsg
+        errMsg=!sales_dates.length ? '请选择促销日期':errMsg
         errMsg=!pos_ids.length ? '请正确填写促销点ID':errMsg
         console.info(errMsg)
         this.setState({errMsg}) 
         return false
       }
       let rows = []
-      console.info(pos_ids, yymmdds, days)
+      console.info(pos_ids, sales_dates, saler_cnt)
       for(let i =0 ; i<pos_ids.length; i++){
-        for(let j=0; j<yymmdds.length; j++) {
+        for(let j=0; j<sales_dates.length; j++) {
           let pos_id = pos_ids[i]
           let status = 1
-          rows.append({ pos_id, saler_mobiles, days, status})
+          let sales_date = sales_dates[j]
+          rows.push({ pos_id, saler_mobiles,saler_cnt, status, sales_date})
         }
       }
       console.info(rows)
@@ -365,8 +389,84 @@ class Plan extends React.Component{
     }
   }
 
+  checkData(){
+    let {rows} = this.state;
+    
+  }
+
+  componentWillUnmout(){
+    this.unmount = true
+  }
+
+  onNext(){
+    let {sending, rows, checked, read} = this.state; 
+    if(checked){
+      this.onCommit();
+    }else{
+      this.onCheck()
+    }
+  }
+  onCommit(){
+    this.setState({sending: true})
+    axios({
+      url: '/plan/api/add_plans.json' ,
+      transformRequest:[ function(data, headers) { let _data =  []
+        for(let k in data){ _data.push(k+'='+ data[k]) }
+        return  _data.join('&')
+      } ],
+      data: {rows: JSON.stringify(this.state.rows)},
+      method: 'post',
+      responseType:'json',
+    }).then( (resp) =>{
+      if(resp.status == 200){
+        if(resp.data.result){
+          this.setState({errMsg: `成功导入${resp.data.cnt}条数据`})
+          this.onCancel();
+        }else{
+          this.setState({errMsg: resp.data.msg})
+        }
+      }else{
+        this.setState({ errMsg: '请求出错!'})
+      }
+      if(!this.unmount){ this.setState({sending: false}) }
+    })
+   
+  }
+
+  onCheck(){
+    let {sending, rows, checked, read} = this.state; 
+    this.setState({sending: true})
+    axios({
+      url: '/plan/api/check_import.json' ,
+      transformRequest:[ function(data, headers) { let _data =  []
+        for(let k in data){ _data.push(k+'='+ data[k]) }
+        return  _data.join('&')
+      } ],
+      data: {rows: JSON.stringify(rows)},
+      method: 'post',
+      responseType:'json',
+    }).then( (resp) =>{
+      if(resp.status == 200){
+        if(resp.data.result){
+          let  _rows = resp.data.rows;
+          let {rows} = this.state;
+          let idxs = _rows.map((c)=>(c.idx))
+          let saler_cnt = _rows.filter((r)=>(r.status==3)).length;
+          let checkResult = `可导入数据${saler_cnt}, 共${rows.length}`
+          this.setState({rows:_rows, checked: true, checkResult}) 
+        }else{
+          this.setState({errMsg: resp.data.msg})
+        }
+      }else{
+        this.setState({ errMsg: '请求出错!'})
+      }
+      if(!this.unmount){ this.setState({sending: false}) }
+    })
+
+  }
+
   renderCheckDialog(){
-    let {sending,checked, read} = this.state;
+    let {sending,checked, read, checkResult} = this.state;
     return (
       <Dialog
       title="即将要导入的数据"

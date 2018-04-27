@@ -40,6 +40,7 @@ blueprints = (
 
     ('pos.api_views.api_bp','/pos/api'),
     ('saler.api_views.api_bp','/saler/api'),
+    ('plan.api_views.api_bp','/plan/api'),
 
     )
 

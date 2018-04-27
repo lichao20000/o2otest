@@ -14,7 +14,8 @@ import config
 
 
 
-def get_saler_list(q=None, mobile=None, channel_id=None, deleted=None,
+def get_saler_list(q=None, mobile=None, mobiles=None,
+                        channel_id=None, deleted=None,
                         sales_depart_ids=None, page=1 , page_size=100):
     conn, cur = None, None
     try:
@@ -31,6 +32,7 @@ def get_saler_list(q=None, mobile=None, channel_id=None, deleted=None,
         where 1 = 1
         ''',
         ' and  s.mobile = %(mobile)s ' if mobile else '',
+        ' and  s.mobile = any(%(mobiles)s) ' if mobiles else '',
         ' and  s.channel_id = %(channel_id)s ' if channel_id else '',
         ' and  s.deleted = %(deleted)s ' if deleted!=None else '',
         '''
@@ -40,6 +42,7 @@ def get_saler_list(q=None, mobile=None, channel_id=None, deleted=None,
         ' order by mobile desc '
         ''' limit %(limit)s offset %(offset)s '''
                 ]
+        #print mobiles, 'wtf......'
         args = {
                 'q': '%%%s%%' % (q, ) if q else None,
                 'mobile': mobile,
@@ -47,10 +50,11 @@ def get_saler_list(q=None, mobile=None, channel_id=None, deleted=None,
                 'deleted': deleted,
                 'sales_depart_ids': sales_depart_ids,
                 'limit': page_size+1,
-                'offset': (page-1)*page_size
+                'offset': (page-1)*page_size,
+                'mobiles' : mobiles,
                 }        
         cur.execute(''.join(sql), args)
-        #print ''.join(sql) % args
+        print ''.join(sql) % args
         rows = pg.fetchall(cur)
         has_more = len(rows) > page_size
         result = rows[:-1] if has_more else rows, has_more

@@ -55,7 +55,7 @@ def get_pos_list(q=None, pos_id=None, channel_id=None,  pos_type=None,
                 'deleted': deleted ,
                 'pos_type':  pos_type,
                 }
-        print ''.join(sql) % args
+        #print ''.join(sql) % args
         cur.execute(''.join(sql), args) 
         rows = pg.fetchall(cur)
         return rows

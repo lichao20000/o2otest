@@ -1,11 +1,4 @@
 # *- coding: utf-8 -*-
-
-import os
-import sys
-_dir = os.path.dirname(os.path.abspath(__file__))
-
-
-
 import os
 import sys
 
