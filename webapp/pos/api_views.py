@@ -5,10 +5,8 @@ _dir = os.path.dirname(os.path.abspath(__file__))
 
 from flask import Blueprint, request, redirect, abort
 from flask import make_response, render_template
-
 from flask import send_file
 from ui import jview, json_view
-
 from libs.session_helper import auth_required
 import config
 import json
@@ -18,6 +16,37 @@ import possvc
 from user.privs import PRIV_ADMIN_POS, PRIV_ADMIN_SUPER
 
 api_bp = Blueprint('pos_api_bp', __name__, template_folder='templates')
+from flask import send_file, Response
+import StringIO
+from libs.file_helper import excel_write
+from datetime import datetime as dt
+
+
+@api_bp.route('/get_file', methods=['POST', 'GET'])
+@auth_required
+@jview
+def get_file():
+    user = request.environ['user']
+    channel_id = user.user_info['channel_id'] 
+    charge_departs = user.user_info['charge_departs']
+    rows = possvc.get_pos_list(
+                        channel_id=channel_id, 
+                        sales_depart_ids = charge_departs,
+                        deleted = 0) 
+    xls  = StringIO.StringIO()
+    if not excel_write(xls, rows):
+       return  u'生成失败.' 
+    response = Response()
+    response.status_code = 200
+    response.data = xls.getvalue()
+    response.headers.set('Content-Type', 
+                'application/vnd.ms-excel')
+    d = dt.now().strftime('%Y%m%d')
+    response.headers.set( 'Content-Disposition', 
+            'attachment', filename='pos-%s.xls' % d )
+    return response
+ 
+
 
 @api_bp.route('/get_pos_list.json', methods=['POST', 'GET'])
 @auth_required
@@ -47,9 +76,12 @@ def get_pos_list():
         ids = [sales_depart_id] if sales_depart_id in charge_departs else []
     else:
         ids = charge_departs
-    rows = possvc.get_pos_list(q=q, channel_id=channel_id, 
-                        pos_id = pos_id, pos_type=pos_type,
-                        pos_name =pos_name, sales_depart_ids=ids,
+    rows = possvc.get_pos_list(q=q,
+                        channel_id=channel_id, 
+                        pos_id = pos_id, 
+                        pos_type=pos_type,
+                        pos_name =pos_name,
+                        sales_depart_ids=ids,
                         deleted=deleted)
     return rows
  

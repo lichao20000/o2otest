@@ -16,8 +16,42 @@ from ui import jview, json_view
 from utils import _int, _float, _date, _int_default, Abort
 import salersvc
 from user.privs import PRIV_ADMIN_SALE, PRIV_ADMIN_SUPER
+import StringIO
+from libs.file_helper import excel_write
+from datetime import datetime as dt
+from flask import send_file, Response
 
 api_bp = Blueprint('saler_api_bp', __name__, template_folder='templates')
+
+
+@api_bp.route('/get_file', methods=['POST', 'GET'])
+@auth_required
+@jview
+def get_file():
+    user = request.environ['user']
+    channel_id = user.user_info['channel_id'] 
+    charge_departs = user.user_info['charge_departs']
+    has_more = True
+    rows = []
+    while has_more:
+        _rows, has_more = salersvc.get_saler_list(
+                        channel_id=channel_id, 
+                        sales_depart_ids = charge_departs,
+                        deleted = 0) 
+        rows.extend(_rows)
+    xls  = StringIO.StringIO()
+    if not excel_write(xls, rows):
+       return  u'生成失败.' 
+    response = Response()
+    response.status_code = 200
+    response.data = xls.getvalue()
+    response.headers.set('Content-Type', 
+                'application/vnd.ms-excel')
+    d = dt.now().strftime('%Y%m%d')
+    response.headers.set( 'Content-Disposition', 
+            'attachment', filename='saler-%s.xls' % d )
+    return response
+ 
 
 @api_bp.route('/get_saler_list.json', methods=['POST', 'GET'])
 @auth_required
@@ -45,9 +79,12 @@ def get_saler_list():
         ids = [sales_depart_id] if sales_depart_id in charge_departs else []
     else:
         ids = charge_departs
-    rows, has_more = salersvc.get_saler_list(q=q, channel_id=channel_id,
-                        deleted = deleted, sales_depart_ids = ids,
-                        page=page, page_size=page_size,
+    rows, has_more = salersvc.get_saler_list(q=q,
+                        channel_id=channel_id,
+                        deleted = deleted,
+                        sales_depart_ids = ids,
+                        page=page,
+                        page_size=page_size,
                         mobile=mobile)
     return {
             'salers': rows,

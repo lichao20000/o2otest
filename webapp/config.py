@@ -60,8 +60,8 @@ session_force_use_redis = False
 
 
 if os.environ.get('LOGNAME') in ['yantz', 'wy']:
-    #pg_main = pg_local
-    #pg_stand = pg_local
+    pg_main = pg_local
+    pg_stand = pg_local
     domain = get_local_ip()
     _debug_ = True
 

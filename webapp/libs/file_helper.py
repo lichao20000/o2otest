@@ -27,7 +27,6 @@ def excel_reader(file_path=None , book =None):
         print e
     return result , rows
 
-
 def excel_write(file_name, rows, headers=None, sheet_name='sheet1'):
     # headers = [('display_col': 'col_val_in_row_key')]
     # if  headers  not none , headers'items  should be  containered
@@ -49,13 +48,15 @@ def excel_write(file_name, rows, headers=None, sheet_name='sheet1'):
             for col_num, h in enumerate(headers):
                 val = r.get(h[1],'')
                 sheet.write(row_num+1, col_num, val)
-        path, fname = os.path.split(file_name)
-        if not path:
-            path = _dir
-        book.save(os.path.join(path, fname))
+        if type(file_name) in (str, unicode):
+            path, fname = os.path.split(file_name)
+            if not path:
+                path = _dir
+            book.save(os.path.join(path, fname).encode('utf-8'))
+        else:
+            book.save(file_name)
         return True
     except Exception, e:
-        print e
         return False
 
 
