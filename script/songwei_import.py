@@ -24,7 +24,7 @@ logging_config = {
     }  
  
 logging.basicConfig(**logging_config)
-logger = logging.getLogger('crawl-bot')
+logger = logging.getLogger('import.log')
 
 
 def get_datas(sql, args=None):
