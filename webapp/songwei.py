@@ -79,8 +79,6 @@ where pos_name in (select distinct poi_name from t_rp_poi where is_deleted is nu
         'sql': u'''
         select * from itd.cuxiao_num_v1 where serial_number in (select bind_mobile from t_rp_sms_user);
         '''
-        
-        
         }
     ]
 
