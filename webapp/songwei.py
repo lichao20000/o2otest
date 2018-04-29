@@ -75,12 +75,10 @@ where a.area = b.area and ST_Distance_sphere(st_point(a.lng,a.lat),st_point(b.x,
 where pos_name in (select distinct poi_name from t_rp_poi where is_deleted is null or is_deleted = 0)
 '''},
     {
-        'name': u'所有录入号码'
+        'name': u'所有录入号码',
         'sql': u'''
         select * from itd.cuxiao_num_v1 where serial_number in (select bind_mobile from t_rp_sms_user);
         '''
-        
-        
         }
     ]
 
