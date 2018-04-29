@@ -166,7 +166,7 @@ class Plan extends React.Component{
       </div>
       <div style={{fontSize:14}}>
           <label style={{ marginRight: 20}}> 促销点 </label>
-          <a style ={{fontSize: 12}} href='/'>我的促销点(正在实现...) </a>
+          <a style ={{fontSize: 12}} href='/pos/api/get_file'>我的促销点</a>
       </div>
       <AsyncSelect
         value ={null}
@@ -183,7 +183,7 @@ class Plan extends React.Component{
       <Divider />
       <div style={{fontSize:14}}>
           <label style={{color:'#333', marginRight: 20}}>  促销人员 </label>
-          <a  style={{fontSize:12}} href='/'>我的促销人员(正在实现...) </a>
+          <a  style={{fontSize:12}} href='/saler/api/get_file'>我的促销人员</a>
       </div>
       <AsyncSelect
         value={null}
