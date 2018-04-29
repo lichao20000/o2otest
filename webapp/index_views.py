@@ -7,7 +7,7 @@ import sys
 _dir = os.path.dirname(os.path.abspath(__file__))
 
 from flask import Blueprint, request, redirect, abort
-from flask import make_response, render_template
+from flask import make_response, render_template, Response
 
 from flask import send_file
 from ui import jview, json_view
@@ -24,6 +24,8 @@ from libs.file_helper import excel_reader
 app_bp = Blueprint('app_bp', __name__, template_folder='templates')
 from user.privs import PRIV_ADMIN_CHECK, PRIV_PLAN
 import xlrd
+from libs.file_helper import excel_write
+from datetime import datetime as dt
 
 
 @app_bp.route('/', methods=['GET'])
@@ -71,18 +73,51 @@ def upload_file():
 
 # 临时解决方案
 from user.privs import PRIV_ADMIN, PRIV_ADMIN_SUPER
+
 @app_bp.route('/get_files.json', methods=['GET', 'POST'])
 @jview
 @auth_required(priv=PRIV_ADMIN | PRIV_ADMIN_SUPER)
 def get_files():
-    path = os.path.join('static', 'files')
-    files = []
-    for _,d, fs in os.walk(path):
-        for f in fs: 
-            _, ext = os.path.splitext(f)
-            if ext in ('.xls','.xlsx' ) :
-                files.append(f)
-    return files
+   # path = os.path.join('static', 'files')
+   # files = []
+   # for _,d, fs in os.walk(path):
+   #     for f in fs: 
+   #         _, ext = os.path.splitext(f)
+   #         if ext in ('.xls','.xlsx' ) :
+   #             files.append(f)
+   # return files
+   import songwei as sw
+   return [sql['name']  for sql in sw.sqls]
+
+
+   
+
+@app_bp.route('/get_file/<string:filename>',
+                        methods=['POST', 'GET'])
+@auth_required(priv=PRIV_ADMIN | PRIV_ADMIN_SUPER)
+def get_file(filename):
+    import songwei as sw
+    import StringIO
+    names = [s['name'] for s in sw.sqls]
+    if filename not in names:
+       return  u'非法文件名.' 
+    idx = names.index(filename)
+    sql = sw.sqls[idx]
+    rows = sw.get_datas(sql['sql'])
+    xls  = StringIO.StringIO()
+    if not excel_write(xls, rows):
+       return  u'生成失败.' 
+    response = Response()
+    response.status_code = 200
+    response.data = xls.getvalue()
+    response.headers.set('Content-Type', 
+                'application/vnd.ms-excel')
+    d = dt.now().strftime('%Y%m%d-%H%M%S')
+    filename=u'%s-%s.xls' % (filename, d)
+    response.headers.set( 'Content-Disposition', 
+            'attachment',filename=filename.encode('gbk') )
+    return response
+ 
     
 
 

@@ -30,7 +30,7 @@ class HomeData extends React.Component{
                         files.map((f,idx)=>{
                             return (
                                 <div key ={idx}>
-                                    <a  href={`/static/files/${f}`} >{f}</a> 
+                              <a href={`/get_file/${f}`} >{f}</a> 
                                 </div> 
                             ) 
                         
