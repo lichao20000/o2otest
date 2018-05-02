@@ -6,8 +6,8 @@ _dir = os.path.dirname(os.path.abspath(__file__))
 
 from flask import Blueprint, request, redirect, abort
 from flask import make_response, render_template
-from flask import send_file
-from ui import jview, json_view
+from flask import send_file 
+from ui import jview, json_view 
 from libs.session_helper import auth_required
 import config
 import json
@@ -16,8 +16,8 @@ from utils import _int, _float, _date, _int_default, Abort
 import plansvc
 from pos import possvc
 from saler import salersvc
-from user.privs import PRIV_PLAN, PRIV_ADMIN_SUPER
-
+from user.privs import PRIV_PLAN, PRIV_ADMIN_SUPER, PRIV_PLAN_AUDIT
+import re
 
 
 api_bp = Blueprint('plan_api_bp', __name__, template_folder='templates')
@@ -115,5 +115,61 @@ def add_plan():
         rows = None
     return {'result': result, 'msg': msg, 'cnt':cnt}
 
+ 
+@api_bp.route('/get_my_plans.json', methods=['POST', 'GET'])
+@auth_required(priv=PRIV_PLAN | PRIV_ADMIN_SUPER)
+@jview
+def get_my_plan():
+    args = request.args
+    if request.method == 'POST':
+        args = request.form
+    status = [1, 2, 4, 5]
+    user = request.environ['user']
+    create_user_id = user.user_id
+    rows, has_more= plansvc.get_plan_list(status=status, create_user_id=create_user_id)
+    return {'rows': rows,  'has_more': has_more }
+
+
 
      
+@api_bp.route('/get_plan_list.json', methods=['POST', 'GET'])
+@auth_required(priv=PRIV_PLAN_AUDIT | PRIV_ADMIN_SUPER)
+@jview
+def get_plan_list():
+    args = request.args
+    if request.method == 'POST':
+        args = request.form
+    status = re.findall(r'\d+', args.get('status', ''))
+    status = map(int, status)
+    if not status:
+        status = [1]
+    rows, has_more= plansvc.get_plan_list(status=status)
+    return {'rows': rows,  'has_more': has_more }
+
+
+
+     
+@api_bp.route('/audit.json', methods=['POST', 'GET'])
+@auth_required(priv=PRIV_PLAN_AUDIT | PRIV_ADMIN_SUPER)
+@jview
+def audit():
+    args = request.args
+    if request.method == 'POST':
+        args = request.form
+    plan_id = _int(args.get('plan_id',''))
+    status = _int(args.get('status',''))
+    result, msg = False, u'' 
+    user = request.environ['user']
+    try:
+        if not plan_id or not status:
+            raise Abort(u'')
+        update_info = {
+                'plan_id': plan_id,
+                'status':  status, 
+                'audit_user_id': user.user_id
+                }
+        result = plansvc.update_plan(update_info)
+    except Abort,e:
+        msg = e.msg
+    return {'result': result,  'msg': msg}
+

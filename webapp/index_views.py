@@ -22,11 +22,11 @@ from user.menu import func_menu
 from libs.file_helper import excel_reader
 
 app_bp = Blueprint('app_bp', __name__, template_folder='templates')
-from user.privs import PRIV_ADMIN_CHECK, PRIV_PLAN
+from user.privs import PRIV_PLAN
 import xlrd
 from libs.file_helper import excel_write
 from datetime import datetime as dt
-
+import config
 
 @app_bp.route('/', methods=['GET'])
 @jview('sales.html')
@@ -36,7 +36,7 @@ def index():
     user = request.environ['user']
     if not user.user_info['channel_id'] or not user.user_info['sales_depart_id']:
         return redirect('/user/setting/')
-    return {'title': u''}
+    return {'title': u'o2o促销管理'}
 
 
 @app_bp.route('/favicon.ico', methods=['GET'])

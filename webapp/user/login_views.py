@@ -27,6 +27,7 @@ import requests
 import usersvc
 import random
 import time
+import config
 
 
 login_bp = Blueprint('login_bp', __name__, template_folder='templates')
@@ -40,6 +41,7 @@ def login_():
         return redirect('/')
     return {
             'title': 'Login',
+            'debug': config._debug_,
             'response_type': 'code',
             'redirect_uri': config.OAuth2['auth_uri'],
             'auth2_uri':  config.OAuth2['auth2_uri'],

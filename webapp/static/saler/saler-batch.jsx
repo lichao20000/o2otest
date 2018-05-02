@@ -187,7 +187,7 @@ class SalerImport extends React.Component{
           <TableRow>
             { headers.map((h,idx)=>{
                 return (
-                <TableHeaderColumn key={idx} tooltip={h}>{h}</TableHeaderColumn>
+                <TableHeaderColumn key={idx} >{h}</TableHeaderColumn>
                 )
               }) 
             }

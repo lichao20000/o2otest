@@ -15,34 +15,47 @@ import config
 
 
 #status integer --1 待审核2 审核通过 4 审核不通过5 通过后取消,6 删除h
-def get_plan_list(channel_id=None, sales_depart_id=None, 
-                                    plan_id=None,status=None ):
+def get_plan_list(channel_id=None, sales_depart_ids=None, create_user_id = None,
+                plan_id=None,status=None , page=1, page_size=100):
     u''' status is a list args'''
     conn, cur = None, None
     try:
-        conn = pg.connect(*config.pg_main)
+        conn = pg.connect(**config.pg_main)
         cur = conn.cursor()
         sql =[ '''
-        select p.* from t_sales_plan p
+        select p.*, ch.channel_name, d.sales_depart_name,
+                (select array_agg(row_to_json(s)) 
+                from t_sales_saler s 
+                where s.mobile = any( p.saler_mobiles))
+                as salers
+        from t_sales_plan p
         left join t_sales_channel ch
             on p.channel_id = ch.channel_id
         left join t_sales_depart d
             on p.sales_depart_id = d.sales_depart_id
         where  1=1
         ''',
-        'and p.channel_id=%(channel_id)s ' if channel_id else '',
-        'and p.sales_depart_id=%(sales_depart_id)s' if sales_depart_id else '',
-        'and p.plan_id=%(plan_id)s' if plan_id else '',
-        'and p.status=any(%(status)s)' if status else '',
+        ' and p.channel_id=%(channel_id)s ' if channel_id else '',
+        ' and p.sales_depart_id=any(%(sales_depart_ids)s)' if sales_depart_ids else '',
+        ' and p.plan_id=%(plan_id)s' if plan_id else '',
+        ' and p.status=any(%(status)s)' if status else '',
+        ' and p.create_user_id = %(create_user_id)s' if create_user_id else '',
+        ' order by p.plan_id desc '
+        ' limit %(limit)s offset %(offset)s ',
             ]
         args = {'channel_id': channel_id,
-                'sales_depart_id': sales_depart_id,
+                'sales_depart_ids': sales_depart_ids,
+                'create_user_id': create_user_id,
                 'plan_id': plan_id,
                 'status': status,
+                'limit' : page_size + 1,
+                'offset': (page-1) * page_size,
                 }
-        cur.execute(''.join(sql), )
+        #print ''.join(sql) % args
+        cur.execute(''.join(sql), args )
         rows = pg.fetchall(cur)
-        return rows
+        has_more = len(rows) > page_size
+        return rows[:-1] if has_more else rows, has_more
     finally:
         if cur: cur.close()
         if conn: conn.close()
@@ -57,11 +70,9 @@ def add_plans(channel_id, sales_depart_id, create_user_id, plans):
                 'saler_cnt', 'remark'  )
         rows = []
         for p in plans :
-            args ={
-                    'channel_id': channel_id,
+            args ={ 'channel_id': channel_id,
                     'sales_depart_id': sales_depart_id,
-                    'create_user_id': create_user_id,
-                    } 
+                    'create_user_id': create_user_id, } 
             for key in keys:
                 args[key] = p.get(key, None)
             rows.append(args)
@@ -169,10 +180,10 @@ def update_plan(plan_info):
             ','.join(items),
             'where plan_id = %(plan_id)s '
             ]
+        #print ''.join(sql) % args
         cur.execute(''.join(sql), args)
         conn.commit()
         return cur.rowcount == 1
- 
     finally:
         if cur: cur.close()
         if conn: conn.close()

@@ -143,6 +143,7 @@ class Login extends React.Component{
                                         onClick={(event) => this.oauth2(event)}/>
                                 </div>
                             </Tab>
+                            {!!window.NS.debug && 
                             <Tab label='短信认证' disabled={loading||gotCode}>
                                 <div className='text-center tab' >
                                     <TextField
@@ -191,6 +192,7 @@ class Login extends React.Component{
                                 </div>
 
                             </Tab>
+                            }
 
                         </Tabs> 
 

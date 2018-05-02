@@ -15,10 +15,13 @@
     <script type="text/javascript">
       (function(obj){
       if(typeof window != 'undefined'){
+        var NS = window.NS || {};
         window.auth2_uri='{{auth2_uri}}';
         window.redirect_uri='{{redirect_uri}}';
         window.client_id= '{{client_id}}';
         window.response_type= '{{response_type}}';
+        NS.debug= {{ debug | tojson }};
+        window.NS = NS;
       }
       })(this ? this : (module ? module.exports:{}))
     </script>

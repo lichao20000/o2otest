@@ -56,13 +56,13 @@ items = [ {
             {
             'label': u'排产审核',
             'url': '/plan/audit/',
-            'priv': PRIV_ADMIN_CHECK | PRIV_ADMIN_SUPER,
+            'priv': PRIV_PLAN_AUDIT | PRIV_ADMIN_SUPER,
             },
-          #  {
-          #  'label': u'排产历史',
-          #  'url': '/plan/history/',
-          #  'priv': PRIV_PLAN | PRIV_ADMIN_ANY ,
-          #  }
+            {
+            'label': u'我的排产',
+            'url': '/plan/mine/',
+            'priv': PRIV_PLAN | PRIV_ADMIN_SUPER ,
+            }
           ],
         } , 
        {

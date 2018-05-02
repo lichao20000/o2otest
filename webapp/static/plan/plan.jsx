@@ -186,12 +186,14 @@ class Plan extends React.Component{
       <AsyncSelect
         value ={null}
         placeholder='输入 名称/位置 搜索'
+        styles={{control:styles=>({...styles, backgroundColor:'#fff',fontSize:10, borderRadius:0 })}}
+        noResultsText='搜索无结果'
         onChange={this.onChoosePos.bind(this)}
         loadOptions={this.getPos.bind(this)}
          />
       <textarea style={{minWidth:'100%',
           minHeight: 100, marginBottom:10}}
-          placeholder='促销点的系统ID(可以在上方搜索),区分范围内的促销点多条换行隔开'
+          placeholder='促销点的系统ID(pos_id)(可以在上方搜索),区分范围内的促销点多条换行隔开'
           value = {posText}
           onChange = {e=>this.setState({posText:e.target.value})}
       />
@@ -203,6 +205,7 @@ class Plan extends React.Component{
       <AsyncSelect
         value={null}
         placeholder='输入 姓名/电话 搜索'
+        styles={{control:styles=>({...styles, backgroundColor:'#fff',fontSize:10, borderRadius:0 })}}
         onChange={this.onChooseSaler.bind(this)}
         loadOptions={this.getSaler.bind(this)}
          />
@@ -229,7 +232,13 @@ class Plan extends React.Component{
                     verticalAlign:'middle',
                     width:150,
                     height:40,}} />
-        
+    <div>
+    <RaisedButton  primary={true} label='下一步'
+        onClick={e=>this.setState({
+            showCheckedDialog:true && this.getRows() })}
+            style ={{float:'right'}}
+        />
+    </div>
      </div>) 
   }
 
@@ -355,8 +364,7 @@ class Plan extends React.Component{
 
 
   getRows(){
-    let {posText,saler_cnt,salerText, dates, imported,
-      } = this.state;
+    let {posText,saler_cnt,salerText, dates, imported, read } = this.state;
     if(!imported){
       if(!saler_cnt|| !saler_cnt.match(/^\d+$/)){
         this.setState({errsaler_cnt:'请填写正确的数字'})
@@ -396,12 +404,10 @@ class Plan extends React.Component{
         let errMsg=!saler_mobiles.length ? '请正确填写促销人员手机号':''
         errMsg=!sales_dates.length ? '请选择促销日期':errMsg
         errMsg=!pos_ids.length ? '请正确填写促销点ID':errMsg
-        console.info(errMsg)
         this.setState({errMsg}) 
         return false
       }
       let rows = []
-      console.info(pos_ids, sales_dates, saler_cnt)
       for(let i =0 ; i<pos_ids.length; i++){
         for(let j=0; j<sales_dates.length; j++) {
           let pos_id = pos_ids[i]
@@ -410,11 +416,13 @@ class Plan extends React.Component{
           rows.push({ pos_id, saler_mobiles,saler_cnt, status, sales_date})
         }
       }
-      console.info(rows)
       this.setState({rows})
       return true
     }else{
-
+        if(!read)  {
+            let errMsg='请选择要导入的文件'
+            this.setState({errMsg})
+        }
     
     }
   }
@@ -543,13 +551,6 @@ class Plan extends React.Component{
           onToggle ={(e, imported)=>{this.setState({imported})}} />
       { imported ? this.renderImport() : this.renderForm() }
       {showCheckedDialog && this.renderCheckDialog()}
-        <div>
-          <RaisedButton  primary={true} label='下一步'
-            onClick={e=>this.setState({
-              showCheckedDialog:true && this.getRows() })}
-            style ={{float:'right'}}
-            />
-        </div>
       <Snackbar 
         open={!!errMsg}
         message={errMsg}

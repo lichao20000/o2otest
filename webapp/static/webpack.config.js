@@ -1,6 +1,6 @@
 module.exports = {
     entry: {
-//          'login': './login/login.jsx',
+          'login': './login/login.jsx',
           //'index'  : './index.jsx',
  //         'menu'  : './menu.jsx',
  //         'setting': './user/setting.jsx',
