@@ -41,9 +41,12 @@ pg_production_readonly = {
 
 import socket 
 def get_local_ip():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(('8.8.8.8', 10000))  
-    _ip = s.getsockname()[0] 
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(('8.8.8.8', 10000))  
+        _ip = s.getsockname()[0] 
+    except:
+        _ip = 'localhost'
     s.close()
     return _ip
 

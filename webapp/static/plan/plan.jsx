@@ -1,4 +1,5 @@
-import Toggle from 'material-ui/Toggle'; import RaisedButton from 'material-ui/RaisedButton';
+import Toggle from 'material-ui/Toggle';
+import RaisedButton from 'material-ui/RaisedButton';
 
 import Divider from 'material-ui/Divider';
 import Select from 'react-select'
@@ -56,15 +57,29 @@ class Plan extends React.Component{
     axios.post('/upload/read_excel', dataForm, config)
       .then((resp)=>{
         let read = resp.data.result;
-        let rows = []
+        let _rows = []
         if(read){
-          rows = resp.data.rows;
-          if(rows.length){
-            rows.splice(0,1)
+          _rows = resp.data.rows;
+          if(_rows.length){
+            _rows.splice(0,1)
           }
         }
+        let rows = _rows.map((r, idx)=>{
+          let mobiles = r[2].split(/\D/).filter((d)=>{
+            console.info(d)
+            return d.match(/^\d+/) && d.length==11
+          })
+          return {
+            pos_id: r[1] ,
+            sales_date: r[0],
+            saler_cnt: r[3],
+            saler_mobiles: mobiles
+          } 
+        })
         let percentCompleted = 0;
-        this.setState({read, rows, percentCompleted, sending: false})
+        this.setState({read, rows, percentCompleted, sending: false,
+          showCheckedDialog:true
+        })
       }
       ).catch((err)=>{
         let percentCompleted = 0;
@@ -219,12 +234,13 @@ class Plan extends React.Component{
   }
 
   renderImport(){
-    let {tabid, imported, fileName, sending, loading }= this.state
+    let {tabid, imported, fileName, sending, loading,
+      percentCompleted, }= this.state
     return (
     <div> 
       <input ref='fileExcel' type='file' id='file' 
-    onChange={this.onChoose.bind(this)}
-    style={{display:'none'}}/>
+        onChange={this.onChoose.bind(this)}
+        style={{display:'none'}}/>
       {sending?  [ <CircularProgress
         mode="determinate"
         size={20}
@@ -241,9 +257,17 @@ class Plan extends React.Component{
         disabled = {sending || loading}
         onClick={(e)=>{this.refs['fileExcel'].click(e)}} /> 
       }
-      <label style={{fontSize:14, color:'#333'}}> 
-      {fileName} </label>
-      <div>正在全力实现中..... </div>
+      <label style={{fontSize:14, color:'#333'}}> {fileName} </label>
+      <div>
+        <label style={{fontSize:14, color:'#880'}}>导入说明 </label>
+        <div style={{fontSize:14, color:'#f00'}}>
+        请按照以下图片显示要求提供导入的excel表(系统只读第一个sheet,第一行为表头)
+          <a href='/static/images/import-plan-tips.png'
+            target='_blank' >点我看大图</a>
+        </div>
+        <div className='import-plan-tips'> </div>
+      </div>
+
       </div>  )
   }
 
@@ -405,7 +429,7 @@ class Plan extends React.Component{
   }
 
   onNext(){
-    let {sending, rows, checked, read} = this.state; 
+    let {sending, rows, checked, read, imported} = this.state; 
     if(checked){
       this.onCommit();
     }else{

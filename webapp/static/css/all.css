@@ -81,6 +81,15 @@ div.auth2{
   background-repeat: no-repeat;
 }
 
+
+.import-plan-tips{
+  background-image:url('/static/images/import-plan-tips.png');
+  width: 100%;
+  height: 300px;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
 .multi-date input{
   height: 2em;
   font-size: 14px;
