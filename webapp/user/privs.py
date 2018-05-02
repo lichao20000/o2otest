@@ -18,9 +18,6 @@ privs_all =[ {
             'lable':u'超级管理员',
             'priv' : 'PRIV_ADMIN_SUPER'
             },
-
-
-        
        ] 
 
 PRIV_PLAN = Priv('PRIV_PLAN')

@@ -18,6 +18,7 @@ from pos import possvc
 from saler import salersvc
 from user.privs import PRIV_PLAN, PRIV_ADMIN_SUPER, PRIV_PLAN_AUDIT
 import re
+from datetime import datetime as dt
 
 
 api_bp = Blueprint('plan_api_bp', __name__, template_folder='templates')
@@ -31,6 +32,19 @@ def _check(rows):
         pos_id = row.get('pos_id')
         mobiles = row.get('saler_mobiles')
         sales_date = row.get('sales_date')
+        if _int(sales_date) < _int(dt.now().strftime('%Y%m%d')):
+            row['msg'] = u'排产日期不能小于当前时间'
+            row['status'] = 4
+            continue
+        plans,_ = plansvc.get_plan_list(sales_date=sales_date, pos_id=pos_id,status=[1,2])
+        if plans:
+            plan = plans[0]
+            if plan['status'] == 1:
+                row['msg'] = '已排产（继续将删除之前排产）'
+            if plan['status'] == 2:
+                row['msg'] = '已排产并审核通过.'
+                row['status'] =4
+                continue
         saler_cnt= row.get('saler_cnt')
         if not pos_id or not mobiles or not sales_date\
                         or not saler_cnt:
@@ -53,7 +67,7 @@ def _check(rows):
             continue
         row['pos'] = _pos[0]
         if not salers or len(salers)!=len(mobiles):
-            row['msg'] = '促销人非法.'
+            row['msg'] = '促销人员非法.'
             row['status'] = 4
             continue
         row['status'] = 3
@@ -65,7 +79,7 @@ def _check(rows):
 
 
 @api_bp.route('/check_import.json', methods=['POST', 'GET'])
-@auth_required(priv=PRIV_PLAN |PRIV_ADMIN_SUPER)
+@auth_required(priv=PRIV_PLAN | PRIV_ADMIN_SUPER)
 @jview
 def checkimport():
     args = request.args

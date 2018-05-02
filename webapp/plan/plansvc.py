@@ -15,8 +15,10 @@ import config
 
 
 #status integer --1 待审核2 审核通过 4 审核不通过5 通过后取消,6 删除h
-def get_plan_list(channel_id=None, sales_depart_ids=None, create_user_id = None,
-                plan_id=None,status=None , page=1, page_size=100):
+def get_plan_list(channel_id=None, sales_depart_ids=None, 
+                    create_user_id = None, pos_id=None, 
+                    sales_date = None, plan_id=None,
+                    status=None , page=1, page_size=100):
     u''' status is a list args'''
     conn, cur = None, None
     try:
@@ -40,6 +42,8 @@ def get_plan_list(channel_id=None, sales_depart_ids=None, create_user_id = None,
         ' and p.plan_id=%(plan_id)s' if plan_id else '',
         ' and p.status=any(%(status)s)' if status else '',
         ' and p.create_user_id = %(create_user_id)s' if create_user_id else '',
+        ' and p.pos_id = %(pos_id)s' if pos_id else '',
+        ' and p.sales_date = %(sales_date)s' if  sales_date else '',
         ' order by p.plan_id desc '
         ' limit %(limit)s offset %(offset)s ',
             ]
@@ -48,6 +52,8 @@ def get_plan_list(channel_id=None, sales_depart_ids=None, create_user_id = None,
                 'create_user_id': create_user_id,
                 'plan_id': plan_id,
                 'status': status,
+                'pos_id': pos_id,
+                'sales_date': sales_date,
                 'limit' : page_size + 1,
                 'offset': (page-1) * page_size,
                 }
@@ -76,6 +82,13 @@ def add_plans(channel_id, sales_depart_id, create_user_id, plans):
             for key in keys:
                 args[key] = p.get(key, None)
             rows.append(args)
+        # 更新 未审核的一个点同一个日期只能有一个
+        sql = '''
+            update t_sales_plan set status = 6
+            where status in (1, 2)  and pos_id = %(pos_id)s 
+                and sales_date = %(sales_date)s
+            '''
+        cur.executemany(sql, rows)
         sql = '''
             insert into t_sales_plan(
                 plan_id,

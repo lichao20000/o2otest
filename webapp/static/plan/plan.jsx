@@ -381,9 +381,11 @@ class Plan extends React.Component{
       let sales_dates = dates.map((d)=>{
         let mm = d.getMonth()+1
         mm = mm>9 ? mm: '0' + mm
+         let dd = d.getDate() ;
+        dd = dd >9 ? dd: '0' + dd;
         return ''.concat(d.getFullYear(),'')
                  .concat(mm, "")
-                 .concat(d.getDate(),"")
+                 .concat(dd,"")
       })
       // 去重
       let _pos_ids = []
