@@ -178,7 +178,7 @@ create table t_sales_plan(
     channel_id integer not null,
     sales_depart_id integer not null,
     pos_id integer not null,
-    saler_mobiles  varchar(11),
+    saler_mobiles  varchar[],
     sales_date varchar(8) not null, -- 8位日期
     saler_cnt int,
     remark text,
