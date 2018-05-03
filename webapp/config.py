@@ -1,15 +1,16 @@
 # -*- coding:utf-8 -*- 
 import os
 
+'''
 pg_local = {
-    'host' : 'localhost',
+    'host' : '10.117.227.208',
     'database': 'o2o',
     'user': 'o2o',
     'password': 'o2o',
     'port': 5432,
     'schema':'public'
     }
-
+'''
 
 session_storage_production = {
         'protocols': 'redis',
@@ -20,7 +21,6 @@ session_storage_production = {
             }
         }
 
-
 pg_production = {
         'host':'132.96.64.32',
         'database':'gi_db',
@@ -29,6 +29,8 @@ pg_production = {
         'port': 5432,
         'schema': 'itd',
         }
+
+pg_local=pg_production
 
 pg_production_readonly = {
         'host':'132.96.64.34',
@@ -51,13 +53,13 @@ def get_local_ip():
     return _ip
 
 session_storage = session_storage_production
-pg_main = pg_production
+pg_main = pg_local
 pg_stand= pg_production_readonly
-domain = 'o2o.gz.gd.unicom.local'
+#domain = 'o2o.gz.gd.unicom.local'
 
-#domain = '132.97.135.12'
+domain = '0.0.0.0'
 port = 9020
-_debug_ = False
+_debug_ = True
 session_force_use_redis = False
 
 

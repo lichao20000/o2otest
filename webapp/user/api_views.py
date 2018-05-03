@@ -18,7 +18,9 @@ from ui import jview, json_view
 from utils import _int, _float, _date, _int_default, Abort
 import usersvc
 from menu import items as menus
-from privs import PRIV_ADMIN_SUPER
+from privs import PRIV_ADMIN_SUPER,PRIV_ADMIN_ANY
+from privs import privs_all
+
 
 api_bp = Blueprint('user_api_bp', __name__, template_folder='templates')
 
@@ -118,5 +120,105 @@ def admin_set_info():
             user.user_info = usersvc.get_user_local_info(user.user_id)
             user.save_to_session()
     except Abort, e:
+        msg = e.msg
+    return {'result': result, 'msg': msg}
+
+
+@api_bp.route('/get_users.json',methods=['POST','GET'])
+@auth_required(priv=PRIV_ADMIN_ANY)
+@jview
+def admin_get_user():
+    args=request.args
+    if request.method=='POST':
+        args=request.form
+    channel_id = _int(args.get('channel_id', ''))
+    sales_depart_id =_int(args.get('sales_depart_id', ''))
+    query=args.get('query')
+    user=request.environ["user"]
+    charge_departs=user.user_info["charge_departs"]
+    charge_departs=tuple(charge_departs)#后台直接限制查询范围
+    return {"users":usersvc.get_users(channel_id,charge_departs,sales_depart_id,query)}
+
+
+@api_bp.route('/get_user_privs.json', methods=['POST','GET'])
+@auth_required
+@jview
+def admin_get_privs():
+    args=request.args
+    if request.method=='POST':
+        args=request.form
+    AdminUser = request.environ['user']
+    user_id=args.get('user_id','')
+    SetUser=usersvc.get_user_local_info(user_id)
+    AdminPrivs = AdminUser.user_info['privs']
+    SetPrivs = SetUser['privs']
+    result,msg=False,''
+    try:
+        if SetUser is None:
+            raise Abort(u'获取用户资料异常')
+        resp=[]
+        for a in AdminPrivs:
+            match=False
+            for s in SetPrivs:
+                if a==s:
+                    match=True
+                    break
+            if match:
+                for p in privs_all:
+                    if p['priv']==a.encode():
+                        resp.append({'priv':a.encode(),'state':True,'label':p['label']})
+            else:
+                for p in privs_all:
+                    if p['priv']==a.encode():
+                        resp.append({'priv':a.encode(),'state':False,'label':p['label']})
+        result=True
+        return {'user':SetUser,'privs':resp,'result':result,'msg':msg}
+    except Abort,e:
+        msg=e.msg
+    return {'result':result,'msg':msg}
+
+
+@api_bp.route('/set_user_privs.json', methods=['POST','GET'])
+@auth_required
+@jview
+def admin_alter_user():
+    args = request.args
+    if request.method == 'POST':
+        args=request.form
+    privs = args.get('req', '')
+    privstate=args.get('reqstate')
+    user_id=args.get('user_id','')
+    AdminUser=request.environ['user']
+    SetUser=usersvc.get_user_local_info(user_id)
+    result, msg = False, ''
+    try:
+        if not isinstance(privs,unicode) and not isinstance(privstate,unicode) and SetUser is None:
+            raise Abort(u'无效的用户')
+        SetPrivs = SetUser['privs']
+        privs=privs.encode().split(',')
+        privstate=privstate.encode().split(',')
+        if SetUser['channel_id']==AdminUser.user_info['channel_id'] and SetUser['sales_depart_id'] in AdminUser.user_info['charge_departs']:
+            for p in range(len(privs)):
+                if privs[p] in AdminUser.user_info['privs']:
+                    if privs[p] not in SetPrivs and privstate[p]=='1':
+                        SetPrivs.append(privs[p])
+                    elif privs[p] in SetPrivs and privstate[p]=='0':
+                        SetPrivs.remove(privs[p])
+                    else:
+                        Abort(u'无效的权限状态')
+                else:
+                    Abort(u'无效的赋权')
+            SetPrivsString =''
+            for p in SetPrivs:
+                if SetPrivsString=='':
+                    SetPrivsString=p
+                else:
+                    SetPrivsString=SetPrivsString+','+p
+            SetPrivsString='{'+SetPrivsString+'}'
+            usersvc.set_user_privs(user_id,SetPrivsString,AdminUser['user_id'])
+            result=True
+        else:
+            raise Abort(u'设置的渠道区分')
+    except Abort, e :
         msg = e.msg
     return {'result': result, 'msg': msg}

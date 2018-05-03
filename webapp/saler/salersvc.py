@@ -157,5 +157,3 @@ def update_saler(saler):
         if cur: cur.close()
         if conn: conn.close()
 
-
-

@@ -14,6 +14,9 @@ import { Plan } from './plan/plan'
 import { Audit } from './plan/audit'
 import { MyPlan } from './plan/myplan'
 import { HomeData} from './home'
+import {AdminManager} from './user/admin-manager'
+import {AdminEditor} from './user/admin-editor'
+
 
 
 
@@ -37,6 +40,8 @@ ReactDOM.render((
         <Route path="/plan/mine" exact component={MyPlan} />
 
         <Route path="/admin/switch" component={AdminSwitch} />
+        <Route path="/admin/manager" exact component={AdminManager} />
+        <Route path="/admin/manager/:user_id" component={AdminEditor}/>
         <Route path="/login_out/" component={LoginOut} />
     </Menu>
   </Router>

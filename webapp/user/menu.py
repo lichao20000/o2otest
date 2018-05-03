@@ -73,11 +73,11 @@ items = [ {
               'priv':  PRIV_ADMIN_SUPER,
               'url': '/admin/switch' 
              },
-           # {
-           #     'label': u'权限管理',
-           #     'url': '/sys/manager/',
-           #     'priv':  PRIV_ADMIN_SUPER,
-           #     },
+            {
+                'label': u'权限管理',
+                'url': '/admin/manager/',
+                'priv':  PRIV_ADMIN_SUPER,
+                },
             ]
          },
       {

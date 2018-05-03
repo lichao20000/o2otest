@@ -228,7 +228,6 @@ def _check(rows):
             row['msg'] = u'手机号已存在.'
             continue
         row['status'] = 3
- 
 
 
 @api_bp.route('/check_import.json', methods=['POST', 'GET'])

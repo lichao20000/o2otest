@@ -97,7 +97,6 @@ class SalerImport extends React.Component{
     onCancel(){
         this.setState({showConfirm:false, checked: false, read: false, fileName:'', checkResult:''}) 
         this.refs['fileExcel'].value=null;
-    
     }
 
     onCommit(){ // 确定提交了
@@ -128,9 +127,9 @@ class SalerImport extends React.Component{
           })
     }
 
+
     onCheck(){
       let {rows, }= this.state;
-
       rows.map((r)=>{
             if(!r.data[0] || !r.data[1] ) {
                 r.status = 4

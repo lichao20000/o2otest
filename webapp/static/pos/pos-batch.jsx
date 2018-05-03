@@ -129,9 +129,9 @@ class PosImport extends React.Component{
           })
     }
 
+
     onCheck(){
       let {rows, user_info}= this.state;
-
       rows.map((r)=>{
             if(!r.data[0] || !r.data[4] || !r.data[6] || !r.data[7]) {
                 r.status = 4
@@ -179,7 +179,6 @@ class PosImport extends React.Component{
           if(!this.unmount){ this.setState({sending: false}) }
       })
     }
-
 
     renderRows(){
       let {rows, read, sending}  = this.state;

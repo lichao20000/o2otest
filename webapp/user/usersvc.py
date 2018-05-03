@@ -152,8 +152,37 @@ def set_user_sales_info(user_id, channel_id, sales_depart_id, op_user_id=None):
 
 def get_all_privs():
     return privs_all
-    
 
+def get_users(channel_id=None,charge_departs=None,sales_depart_id=None,query=None):
+    conn, cur = None, None
+    try:
+        conn = pg.connect(**config.pg_main)
+        cur = conn.cursor()
+        sql=['''
+            select u.*,c.channel_name,d.sales_depart_name from t_sales_user u
+                left join t_sales_channel c
+                on u.channel_id=c.channel_id
+                left join t_sales_depart d
+                on u.sales_depart_id=d.sales_depart_id
+            where 1 = 1 
+            ''',
+            ' and u.sales_depart_id in %(charge_departs)s' if charge_departs else ''
+            ' and u.channel_id = %(channel_id)s' if channel_id else '',
+            ' and u.sales_depart_id = %(sales_depart_id)s' if sales_depart_id else '',
+            ' and (u.user_name like %(query)s or u.mobile like %(query)s) ' if query else '',
+             ]
+        args={
+            'channel_id': channel_id,
+            'charge_departs': charge_departs,
+            'sales_depart_id': sales_depart_id,
+            'query': '%%%s%%' % (query,) if query else None}
+        cur.execute(''.join(sql),args)
+        rows=pg.fetchall(cur)
+        result=rows
+        return result
+    finally:
+        if cur: cur.close()
+        if conn: conn.close()
 
 def set_user_privs(user_id, privs, op_user_id =None):
     conn, cur = None, None
@@ -178,17 +207,6 @@ def set_user_privs(user_id, privs, op_user_id =None):
     finally:
         if cur: cur.close()
         if conn: conn.close()
-
-
-
-
-def get_user_privs(user_id):
-    user_info = get_user_local_info(user_id)
-    if not user_info:
-        return None
-    return user_info['privs']
-
-
 
 
 def get_bcmaanger_info(uni_email):

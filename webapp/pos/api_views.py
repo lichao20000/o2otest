@@ -191,7 +191,6 @@ def add_pos():
     return {'result': result, 'pos_id': pos_id, 'msg': msg}
 
 
-
 def _check(rows):
     names = []
     for row in rows:
@@ -212,16 +211,16 @@ def _check(rows):
             row['status'] = 4
             row['msg'] = u'手机号.'
             continue 
-        if data[4] in names:
+        if data[4] in names :
             row['status'] = 4
             row['msg'] = u'名称重复(excel).'
             continue
-        names.append(data[4]) 
+        names.append(data[4])
         if possvc.get_pos_list(pos_name=data[4]):
             row['status'] = 4
             row['msg'] = u'名称已存在.'
             continue
-        row['status'] = 3 
+        row['status'] = 3
 
 
 
@@ -238,6 +237,7 @@ def checkimport():
     # 单元	促销点ID	代码点	门店名称	门店地址	负责人姓名	负责人电话
         rows = json.loads(rows)
         _check(rows)
+        print(rows)
         result = True
     except  ValueError, e: 
         msg = u'请提供JSON格式数据.(loads error) '

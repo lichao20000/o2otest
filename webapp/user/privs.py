@@ -3,22 +3,22 @@ from libs.privs import Priv
 
 
 privs_all =[ {
-            'lable':u'排产人员',
+            'label':u'排产人员',
             'priv' : 'PRIV_PLAN'
             },{
-            'lable':u'排产审核',
+            'label':u'排产审核',
             'priv' : 'PRIV_PLAN_AUDIT'
             },{
-            'lable':u'促销点管理员',
+            'label':u'促销点管理员',
             'priv' : 'PRIV_ADMIN_POS'
             },{
-            'lable':u'促销人员管理员',
+            'label':u'促销人员管理员',
             'priv' : 'PRIV_ADMIN_SALE'
             },{
-            'lable':u'超级管理员',
+            'label':u'超级管理员',
             'priv' : 'PRIV_ADMIN_SUPER'
             },
-       ] 
+       ]
 
 PRIV_PLAN = Priv('PRIV_PLAN')
 
