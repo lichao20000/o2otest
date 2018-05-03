@@ -55,11 +55,10 @@ def get_local_ip():
 session_storage = session_storage_production
 pg_main = pg_local
 pg_stand= pg_production_readonly
-#domain = 'o2o.gz.gd.unicom.local'
+domain = 'o2o.gz.gd.unicom.local'
 
-domain = '0.0.0.0'
 port = 9020
-_debug_ = True
+_debug_ = False
 session_force_use_redis = False
 
 
