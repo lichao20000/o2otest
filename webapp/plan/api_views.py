@@ -32,6 +32,7 @@ def _check(rows):
         pos_id = row.get('pos_id')
         mobiles = row.get('saler_mobiles')
         sales_date = row.get('sales_date')
+        sale_hour=row.get('sale_hour')
         if _int(sales_date) < _int(dt.now().strftime('%Y%m%d')):
             row['msg'] = u'排产日期不能小于当前时间'
             row['status'] = 4
@@ -71,6 +72,24 @@ def _check(rows):
             row['status'] = 4
             continue
         row['status'] = 3
+        if sale_hour and len(sale_hour)<100:
+            sale_hour=sale_hour.split(',')
+            for h in range(len(sale_hour)):
+                if sale_hour[h] in sale_hour[h+1:]:
+                    row['msg']='促销时间重复'
+                    row['status']=4
+                try:
+                    s=int(sale_hour[h])
+                except:
+                    s=0
+                    row['msg']='促销时间不是整数'
+                    row['status']=4
+                if s not in range(0,24):
+                    row['msg']='促销时间范围超出0-23'
+                    row['status']=4
+        else:
+            row['msg']='促销时间错误！'
+            row['status']=4
     return rows
 
 

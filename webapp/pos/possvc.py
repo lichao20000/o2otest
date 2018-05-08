@@ -3,6 +3,7 @@
 import os
 import sys
 
+
 _dir = os.path.dirname(os.path.abspath(__file__))
 _updir = os.path.abspath(os.path.join( _dir, '../'))
 if _updir not in sys.path:
@@ -11,8 +12,6 @@ if _updir not in sys.path:
 
 from libs import pg_helper as pg
 import config
-
-
 
 
 def get_pos_list(q=None, pos_id=None, channel_id=None,  pos_type=None,
@@ -215,21 +214,76 @@ def pos_import(rows):
                 pos_id, pos_type, sales_id, 
                 pos_name, pos_address, channel_id,
                 sales_depart_id, pos_unit, pos_code, 
-                pos_man, pos_man_mobile, create_user_id
+                pos_man, pos_man_mobile, create_user_id,is_charge
             ) values(
                 nextval('seq_t_sales_pos'), %(pos_type)s, %(sales_id)s, 
                 %(pos_name)s, %(pos_address)s, %(channel_id)s, 
                 %(sales_depart_id)s, %(pos_unit)s, %(pos_code)s,
-                %(pos_man)s, %(pos_man_mobile)s, %(create_user_id)s
-            ) 
+                %(pos_man)s, %(pos_man_mobile)s, %(create_user_id)s,%(is_charge)s
+            );
             '''
         cur.executemany(sql, rows)
         result = cur.rowcount == len(rows)
         if result:
             conn.commit()
-        return  result 
+        return  result
+    finally:
+        if cur: cur.close()
+        if conn: conn.close()
+
+def sms_user_import(data):
+    conn,cur=None,None
+    try:
+        conn = pg.connect(**config.pg_main)
+        cur = conn.cursor()
+        sql=( ' insert into public.t_rp_sms_user ',
+                  ' (user_id,bind_mobile,full_name,reg_date,status) ',
+                  ' select ',
+                  " nextval('public.seq_rp_sms_user_id'), '%(pos_man_mobile)s',%(pos_man)s,current_timestamp,1 ",
+              ' where not exists (select 1 ',
+              '                             from public.t_rp_sms_user',
+              "                             where bind_mobile='%(pos_man_mobile)s') ",)
+        cur.executemany(''.join(sql),data)
+        result=cur.rowcount
+        if result>0:
+            conn.commit()
+        return result
     finally:
         if cur: cur.close()
         if conn: conn.close()
 
 
+
+
+
+
+
+
+
+def get_audit_list(channel_id,charge_departs):
+    conn,cur=None,None
+    try:
+        conn=pg.connect(**config.pg_main)
+        cur=conn.cursor()
+        sql=('''
+        select p.*,s.saler_name from 
+        public.t_rp_poi p
+        left join public.t_rp_sms_user u
+        on p.create_user_id=u.user_id
+        left join itd.t_sales_saler s
+        on u.bind_mobile=s.mobile
+        where 1=1
+        ''',
+        ' and s.channel_id=%(channel_id)s' if channel_id else None,
+        ' and s.sales_depart_id in %(charge_departs)s' if charge_departs else None,)
+        args = {
+                'channel_id': channel_id,
+                'charge_departs':charge_departs
+                }
+        #print ''.join(sql) % args
+        cur.execute(''.join(sql), args)
+        rows = pg.fetchall(cur)
+        return rows
+    finally:
+        if cur: cur.close()
+        if conn: conn.close()

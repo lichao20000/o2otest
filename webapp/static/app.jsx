@@ -16,7 +16,7 @@ import { MyPlan } from './plan/myplan'
 import { HomeData} from './home'
 import {AdminManager} from './user/admin-manager'
 import {AdminEditor} from './user/admin-editor'
-
+import {PosAudit} from './pos/pos-audit'
 
 
 
@@ -29,6 +29,7 @@ ReactDOM.render((
         <Route path="/pos/manager/:pos_id" component={SalesPositionManager}/>
         <Route path="/pos/new" exact component={NewPosition} />
         <Route path="/pos/import" exact component={PosImport} />
+        <Route path="/pos/audit" exact component={PosAudit}/>
 
         <Route path="/saler/manager" exact component={SalerList} />
         <Route path="/saler/manager/:mobile" component={SalerEditor}/>

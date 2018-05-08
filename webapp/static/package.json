@@ -23,6 +23,7 @@
   "mode": "development",
   "dependencies": {
     "babel-loader": "^7.1.4",
+    "rc-slider": "^8.6.1",
     "react-multiple-datepicker": "^0.1.0",
     "react-router": "^4.2.0",
     "react-router-dom": "^4.2.2",

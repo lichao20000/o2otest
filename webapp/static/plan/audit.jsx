@@ -91,7 +91,7 @@ class Audit extends React.Component{
 
     render(){
         let {loading, sending, rows  } = this.state;
-        let headers = [ 'ID', '状态', '促销时间', '渠道', '区分', '促销人数', '促销人员' ];
+        let headers = [ 'ID', '门店名称','状态', '促销时间', '渠道', '区分', '促销人数', '促销人员' ];
         return (
          loading ? <CircularProgress size={40} thickness={3} />:
           <div style={{padding: 10}}>
@@ -141,6 +141,7 @@ class Audit extends React.Component{
                       {r.plan_id}
                   </div>
                   </TableRowColumn>
+                  <TableRowColumn style ={{textAlign: 'center'}} > {r.pos_id}{r.pos_name}</TableRowColumn>
                   <TableRowColumn style ={{textAlign: 'center'}} > {statusText}</TableRowColumn>
                   <TableRowColumn style ={{textAlign: 'center'}} > {r.sales_date}</TableRowColumn>
                   <TableRowColumn style ={{textAlign: 'center'}} > {r.channel_name}</TableRowColumn>

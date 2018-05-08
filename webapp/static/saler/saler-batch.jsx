@@ -268,7 +268,9 @@ class SalerImport extends React.Component{
                   <div>
                   <label style={{fontSize:14, color:'#88'}}>导入说明 </label>
                   <div style={{fontSize:14, color:'#f00'}}>
-                     请按照以下图片显示要求提供导入的excel表(系统只读第一个sheet,第一行为表头)
+                     请按照以下图片提示，将数据填写到
+                      <a href="/static/files/import_saler-sample.xlsx" download>样例表格</a>
+                      再导入(只有第一个Sheet,第一行为表头)
                     <a href='/static/images/import-saler-tips.png'
                     target='_blank' >点我看大图</a>
                   </div>

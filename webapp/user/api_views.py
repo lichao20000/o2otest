@@ -34,8 +34,6 @@ def menus():
     return usersvc.get_channels()
 
 
-
-
 @api_bp.route('/get_channels.json', methods=['POST', 'GET'])
 @auth_required
 @jview
@@ -141,7 +139,7 @@ def admin_get_user():
 
 
 @api_bp.route('/get_user_privs.json', methods=['POST','GET'])
-@auth_required
+@auth_required(priv=PRIV_ADMIN_ANY)
 @jview
 def admin_get_privs():
     args=request.args
@@ -152,6 +150,8 @@ def admin_get_privs():
     SetUser=usersvc.get_user_local_info(user_id)
     AdminPrivs = AdminUser.user_info['privs']
     SetPrivs = SetUser['privs']
+    if SetPrivs is None:
+        SetPrivs=[]
     result,msg=False,''
     try:
         if SetUser is None:
@@ -179,7 +179,7 @@ def admin_get_privs():
 
 
 @api_bp.route('/set_user_privs.json', methods=['POST','GET'])
-@auth_required
+@auth_required(priv=PRIV_ADMIN_ANY)
 @jview
 def admin_alter_user():
     args = request.args

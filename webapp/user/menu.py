@@ -16,7 +16,10 @@ items = [ {
            # 'label':'促销点查询' ,
            # 'url': '/pos/scan'
            # },
-            {
+            {'label':'已上传的促销点',
+             'url':'/pos/audit',
+             'priv':PRIV_ADMIN_SUPER,
+            },{
             'label':'促销点管理' ,
             'url': '/pos/manager/',
             'priv': PRIV_ADMIN_POS | PRIV_ADMIN_SUPER,
@@ -76,7 +79,7 @@ items = [ {
             {
                 'label': u'权限管理',
                 'url': '/admin/manager/',
-                'priv':  PRIV_ADMIN_SUPER,
+                'priv':  PRIV_ADMIN_SUPER|PRIV_ADMIN_ANY,
                 },
             ]
          },

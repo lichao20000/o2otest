@@ -25,7 +25,7 @@ def get_plan_list(channel_id=None, sales_depart_ids=None,
         conn = pg.connect(**config.pg_main)
         cur = conn.cursor()
         sql =[ '''
-        select p.*, ch.channel_name, d.sales_depart_name,
+        select p.*, ch.channel_name, d.sales_depart_name,pos.pos_name,
                 (select array_agg(row_to_json(s)) 
                 from t_sales_saler s 
                 where s.mobile = any( p.saler_mobiles))
@@ -35,6 +35,8 @@ def get_plan_list(channel_id=None, sales_depart_ids=None,
             on p.channel_id = ch.channel_id
         left join t_sales_depart d
             on p.sales_depart_id = d.sales_depart_id
+        left join t_sales_pos pos
+            on p.pos_id=pos.pos_id
         where  1=1
         ''',
         ' and p.channel_id=%(channel_id)s ' if channel_id else '',
@@ -73,7 +75,7 @@ def add_plans(channel_id, sales_depart_id, create_user_id, plans):
         conn = pg.connect(**config.pg_main)
         cur = conn.cursor()
         keys = ( 'pos_id', 'saler_mobiles', 'sales_date', 
-                'saler_cnt', 'remark'  )
+                'saler_cnt', 'remark','sale_hour'  )
         rows = []
         for p in plans :
             args ={ 'channel_id': channel_id,
@@ -81,6 +83,7 @@ def add_plans(channel_id, sales_depart_id, create_user_id, plans):
                     'create_user_id': create_user_id, } 
             for key in keys:
                 args[key] = p.get(key, None)
+            args['sale_hour']='{'+args['sale_hour']+'}'
             rows.append(args)
         # 更新 未审核的一个点同一个日期只能有一个
         sql = '''
@@ -99,7 +102,8 @@ def add_plans(channel_id, sales_depart_id, create_user_id, plans):
                 sales_date,
                 saler_cnt,
                 remark,
-                create_user_id
+                create_user_id,
+                sale_hour
             )values(
                 nextval('seq_t_sales_plan'),
                 %(channel_id)s,
@@ -109,7 +113,8 @@ def add_plans(channel_id, sales_depart_id, create_user_id, plans):
                 %(sales_date)s,
                 %(saler_cnt)s,
                 %(remark)s,
-                %(create_user_id)s
+                %(create_user_id)s,
+                %(sale_hour)s
             )
             '''
         cur.executemany(sql, rows)

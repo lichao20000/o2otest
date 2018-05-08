@@ -133,7 +133,7 @@ class PosImport extends React.Component{
     onCheck(){
       let {rows, user_info}= this.state;
       rows.map((r)=>{
-            if(!r.data[0] || !r.data[4] || !r.data[6] || !r.data[7]) {
+            if(!r.data[0] || !r.data[4] || !r.data[6] || !r.data[7]|| !r.data[8]) {
                 r.status = 4
                 r.msg = '必填项.'
             }
@@ -145,6 +145,11 @@ class PosImport extends React.Component{
           if(r.data[0] && user_info.charge_departs.indexOf(r.data[0])==-1){
                 r.status = 4
                 r.msg = '无权区分ID.'
+          }
+          console.log(r.data[8]);
+          if(!(r.data[8]=='收费'||r.data[8]=='不收费')){
+                r.status=4
+              r.msg='收费类型不正确'
           }
         })
     this.setState({sending:true, rows})
@@ -183,7 +188,7 @@ class PosImport extends React.Component{
     renderRows(){
       let {rows, read, sending}  = this.state;
       let headers = ['序号',' ','区分ID','单元'	,'促销点ID','代码点','门店名称','门店地址',
-              '负责人姓名','负责人电话'];
+              '负责人姓名','负责人电话','收费'];
       let iconStyle ={verticalAlign:'middle', marginRight:'5'}
       return (
        <div style={{    overflow: 'hidden', }}>
@@ -222,6 +227,7 @@ class PosImport extends React.Component{
                 <TableRowColumn>{r.data[5]}</TableRowColumn>
                 <TableRowColumn>{r.data[6]}</TableRowColumn>
                 <TableRowColumn>{r.data[7]}</TableRowColumn>
+                  <TableRowColumn>{r.data[8]}</TableRowColumn>
               </TableRow>
                 )})
               }
@@ -272,7 +278,6 @@ class PosImport extends React.Component{
                         ))
                       }
                   </SelectField>
-
               <div>
                     <input ref='fileExcel' type='file' id='file' 
                     onChange={this.onChoose.bind(this)}
@@ -294,7 +299,9 @@ class PosImport extends React.Component{
                   <div>
                   <label style={{fontSize:14, color:'#880'}}>导入说明 </label>
                   <div style={{fontSize:14, color:'#f00'}}>
-                     请按照以下图片显示要求提供导入的excel表(系统只读第一个sheet,第一行为表头)
+                      请按照以下图片提示，将数据填写到
+                      <a href="/static/files/import-pos-sample.xlsx" download>样例表格</a>
+                      再导入(只有第一个Sheet,第一行为表头)
                     <a href='/static/images/import-pos-tips.png'
                     target='_blank' >点我看大图</a>
                   </div>

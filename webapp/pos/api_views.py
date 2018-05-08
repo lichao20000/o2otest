@@ -220,6 +220,9 @@ def _check(rows):
             row['status'] = 4
             row['msg'] = u'名称已存在.'
             continue
+        if not (data[8]==u'收费' or data[8]==u'不收费'):
+            row['status']=4
+            row['msg']=u'收费类型不正确'
         row['status'] = 3
 
 
@@ -237,7 +240,6 @@ def checkimport():
     # 单元	促销点ID	代码点	门店名称	门店地址	负责人姓名	负责人电话
         rows = json.loads(rows)
         _check(rows)
-        print(rows)
         result = True
     except  ValueError, e: 
         msg = u'请提供JSON格式数据.(loads error) '
@@ -264,30 +266,48 @@ def pos_import():
     rows = args.get('rows','')
     sales_depart_id = _int(args.get('sales_depart_id', ''))
     pos_type = args.get('pos_type','')
-    result, msg, cnt  = False, '' , 0
+    result, msg, cnt ,result_sms_users = False, '' , 0, 0
     # 单元	促销点ID	代码点	门店名称	门店地址	负责人姓名	负责人电话
     try:
         if not pos_type :
             raise Abort(u'请指定类型.')
         rows = json.loads(rows)
-        _check(rows) 
+        _check(rows)
         rows = filter(lambda r :r.get('status')==3, rows)
-        datas = [r['data'][:8] for r in rows]
+        datas = [r['data'][:9] for r in rows]
         keys = ['sales_depart_id','pos_unit', 'sales_id', 'pos_code', 
-                'pos_name', 'pos_address', 'pos_man', 'pos_man_mobile'] 
+                'pos_name', 'pos_address', 'pos_man', 'pos_man_mobile','is_charge']
         datas = [dict(zip(keys, d))   for d in datas]
+        update_sms_users=[]
         for d in datas:
             d['create_user_id'] = user.user_id
             d['channel_id'] = channel_id
             d['pos_type'] = pos_type
-        result =  possvc.pos_import(datas)
-        cnt = len(datas)
+            match=False
+            for u in update_sms_users:
+                if u.has_key('pos_man_mobile') and u['pos_man_mobile']==d['pos_man_mobile']:
+                    match=True
+                    break
+            if not match:
+                update_sms_users.append(d)
+        result = possvc.pos_import(datas)
+        result_sms_users=possvc.sms_user_import(update_sms_users)
     except  ValueError, e: 
         msg = u'请提供JSON格式数据.(loads error) '
     except Abort,e :
         msg = e.msg
-    return {'result': result, 'msg': msg, 'cnt': cnt}    
+    return {'result': result, 'msg': msg, 'cnt': cnt, 'result_sms_users':result_sms_users}
         
 
-
-
+@api_bp.route('/pos_audit_list.json',methods=['POST','GET'])
+@auth_required
+@jview
+def pos_audit_list():
+    args=request.args
+    if request.method=='POST':
+        args=request.form
+    user=request.environ['user']
+    channel_id=user.user_info["channel_id"]
+    charge_departs=user.user_info["charge_departs"]
+    charge_departs=tuple(charge_departs)#后台直接限制查询范围
+    return{'rows':possvc.get_audit_list(channel_id,charge_departs)}
