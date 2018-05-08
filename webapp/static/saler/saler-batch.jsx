@@ -222,7 +222,11 @@ class SalerImport extends React.Component{
     render(){
         let user_info = (((window.NS||{}).userInfo||{}).user_info||{});
         let sales_departs = user_info.charge_departs_info.concat();
-        sales_departs.pop();
+        for(let i=0;i<sales_departs.length;i++){
+            if(sales_departs[i].parent_id==0){
+                sales_departs.splice(i,1)
+            }
+        }
         let {read, percentCompleted, rows, errMsg, fileName,
                 showConfirm, sales_depart_id,
                 checked, checkResult, sending,} = this.state;
@@ -244,9 +248,8 @@ class SalerImport extends React.Component{
                     onChange = {(e,idx,sales_depart_id)=>(this.setState({sales_depart_id}))}>
                     {
                         sales_departs.map((d, i)=>(
-                            <MenuItem key ={'f-'+i} value={d.sales_depart_id} 
-                                primaryText={d.sales_depart_name} />
-                        ))
+                            <MenuItem key ={'f-' + i} value={d.sales_depart_id}
+                        primaryText={d.sales_depart_name} />))
                     }
                     </SelectField>
                     <div>

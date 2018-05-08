@@ -75,8 +75,11 @@ class SalesPosition extends React.Component{
       } = this.state;
       let headers = ['系统ID','类型', '促销点ID', '门店名称', '门店地址', '代码点',
         '区分', '单元', '责任人','责任人电话'  ]
-      let sales_departs = (((window.NS||{}).userInfo||{})
-                          .user_info||{}).charge_departs_info||[];
+        let user_info=(((window.NS||{}).userInfo||{}).user_info||{});
+    let sales_departs = user_info.charge_departs_info.concat();
+    for(let i=0;i<sales_departs.length;i++){
+        if(sales_departs[i].parent_id==0){sales_departs.splice(i,1)}
+    }
       let privs=(((window.NS||{}).userInfo||{})
                           .user_info||{}).privs||[];
       let showAdd=false;
@@ -157,7 +160,7 @@ class SalesPosition extends React.Component{
                     height:40,}} >
                 <MenuItem  value={null} primaryText={'请选择'} />
                 {
-                  ['美宜佳', '7 11', '固定点'].map((t, idx)=>(
+                  ['固定促销点'].map((t, idx)=>(
                     <MenuItem key ={idx} value={t} primaryText={t} />
                   ))
                 }
@@ -337,8 +340,11 @@ class SalesPositionManager extends React.Component{
   render(){
     let {loading, sending, pos_id, pos_info, errMsg, changeItems} =this.state;
     let style = { margin: 12, float:'right'};
-    let sales_departs = (((window.NS||{}).userInfo||{})
-                          .user_info||{}).charge_departs_info||[];
+    let user_info=(((window.NS||{}).userInfo||{}).user_info||{});
+    let sales_departs = user_info.charge_departs_info.concat();
+    for(let i=0;i<sales_departs.length;i++){
+        if(sales_departs[i].parent_id==0){sales_departs.splice(i,1)}
+    }
     return( 
     <div style={{padding: 20}}> 
       <TextField
@@ -385,7 +391,7 @@ class SalesPositionManager extends React.Component{
           value = {pos_info['pos_type']}
           onChange = {(e,idx,v)=>(this.onChange('pos_type',e,v))}>
           {
-            ['美宜佳', '7 11', '固定点'].map((t, idx)=>(
+            ['固定促销点'].map((t, idx)=>(
             <MenuItem key ={idx} value={t} primaryText={t} />
             ))
           }
