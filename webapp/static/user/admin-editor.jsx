@@ -34,8 +34,8 @@ class AdminEditor extends React.Component {
 
     getData() {
         this.setState({loading: true});
-        let {user_id} = this.state
-        let args={user_id}
+        let {user_id} = this.state;
+        let args={user_id};
         axios({
             url: '/user/api/get_user_privs.json',
             transformRequest: [function (data, headers) {

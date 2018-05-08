@@ -65,9 +65,10 @@ class SalerList extends React.Component{
     render(){
       let {loading, sending, rows,
           query, deleted, sales_depart_id, } = this.state;
+      let user_info = (((window.NS||{}).userInfo||{}).user_info||{});
       let headers = ['手机号','姓名', '渠道', '区分','单元','状态','创建人ID']
-      let sales_departs = (((window.NS||{}).userInfo||{})
-                          .user_info||{}).charge_departs_info||[];
+      let sales_departs = user_info.charge_departs_info.concat();
+      sales_departs.pop();
       return (
         <div>
           <Paper style={{padding:'5px 20px', margin:'5px 0px'}} zDepth={2}>

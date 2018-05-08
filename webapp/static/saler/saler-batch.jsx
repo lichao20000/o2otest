@@ -221,7 +221,8 @@ class SalerImport extends React.Component{
 
     render(){
         let user_info = (((window.NS||{}).userInfo||{}).user_info||{});
-        let sales_departs = user_info.charge_departs_info;
+        let sales_departs = user_info.charge_departs_info.concat();
+        sales_departs.pop();
         let {read, percentCompleted, rows, errMsg, fileName,
                 showConfirm, sales_depart_id,
                 checked, checkResult, sending,} = this.state;

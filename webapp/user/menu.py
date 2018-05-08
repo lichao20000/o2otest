@@ -79,7 +79,7 @@ items = [ {
             {
                 'label': u'权限管理',
                 'url': '/admin/manager/',
-                'priv':  PRIV_ADMIN_SUPER|PRIV_ADMIN_ANY,
+                'priv':  PRIV_ADMIN_SUPER | PRIV_ADMIN,
                 },
             ]
          },

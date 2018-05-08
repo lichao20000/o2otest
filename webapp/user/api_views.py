@@ -158,19 +158,22 @@ def admin_get_privs():
             raise Abort(u'获取用户资料异常')
         resp=[]
         for a in AdminPrivs:
-            match=False
-            for s in SetPrivs:
-                if a==s:
-                    match=True
-                    break
-            if match:
-                for p in privs_all:
-                    if p['priv']==a.encode():
-                        resp.append({'priv':a.encode(),'state':True,'label':p['label']})
+            if a=='PRIV_ADMIN_SUPER' or a=='PRIV_ADMIN':
+                pass
             else:
-                for p in privs_all:
-                    if p['priv']==a.encode():
-                        resp.append({'priv':a.encode(),'state':False,'label':p['label']})
+                match=False
+                for s in SetPrivs:
+                    if a==s:
+                        match=True
+                        break
+                if match:
+                    for p in privs_all:
+                        if p['priv']==a.encode():
+                            resp.append({'priv':a.encode(),'state':True,'label':p['label']})
+                else:
+                    for p in privs_all:
+                        if p['priv']==a.encode():
+                            resp.append({'priv':a.encode(),'state':False,'label':p['label']})
         result=True
         return {'user':SetUser,'privs':resp,'result':result,'msg':msg}
     except Abort,e:
@@ -194,12 +197,20 @@ def admin_alter_user():
     try:
         if not isinstance(privs,unicode) and not isinstance(privstate,unicode) and SetUser is None:
             raise Abort(u'无效的用户')
+        if 'PRIV_ADMIN_SUPER' not in AdminUser.user_info['privs'] and 'PRIV_ADMIN' not in AdminUser.user_info['privs']:
+            raise Abort(u'无权赋权')
         SetPrivs = SetUser['privs']
+        if SetPrivs is None:
+            SetPrivs = []
         privs=privs.encode().split(',')
         privstate=privstate.encode().split(',')
+        if len(privs)!=len(privstate):
+            raise Abort(u'权限和状态数量不一致')
         if SetUser['channel_id']==AdminUser.user_info['channel_id'] and SetUser['sales_depart_id'] in AdminUser.user_info['charge_departs']:
             for p in range(len(privs)):
-                if privs[p] in AdminUser.user_info['privs']:
+                if p=='PRIV_ADMIN_SUPER' or p=='PRIV_ADMIN':
+                    pass
+                elif privs[p] in AdminUser.user_info['privs']:
                     if privs[p] not in SetPrivs and privstate[p]=='1':
                         SetPrivs.append(privs[p])
                     elif privs[p] in SetPrivs and privstate[p]=='0':

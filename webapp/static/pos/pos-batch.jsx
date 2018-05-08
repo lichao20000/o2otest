@@ -273,7 +273,7 @@ class PosImport extends React.Component{
                       value = {pos_type}
                         onChange = {(e,idx,pos_type)=>(this.setState({pos_type}))}>
                       {
-                        ['美宜佳', '7 11', '固定点'].map((t, idx)=>(
+                        ['固定促销点'].map((t, idx)=>(
                         <MenuItem key ={idx} value={t} primaryText={t} />
                         ))
                       }

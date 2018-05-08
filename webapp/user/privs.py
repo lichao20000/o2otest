@@ -2,7 +2,10 @@
 from libs.privs import Priv
 
 
-privs_all =[ {
+privs_all =[
+            {'label':u'权限管理员',
+              'priv':'PRIV_ADMIN'
+            },{
             'label':u'排产人员',
             'priv' : 'PRIV_PLAN'
             },{
