@@ -77,6 +77,15 @@ class SalesPosition extends React.Component{
         '区分', '单元', '责任人','责任人电话'  ]
       let sales_departs = (((window.NS||{}).userInfo||{})
                           .user_info||{}).charge_departs_info||[];
+      let privs=(((window.NS||{}).userInfo||{})
+                          .user_info||{}).privs||[];
+      let showAdd=false;
+      for(let p in privs){
+          if (p=='PRIV_ADMIN_SUPER'){
+              showAdd=true;
+              break
+          }
+      }
       return (
         <div>
           <Paper style={{padding:'5px 20px', margin:'5px 0px'}} zDepth={2}>
@@ -170,14 +179,15 @@ class SalesPosition extends React.Component{
                   marginLeft: 20
               }} />
             <Link to='/pos/new'>
-            <RaisedButton label="添加" primary={true}
+                {showAdd?
+            (<RaisedButton label="添加" primary={true}
               backgroundColor="#a4c639"
               onClick = {this.getData.bind(this)}
               disabled ={loading}
               style ={{ height:30,
                   width: 50 ,
                   marginLeft: 20
-              }} />
+              }} />):<div> </div>}
             </Link>
 
 

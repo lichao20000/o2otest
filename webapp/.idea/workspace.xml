@@ -26,11 +26,14 @@
                 </provider>
               </entry>
             </file>
-            <file leaf-file-name="app.jsx" pinned="false" current-in-tab="false">
+            <file leaf-file-name="app.jsx" pinned="false" current-in-tab="true">
               <entry file="file://$PROJECT_DIR$/static/app.jsx">
                 <provider selected="true" editor-type-id="text-editor">
-                  <state relative-caret-position="-25">
-                    <caret line="8" column="22" selection-start-line="8" selection-start-column="22" selection-end-line="8" selection-end-column="22" />
+                  <state relative-caret-position="157">
+                    <caret line="27" column="56" lean-forward="true" selection-start-line="27" selection-start-column="56" selection-end-line="27" selection-end-column="56" />
+                    <folding>
+                      <element signature="e#0#68#0" expanded="true" />
+                    </folding>
                   </state>
                 </provider>
               </entry>
@@ -68,7 +71,7 @@
                 </provider>
               </entry>
             </file>
-            <file leaf-file-name="possvc.py" pinned="false" current-in-tab="true">
+            <file leaf-file-name="possvc.py" pinned="false" current-in-tab="false">
               <entry file="file://$PROJECT_DIR$/pos/possvc.py">
                 <provider selected="true" editor-type-id="text-editor">
                   <state relative-caret-position="427">
@@ -102,8 +105,8 @@
       <file leaf-file-name="pos-batch.jsx" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/static/pos/pos-batch.jsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="465">
-              <caret line="27" column="69" lean-forward="true" selection-start-line="27" selection-start-column="69" selection-end-line="27" selection-end-column="69" />
+            <state relative-caret-position="-2883">
+              <caret line="42" column="24" lean-forward="true" selection-start-line="42" selection-start-column="24" selection-end-line="42" selection-end-column="24" />
               <folding>
                 <element signature="e#0#115#0" expanded="true" />
               </folding>
@@ -135,11 +138,14 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="sales-position.jsx" pinned="false" current-in-tab="false">
+      <file leaf-file-name="sales-position.jsx" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/static/pos/sales-position.jsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="248">
-              <caret line="8" column="17" selection-start-line="8" selection-start-column="17" selection-end-line="8" selection-end-column="17" />
+            <state relative-caret-position="623">
+              <caret line="192" lean-forward="true" selection-start-line="192" selection-end-line="192" />
+              <folding>
+                <element signature="e#0#115#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -185,11 +191,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="api_views.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="api_views.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/pos/api_views.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="398">
-              <caret line="296" column="20" lean-forward="true" selection-start-line="296" selection-start-column="20" selection-end-line="296" selection-end-column="20" />
+            <state relative-caret-position="367">
+              <caret line="295" column="33" lean-forward="true" selection-start-line="295" selection-start-column="33" selection-end-line="295" selection-end-column="33" />
             </state>
           </provider>
         </entry>
@@ -205,8 +211,10 @@
       <find>选择</find>
       <find>导入</find>
       <find>charge_departs</find>
-      <find>fetchone</find>
       <find>check_import</find>
+      <find>fetchone</find>
+      <find>添加</find>
+      <find>for</find>
     </findStrings>
   </component>
   <component name="IdeDocumentHistory">
@@ -227,6 +235,7 @@
         <option value="$PROJECT_DIR$/static/pos/pos-batch.jsx" />
         <option value="$PROJECT_DIR$/pos/api_views.py" />
         <option value="$PROJECT_DIR$/pos/possvc.py" />
+        <option value="$PROJECT_DIR$/static/pos/sales-position.jsx" />
       </list>
     </option>
   </component>
@@ -431,9 +440,9 @@
       <window_info anchor="bottom" id="Database Changes" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Version Control" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Python Console" order="7" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.08714597" />
+      <window_info anchor="bottom" id="Run" order="2" visible="true" weight="0.08714597" />
       <window_info anchor="bottom" id="Terminal" order="7" />
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.1875" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1875" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="right" id="Database" order="3" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.52287585" />
@@ -541,13 +550,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="372">
           <caret line="12" column="39" selection-start-line="12" selection-start-column="39" selection-end-line="12" selection-end-column="39" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/static/app.jsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-25">
-          <caret line="8" column="22" selection-start-line="8" selection-start-column="22" selection-end-line="8" selection-end-column="22" />
         </state>
       </provider>
     </entry>
@@ -672,13 +674,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/static/pos/sales-position.jsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="248">
-          <caret line="8" column="17" selection-start-line="8" selection-start-column="17" selection-end-line="8" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/static/saler/saler-batch.jsx">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="403">
@@ -695,16 +690,6 @@
           <caret line="69" column="69" selection-start-line="69" selection-start-column="59" selection-end-line="69" selection-end-column="69" />
           <folding>
             <element signature="e#0#25#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/static/pos/pos-batch.jsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="465">
-          <caret line="27" column="69" lean-forward="true" selection-start-line="27" selection-start-column="69" selection-end-line="27" selection-end-column="69" />
-          <folding>
-            <element signature="e#0#115#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -735,8 +720,38 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/pos/api_views.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="398">
-          <caret line="296" column="20" lean-forward="true" selection-start-line="296" selection-start-column="20" selection-end-line="296" selection-end-column="20" />
+        <state relative-caret-position="367">
+          <caret line="295" column="33" lean-forward="true" selection-start-line="295" selection-start-column="33" selection-end-line="295" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/pos/pos-batch.jsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-2883">
+          <caret line="42" column="24" lean-forward="true" selection-start-line="42" selection-start-column="24" selection-end-line="42" selection-end-column="24" />
+          <folding>
+            <element signature="e#0#115#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/app.jsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="157">
+          <caret line="27" column="56" lean-forward="true" selection-start-line="27" selection-start-column="56" selection-end-line="27" selection-end-column="56" />
+          <folding>
+            <element signature="e#0#68#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/pos/sales-position.jsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="623">
+          <caret line="192" lean-forward="true" selection-start-line="192" selection-end-line="192" />
+          <folding>
+            <element signature="e#0#115#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
