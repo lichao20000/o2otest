@@ -15,10 +15,11 @@ import config
 
 
 #status integer --1 待审核2 审核通过 4 审核不通过5 通过后取消,6 删除h
-def get_plan_list(channel_id=None, sales_depart_ids=None, 
+def get_plan_list(channel_id, charge_departs,sales_depart_id=None,
+                  pos_type=None,is_charge=None,queryPos=None,
                     create_user_id = None, pos_id=None, 
-                    sales_date = None, plan_id=None,
-                    status=None , page=1, page_size=100):
+                    sales_dates = None, plan_id=None,
+                    status_id=None , page=1, page_size=100):
     u''' status is a list args'''
     conn, cur = None, None
     try:
@@ -39,31 +40,42 @@ def get_plan_list(channel_id=None, sales_depart_ids=None,
             on p.pos_id=pos.pos_id
         where  1=1
         ''',
-        ' and p.channel_id=%(channel_id)s ' if channel_id else '',
-        ' and p.sales_depart_id=any(%(sales_depart_ids)s)' if sales_depart_ids else '',
+        ' and p.channel_id=%(channel_id)s ',
+        ' and p.sales_depart_id in %(charge_departs)s'
+        ' and p.sales_depart_id = %(sales_depart_ids)s' if sales_depart_id else '',
         ' and p.plan_id=%(plan_id)s' if plan_id else '',
-        ' and p.status=any(%(status)s)' if status else '',
+        ' and p.status in (1,2,4,5)'
+        ' and p.status =%(status_id)s' if status_id else '',
         ' and p.create_user_id = %(create_user_id)s' if create_user_id else '',
         ' and p.pos_id = %(pos_id)s' if pos_id else '',
-        ' and p.sales_date = %(sales_date)s' if  sales_date else '',
-        ' order by p.plan_id desc '
+        ' and p.sales_date in %(sales_dates)s' if  sales_dates else '',
+        ' and pos.pos_type = %(pos_type)s' if pos_type else '',
+        ' and pos.is_charge= %(is_charge)s' if is_charge else '',
+        ' and pos.pos_name like %(queryPos)s' if queryPos else '',
+        ' order by p.plan_id desc ',
         ' limit %(limit)s offset %(offset)s ',
-            ]
+        ]
         args = {'channel_id': channel_id,
-                'sales_depart_ids': sales_depart_ids,
+                'charge_departs':charge_departs,
+                'sales_depart_ids': sales_depart_id,
+                'pos_type':pos_type,
+                'is_charge':is_charge,
+                'queryPos':'%%%s%%'%queryPos if queryPos else '',
                 'create_user_id': create_user_id,
                 'plan_id': plan_id,
-                'status': status,
+                'status_id': status_id,
                 'pos_id': pos_id,
-                'sales_date': sales_date,
-                'limit' : page_size + 1,
+                'sales_dates': sales_dates,
+                'limit' : page_size ,
                 'offset': (page-1) * page_size,
                 }
         #print ''.join(sql) % args
         cur.execute(''.join(sql), args )
         rows = pg.fetchall(cur)
-        has_more = len(rows) > page_size
-        return rows[:-1] if has_more else rows, has_more
+        cur.execute(''.join(sql[:-2]),args)
+        cnt=len(pg.fetchall(cur))
+        print cnt
+        return rows,cnt
     finally:
         if cur: cur.close()
         if conn: conn.close()

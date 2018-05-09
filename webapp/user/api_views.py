@@ -18,7 +18,7 @@ from ui import jview, json_view
 from utils import _int, _float, _date, _int_default, Abort
 import usersvc
 from menu import items as menus
-from privs import PRIV_ADMIN_SUPER,PRIV_ADMIN_ANY
+from privs import PRIV_ADMIN_SUPER,PRIV_ADMIN_ANY,PRIV_ADMIN
 from privs import privs_all
 
 
@@ -123,16 +123,16 @@ def admin_set_info():
 
 
 @api_bp.route('/get_users.json',methods=['POST','GET'])
-@auth_required(priv=PRIV_ADMIN_ANY)
+@auth_required(priv=PRIV_ADMIN_SUPER|PRIV_ADMIN)
 @jview
 def admin_get_user():
     args=request.args
     if request.method=='POST':
         args=request.form
-    channel_id = _int(args.get('channel_id', ''))
     sales_depart_id =_int(args.get('sales_depart_id', ''))
     query=args.get('query')
     user=request.environ["user"]
+    channel_id=user.user_info['channel_id']
     charge_departs=user.user_info["charge_departs"]
     charge_departs=tuple(charge_departs)#后台直接限制查询范围
     return {"users":usersvc.get_users(channel_id,charge_departs,sales_depart_id,query)}
@@ -149,7 +149,18 @@ def admin_get_privs():
     user_id=args.get('user_id','')
     SetUser=usersvc.get_user_local_info(user_id)
     AdminPrivs = AdminUser.user_info['privs']
+    privsmanage=[False,False,False,False]
+    for a in AdminPrivs:
+        if a=='PRIV_ADMIN_SUPER':
+            privsmanage[0]=True
+        if a=='PRIV_ADMIN':
+            privsmanage[1]=True
     SetPrivs = SetUser['privs']
+    for s in SetPrivs:
+        if s=='PRIV_ADMIN_SUPER':
+            privsmanage[2]=True
+        if s=='PRIV_ADMIN':
+            privsmanage[3]=True
     if SetPrivs is None:
         SetPrivs=[]
     result,msg=False,''
@@ -157,23 +168,26 @@ def admin_get_privs():
         if SetUser is None:
             raise Abort(u'获取用户资料异常')
         resp=[]
-        for a in AdminPrivs:
-            if a=='PRIV_ADMIN_SUPER' or a=='PRIV_ADMIN':
-                pass
-            else:
-                match=False
-                for s in SetPrivs:
-                    if a==s:
-                        match=True
-                        break
-                if match:
-                    for p in privs_all:
-                        if p['priv']==a.encode():
-                            resp.append({'priv':a.encode(),'state':True,'label':p['label']})
+        if privsmanage[2] or (privsmanage[3] and not privsmanage[0]):
+            pass
+        else:
+            for a in AdminPrivs:
+                if a=='PRIV_ADMIN_SUPER' or (a=='PRIV_ADMIN' and not privsmanage[0]):
+                    pass
                 else:
-                    for p in privs_all:
-                        if p['priv']==a.encode():
-                            resp.append({'priv':a.encode(),'state':False,'label':p['label']})
+                    match=False
+                    for s in SetPrivs:
+                        if a==s:
+                            match=True
+                            break
+                    if match:
+                        for p in privs_all:
+                            if p['priv']==a.encode():
+                                resp.append({'priv':a.encode(),'state':True,'label':p['label']})
+                    else:
+                        for p in privs_all:
+                            if p['priv']==a.encode():
+                                resp.append({'priv':a.encode(),'state':False,'label':p['label']})
         result=True
         return {'user':SetUser,'privs':resp,'result':result,'msg':msg}
     except Abort,e:

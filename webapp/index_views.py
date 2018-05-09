@@ -113,7 +113,7 @@ def get_file(filename):
     response.headers.set('Content-Type', 
                 'application/vnd.ms-excel')
     d = dt.now().strftime('%Y%m%d-%H%M%S')
-    filename=u'%s-%s.xls' % (filename, d)
+    filename=u'%s-%s.xlsx' % (filename, d)
     response.headers.set( 'Content-Disposition', 
             'attachment',filename=filename.encode('gbk') )
     return response

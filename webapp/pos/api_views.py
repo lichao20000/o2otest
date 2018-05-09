@@ -220,9 +220,9 @@ def _check(rows):
             row['status'] = 4
             row['msg'] = u'名称已存在.'
             continue
-        if not (data[8]==u'收费' or data[8]==u'不收费'):
+        if not (data[8]==u'有租金' or data[8]==u'无租金'):
             row['status']=4
-            row['msg']=u'收费类型不正确'
+            row['msg']=u'租金类型不正确'
         row['status'] = 3
 
 

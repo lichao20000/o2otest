@@ -147,9 +147,9 @@ class PosImport extends React.Component{
                 r.msg = '无权区分ID.'
           }
           console.log(r.data[8]);
-          if(!(r.data[8]=='收费'||r.data[8]=='不收费')){
+          if(!(r.data[8]=='有租金'||r.data[8]=='无租金')){
                 r.status=4
-              r.msg='收费类型不正确'
+              r.msg='租金类型不正确'
           }
         })
     this.setState({sending:true, rows})
@@ -188,7 +188,7 @@ class PosImport extends React.Component{
     renderRows(){
       let {rows, read, sending}  = this.state;
       let headers = ['序号',' ','区分ID','单元'	,'促销点ID','代码点','门店名称','门店地址',
-              '负责人姓名','负责人电话','收费'];
+              '负责人姓名','负责人电话','租金类型'];
       let iconStyle ={verticalAlign:'middle', marginRight:'5'}
       return (
        <div style={{    overflow: 'hidden', }}>

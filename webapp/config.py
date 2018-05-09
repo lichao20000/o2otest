@@ -2,7 +2,7 @@
 import os
 
 pg_local = {
-    'host' : '10.117.227.208',
+    'host' : '10.117.227.230',
     'database': 'o2o',
     'user': 'o2o',
     'password': 'o2o',

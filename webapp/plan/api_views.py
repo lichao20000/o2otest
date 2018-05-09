@@ -164,6 +164,7 @@ def get_my_plan():
 
 
 
+
      
 @api_bp.route('/get_plan_list.json', methods=['POST', 'GET'])
 @auth_required(priv=PRIV_PLAN_AUDIT | PRIV_ADMIN_SUPER)
@@ -172,12 +173,34 @@ def get_plan_list():
     args = request.args
     if request.method == 'POST':
         args = request.form
-    status = re.findall(r'\d+', args.get('status', ''))
-    status = map(int, status)
-    if not status:
-        status = [1]
-    rows, has_more= plansvc.get_plan_list(status=status)
-    return {'rows': rows,  'has_more': has_more }
+    user=request.environ['user']
+    channel_id=user.user_info['channel_id']
+    charge_departs=tuple(user.user_info['charge_departs'])
+    pageCurrent=_int(args.get('pageCurrent',''))
+    pageSize=_int(args.get('pageSize',''))
+    sales_dates= args.get('sales_dates','')
+    status_id=args.get('status_id','')
+    status_id = None if not status_id else _int(status_id)
+    sales_dates = None if not sales_dates else tuple(sales_dates.encode().split(','))
+    sales_depart_id=_int(args.get('sales_depart_id',''))
+    pos_type = args.get('pos_type','')
+    pos_type=None if not pos_type else pos_type
+    is_charge = args.get('is_charge')
+    is_charge=None if not is_charge else is_charge
+    queryPos=args.get('queryPos')
+    queryPos=None if not queryPos else queryPos
+    rows, cnt= plansvc.get_plan_list(status_id=status_id,
+                                     channel_id=channel_id,
+                                     page=pageCurrent,
+                                     page_size=pageSize,
+                                     sales_dates=sales_dates,
+                                     charge_departs=charge_departs,
+                                     sales_depart_id=sales_depart_id,
+                                     pos_type=pos_type,
+                                     is_charge=is_charge,
+                                     queryPos=queryPos,
+                                     )
+    return {'rows': rows,  'count': cnt }
 
 
 
