@@ -63,12 +63,9 @@ def get_pos_list():
     pos_id = _int(args.get('pos_id',''))
     pos_type = args.get('pos_type','')
     pos_name  = args.get('pos_name','')
-
     sales_depart_id = _int(args.get('sales_depart_id',''))
-
     deleted = args.get('deleted','')
     deleted = -1 if not deleted.isdigit() else _int(deleted)
-
     channel_id = user.user_info['channel_id'] 
     charge_departs = user.user_info['charge_departs']
         

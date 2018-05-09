@@ -15,11 +15,11 @@ import config
 
 
 #status integer --1 待审核2 审核通过 4 审核不通过5 通过后取消,6 删除h
-def get_plan_list(channel_id, charge_departs,sales_depart_id=None,
+def get_plan_list(channel_id=None, charge_departs=None,sales_depart_id=None,
                   pos_type=None,is_charge=None,queryPos=None,
                     create_user_id = None, pos_id=None, 
-                    sales_dates = None, plan_id=None,
-                    status_id=None , page=1, page_size=100):
+                    sales_date = None, plan_id=None,
+                    status=None, page=1, page_size=100):
     u''' status is a list args'''
     conn, cur = None, None
     try:
@@ -40,15 +40,15 @@ def get_plan_list(channel_id, charge_departs,sales_depart_id=None,
             on p.pos_id=pos.pos_id
         where  1=1
         ''',
-        ' and p.channel_id=%(channel_id)s ',
-        ' and p.sales_depart_id in %(charge_departs)s'
+        ' and p.channel_id=%(channel_id)s ' if channel_id else '' ,
+        ' and p.sales_depart_id in %(charge_departs)s' if charge_departs else '',
         ' and p.sales_depart_id = %(sales_depart_ids)s' if sales_depart_id else '',
         ' and p.plan_id=%(plan_id)s' if plan_id else '',
-        ' and p.status in (1,2,4,5)'
-        ' and p.status =%(status_id)s' if status_id else '',
+        ' and p.status in (1,2,4,5)',
+        ' and p.status=any(%(status)s)' if status else '',
         ' and p.create_user_id = %(create_user_id)s' if create_user_id else '',
         ' and p.pos_id = %(pos_id)s' if pos_id else '',
-        ' and p.sales_date in %(sales_dates)s' if  sales_dates else '',
+        ' and p.sales_date=any(%(sales_date)s)' if  sales_date else '',
         ' and pos.pos_type = %(pos_type)s' if pos_type else '',
         ' and pos.is_charge= %(is_charge)s' if is_charge else '',
         ' and pos.pos_name like %(queryPos)s' if queryPos else '',
@@ -63,9 +63,9 @@ def get_plan_list(channel_id, charge_departs,sales_depart_id=None,
                 'queryPos':'%%%s%%'%queryPos if queryPos else '',
                 'create_user_id': create_user_id,
                 'plan_id': plan_id,
-                'status_id': status_id,
+                'status':status,
                 'pos_id': pos_id,
-                'sales_dates': sales_dates,
+                'sales_date': sales_date if isinstance(sales_date,list) else '{%s}'%sales_date ,
                 'limit' : page_size ,
                 'offset': (page-1) * page_size,
                 }
@@ -74,7 +74,6 @@ def get_plan_list(channel_id, charge_departs,sales_depart_id=None,
         rows = pg.fetchall(cur)
         cur.execute(''.join(sql[:-2]),args)
         cnt=len(pg.fetchall(cur))
-        print cnt
         return rows,cnt
     finally:
         if cur: cur.close()

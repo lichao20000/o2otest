@@ -34,6 +34,7 @@ class MyPlan extends React.Component{
     componentDidMount(){
         this.getData() 
     }
+
     getData(){
      axios({
           url: '/plan/api/get_my_plans.json' ,
@@ -50,8 +51,7 @@ class MyPlan extends React.Component{
           responseType:'json',
       }).then( (resp) =>{
           if(resp.status == 200){
-              let {has_more, rows } = resp.data ;
-              this.setState({has_more, rows})
+              this.setState({ rows:resp.data.rows[0]})
             }else{
               this.setState({ errMsg: '请求出错!'})
           }
@@ -65,6 +65,7 @@ class MyPlan extends React.Component{
     render(){
         let {loading, sending, rows  } = this.state;
         let headers = [ 'ID', '状态', '促销时间', '促销人数', '促销人员' ];
+        console.log(rows);
         return (
          loading ? <CircularProgress size={40} thickness={3} />:
           <div style={{padding: 10}}>

@@ -159,8 +159,8 @@ def get_my_plan():
     status = [1, 2, 4, 5]
     user = request.environ['user']
     create_user_id = user.user_id
-    rows, has_more= plansvc.get_plan_list(status=status, create_user_id=create_user_id)
-    return {'rows': rows,  'has_more': has_more }
+    rows= plansvc.get_plan_list(status=status, create_user_id=create_user_id)
+    return {'rows': rows}
 
 
 
@@ -180,8 +180,11 @@ def get_plan_list():
     pageSize=_int(args.get('pageSize',''))
     sales_dates= args.get('sales_dates','')
     status_id=args.get('status_id','')
-    status_id = None if not status_id else _int(status_id)
-    sales_dates = None if not sales_dates else tuple(sales_dates.encode().split(','))
+    status_id = None if not status_id else status_id.encode().split(',')
+    if status_id:
+        for s in range(len(status_id)):
+            status_id[s]=_int(status_id[s])
+    sales_dates = None if not sales_dates else sales_dates.encode().split(',')
     sales_depart_id=_int(args.get('sales_depart_id',''))
     pos_type = args.get('pos_type','')
     pos_type=None if not pos_type else pos_type
@@ -189,11 +192,11 @@ def get_plan_list():
     is_charge=None if not is_charge else is_charge
     queryPos=args.get('queryPos')
     queryPos=None if not queryPos else queryPos
-    rows, cnt= plansvc.get_plan_list(status_id=status_id,
+    rows, cnt= plansvc.get_plan_list(status=status_id,
                                      channel_id=channel_id,
                                      page=pageCurrent,
                                      page_size=pageSize,
-                                     sales_dates=sales_dates,
+                                     sales_date=sales_dates,
                                      charge_departs=charge_departs,
                                      sales_depart_id=sales_depart_id,
                                      pos_type=pos_type,
