@@ -65,22 +65,39 @@ def get_pos_list():
     pos_name  = args.get('pos_name','')
     sales_depart_id = _int(args.get('sales_depart_id',''))
     deleted = args.get('deleted','')
+    pageCurrent=args.get('pageCurrent','')
+    pageSize=args.get('pageSize','')
+    pageSize=None if not pageSize else _int(pageSize)
+    pageCurrent=None if not pageCurrent else _int(pageCurrent)
     deleted = -1 if not deleted.isdigit() else _int(deleted)
     channel_id = user.user_info['channel_id'] 
     charge_departs = user.user_info['charge_departs']
-        
+    located=args.get('located','')
+    located=_int(located) if located else None
+    is_charge=args.get('is_charge','')
+    if is_charge:
+        if _int(is_charge)==0:
+            is_charge='无租金'
+        elif _int(is_charge)==1:
+            is_charge='有租金'
+        else:
+            is_charge=None
     if sales_depart_id :
         ids = [sales_depart_id] if sales_depart_id in charge_departs else []
     else:
         ids = charge_departs
-    rows = possvc.get_pos_list(q=q,
+    rows,cnt = possvc.get_pos_list(q=q,
                         channel_id=channel_id, 
                         pos_id = pos_id, 
                         pos_type=pos_type,
                         pos_name =pos_name,
                         sales_depart_ids=ids,
-                        deleted=deleted)
-    return rows
+                        deleted=deleted,
+                        pageCurrent=pageCurrent,
+                        pageSize=pageSize,
+                        located=located,
+                        is_charge=is_charge)
+    return {'rows':rows,'cnt':cnt}
  
 
 
@@ -122,7 +139,7 @@ def update_pos():
         mobile = items.get('pos_man_mobile') 
         if mobile and (len(mobile)!=11  or not mobile.isdigit()):
             raise Abort(u'手机号码不正确.')
-        pos = possvc.get_pos_list(pos_id = pos_id) 
+        pos,cnt = possvc.get_pos_list(pos_id = pos_id)
         if not pos:
             raise Abort(u'更新项不存在.')
         pos =pos[0]

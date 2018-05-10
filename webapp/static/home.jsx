@@ -27,14 +27,14 @@ class HomeData extends React.Component{
                 <h2>首页</h2>
                 {loading ?
                 < CircularProgress size={40} thickness={3} />:
-                        files.map((f,idx)=>{
+                    files.map((f,idx)=>{
                             return (
                                 <div key ={idx}>
-                              <a href={`/get_file/${f}`} >{f}</a> 
+                              <a href={`/get_file/${f}`} >下载明细：{f}</a>
                                 </div> 
                             ) 
                         
-                        })  
+                        })
                 }
             </div>
         ) 

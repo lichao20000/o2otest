@@ -15,7 +15,9 @@ import config
 
 
 def get_pos_list(q=None, pos_id=None, channel_id=None,  pos_type=None,
-                    pos_name=None,sales_depart_ids=None, deleted = -1):
+                    pos_name=None,sales_depart_ids=None, deleted = -1,
+                 located=None,is_charge=None,
+                 pageCurrent=1,pageSize=20):
     u'''
     deleted = -1 全部
     '''
@@ -39,11 +41,16 @@ def get_pos_list(q=None, pos_id=None, channel_id=None,  pos_type=None,
                if sales_depart_ids else ' ',
                ' and p.pos_name=%(pos_name)s ' if pos_name else '',
                ' and pos_type = %(pos_type)s ' if pos_type else '',
-               'and p.pos_id = %(pos_id)s ' if pos_id else ' ',
+               ' and p.pos_id = %(pos_id)s ' if pos_id else ' ',
+               ' and p.lng is null or p.lat is null ' if located==0 else '',
+               ' and p.lng is not null and p.lat is not null' if located==1 else '',
+               " and p.is_charge = %(is_charge)s " if is_charge else '',
                u'''
                and (p.pos_name like %(q)s
                  or p.pos_address like %(q)s)
                ''' if q  else ' ',
+                ' order by p.pos_id desc ',
+                ' limit %(limit)s offset %(offset)s ' if pageSize and pageCurrent else ''
                 )
         args = {
                 'q' : '%%%s%%'%q if q else '',
@@ -53,11 +60,16 @@ def get_pos_list(q=None, pos_id=None, channel_id=None,  pos_type=None,
                 'sales_depart_ids': sales_depart_ids,
                 'deleted': deleted ,
                 'pos_type':  pos_type,
+                'is_charge':is_charge,
+                'limit': pageSize if pageSize else None,
+                'offset':(pageCurrent-1)*pageSize if pageCurrent and pageSize else None
                 }
         #print ''.join(sql) % args
         cur.execute(''.join(sql), args) 
         rows = pg.fetchall(cur)
-        return rows
+        cur.execute(''.join(sql[:-2]), args)
+        cnt=len(pg.fetchall(cur))
+        return rows,cnt
     finally:
         if cur: cur.close()
         if conn: conn.close()

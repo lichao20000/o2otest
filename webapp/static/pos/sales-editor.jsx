@@ -89,8 +89,8 @@ class SalesPositionManager extends React.Component{
           responseType:'json',
       }).then( (resp) =>{
           if(resp.status == 200){
-               if(resp.data instanceof Array){
-                   this.setState({pos_info: resp.data[0]})
+               if(resp.data.rows instanceof Array){
+                   this.setState({pos_info: resp.data.rows[0]})
                }else{
                   this.setState({ errMsg: '请求数据出错'})
                }

@@ -16,7 +16,7 @@ items = [ {
            # 'label':'促销点查询' ,
            # 'url': '/pos/scan'
            # },
-            {'label':'已上传的促销点',
+            {'label':'待审核促销点',
              'url':'/pos/audit',
              'priv':PRIV_ADMIN_SUPER,
             },{

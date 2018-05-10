@@ -53,7 +53,7 @@ def get_plan_list(channel_id=None, charge_departs=None,sales_depart_id=None,
         ' and pos.is_charge= %(is_charge)s' if is_charge else '',
         ' and pos.pos_name like %(queryPos)s' if queryPos else '',
         ' order by p.plan_id desc ',
-        ' limit %(limit)s offset %(offset)s ',
+        ' limit %(limit)s offset %(offset)s '
         ]
         args = {'channel_id': channel_id,
                 'charge_departs':charge_departs,
