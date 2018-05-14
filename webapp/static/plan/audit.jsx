@@ -181,7 +181,7 @@ class Audit extends React.Component{
                                  >
                         <MenuItem  value={''} primaryText={'请选择'} />
                         {
-                            ['固定促销点'].map((t, idx)=>(<MenuItem key ={idx} value={t} primaryText={t} />))
+                            ['固定促销点','营业厅','楼宇'].map((t, idx)=>(<MenuItem key ={idx} value={t} primaryText={t} />))
                         }
                     </SelectField>
                     <label style={{fontSize:12,

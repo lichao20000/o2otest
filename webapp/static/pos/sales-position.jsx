@@ -189,7 +189,7 @@ class SalesPosition extends React.Component{
                     height:40,}} >
                 <MenuItem  value={null} primaryText={'请选择'} />
                 {
-                  ['固定促销点'].map((t, idx)=>(
+                  ['固定促销点','营业厅','楼宇'].map((t, idx)=>(
                     <MenuItem key ={idx} value={t} primaryText={t} />
                   ))
                 }

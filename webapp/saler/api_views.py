@@ -79,7 +79,7 @@ def get_saler_list():
         ids = [sales_depart_id] if sales_depart_id in charge_departs else []
     else:
         ids = charge_departs
-    rows, has_more = salersvc.get_saler_list(q=q,
+    rows = salersvc.get_saler_list(q=q,
                         channel_id=channel_id,
                         deleted = deleted,
                         sales_depart_ids = ids,
@@ -88,7 +88,6 @@ def get_saler_list():
                         mobile=mobile)
     return {
             'salers': rows,
-            'has_more': has_more,
             } 
  
 

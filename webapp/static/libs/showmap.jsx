@@ -37,6 +37,8 @@ export default class ShowMap extends Component {
 	    tilePrefix = '//132.96.38.20' + tilePrefix;}
         else if(/10\.117\.\d+\.\d+/.test(location.href)){
             tilePrefix='//132.96.38.20'+tilePrefix;
+        }else{
+            tilePrefix='//gm.gz.gd.unicom.local'+tilePrefix
         }
         const baseLayerUrls = [tilePrefix + '/tianditu/{z}/{x}/{y}/w.png',
                                tilePrefix + '/tianditu_labels/{z}/{x}/{y}/w.png'];

@@ -362,12 +362,19 @@ def pos_audit():
     charge_departs=user.user_info['charge_departs']
     selectedPoi=args.get('selectedPoi','')
     status=_int(args.get('status',''))
+    cnt,msg=0,''
     if selectedPoi and isinstance(selectedPoi,unicode):
         selectedPoi=selectedPoi.encode().split(',')
-        print (selectedPoi,status)
+        try:
+            for s in range(len(selectedPoi)):
+                selectedPoi[s]=_int(selectedPoi[s])
+            cnt=possvc.pos_audit(selectedPoi=selectedPoi,status=status)
+            msg=u'提交'+str(len(selectedPoi))+'行,成功'+str(cnt)+'行。'
+        except ValueError:
+            msg=u'促销点Id不符合要求'
     else:
-        print (selectedPoi,status)
-    return {'selectedPoi':selectedPoi,'status':status}
+        msg=u'促销点Id不符合要求'
+    return {'cnt':cnt,'msg':msg}
 
 @api_bp.route('/get_poi_tag.json',methods=['POST','GET'])
 @auth_required

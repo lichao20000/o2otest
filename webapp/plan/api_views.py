@@ -56,19 +56,21 @@ def _check(rows):
                                 sales_depart_ids=charge_departs,
                                 pos_id=pos_id,
                                 deleted = 0)
-        salers,_ = salersvc.get_saler_list(channel_id=channel_id,
+        print mobiles
+        salers = salersvc.get_saler_list(channel_id=channel_id,
                                 sales_depart_ids=charge_departs, 
                                 deleted=0,
                                 mobiles = mobiles
                                 )
+        print salers
         row['salers'] = salers
         if not _pos:
-            row['msg'] = '促销点非法.'
+            row['msg'] = '促销点不存在.'
             row['status'] = 4
             continue
         row['pos'] = _pos[0]
         if not salers or len(salers)!=len(mobiles):
-            row['msg'] = '促销人员非法.'
+            row['msg'] = '促销人员不存在.'
             row['status'] = 4
             continue
         row['status'] = 3

@@ -339,3 +339,20 @@ def get_poi_tag(channel_name):
     finally:
         if cur:cur.close()
         if conn:conn.close()
+
+def pos_audit(selectedPoi,status):
+    conn,cur=None,None
+    try:
+        conn=pg.connect(**config.pg_main)
+        cur=conn.cursor()
+        sql=(' update public.t_rp_poi set status=%(status)s where (status=1 or status=4) and poi_id=any(%(selectedPoi)s)')
+        args={
+            'selectedPoi':selectedPoi,
+            'status':status
+        }
+        cur.execute(sql,args)
+        conn.commit()
+        return cur.rowcount
+    finally:
+        if cur:cur.close()
+        if conn:conn.close()

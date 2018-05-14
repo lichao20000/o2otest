@@ -21,6 +21,8 @@ import FlatButton from 'material-ui/FlatButton'
 import MapsAddLocation from 'material-ui/svg-icons/maps/add-location'
 import Dialog from 'material-ui/Dialog'
 import ShowMap from'../libs/showmap'
+import Snackbar from 'material-ui/Snackbar'
+
 
 export default class TableExampleComplex extends Component {
     constructor(props) {
@@ -35,9 +37,10 @@ export default class TableExampleComplex extends Component {
             selectable: true,
             multiSelectable: true,
             enableSelectAll: true,
-            deselectOnClickaway: true,
+            deselectOnClickaway: false,
             showCheckboxes: true,
             loading:false,
+            errMsg:'',
             pageCurrent: 1,
             pageSize: 20,
             rowsTotal: 0,
@@ -141,14 +144,14 @@ export default class TableExampleComplex extends Component {
             console.log(selectedRows);
             for(let i=0;i<selectedRows.length;i++){
                 if(rows[selectedRows[i]].status in [1,4]){
-                    selectedPoi.push(rows.poi_id)
+                    selectedPoi.push(rows[selectedRows[i]].poi_id)
                 }
             }
             console.log(selectedPoi)
         }else if(selectedRows=='all'){
             for(let i=0;i<rows.length;i++){
                 if(rows[i].status in [1,4]){
-                    selectedPoi.push(rows.poi_id)
+                    selectedPoi.push(rows[i].poi_id)
                 }
             }
             console.log(selectedPoi)
@@ -156,8 +159,8 @@ export default class TableExampleComplex extends Component {
             let errMsg='勾选审核数据错误';
             this.setState({errMsg});
         }
-        if(selectedPoi==[]||selectedRows=='none'){
-            let errMsg='未选择任何行，或已选择行的状态不允许审核';
+        if(selectedPoi.length==0||selectedRows=='none'){
+            let errMsg='未选择任何行，或已选择行的状态不允许审核通过';
             this.setState({errMsg});
         }
         else {
@@ -176,10 +179,7 @@ export default class TableExampleComplex extends Component {
                 responseType: 'json',
             }).then((resp => {
                 if (resp.status == 200) {
-
-
-
-
+                    this.setState({errMsg:resp.data.msg})
                 } else {
                     let errMsg = '审核请求失败';
                     this.setState({errMsg})
@@ -191,30 +191,34 @@ export default class TableExampleComplex extends Component {
 
     onUnAudit(){
         let {selectedRows,rows}=this.state;
-        let status=4;//审核不通过
+        let status=4; //审核不通过
         let selectedPoi=[];
         if(selectedRows instanceof Array){
+            console.log(selectedRows);
             for(let i=0;i<selectedRows.length;i++){
-                if(rows[selectedRows[i]].status in [1,2]){
-                    selectedPoi.push(rows.poi_id)
+                let r=rows[selectedRows[i]]
+                if(r.status==1||r.status==2){
+                    selectedPoi.push(r.poi_id)
                 }
             }
+            console.log(selectedPoi)
         }else if(selectedRows=='all'){
             for(let i=0;i<rows.length;i++){
-                if(rows[i].status in [1,2]){
-                    selectedPoi.push(rows.poi_id)
+                if(rows[i].status==1||rows[i].status==2){
+                    selectedPoi.push(rows[i].poi_id)
                 }
             }
+            console.log(selectedPoi)
         }else{
             let errMsg='勾选审核数据错误';
             this.setState({errMsg});
         }
-        if(selectedPoi==[]||selectedRows=='none'){
-            let errMsg='未选择任何行，或已选择行的状态不允许审核';
+        if(selectedPoi.length==0||selectedRows=='none'){
+            let errMsg='未选择任何行，或已选择行的状态不允许审核不通过';
             this.setState({errMsg});
         }
         else {
-            this.setState({loading:true})
+            this.setState({loading:true});
             axios({
                 url: '/pos/api/pos_audit.json',
                 transformRequest: [function (data, headers) {
@@ -229,7 +233,7 @@ export default class TableExampleComplex extends Component {
                 responseType: 'json',
             }).then((resp => {
                 if (resp.status == 200) {
-
+                    this.setState({errMsg:resp.data.msg})
                 } else {
                     let errMsg = '审核请求失败';
                     this.setState({errMsg})
@@ -251,10 +255,11 @@ export default class TableExampleComplex extends Component {
     }
 
     render() {
-        let {loading}=this.state;
+        let {loading,errMsg}=this.state;
         let {rows}=this.state;
         let {pageCurrent,pageSize,rowsTotal}=this.state;
         let {sales_depart_id,poi_tag,selectedTag,status_id,queryPoi,queryMan}=this.state;
+        let {selectedRows}=this.state;
         let charge_departs=(((window.NS||{}).userInfo||{}).user_info||{}).charge_departs_info||[];
         let status=[{status:'待审核',id:1},{status:'审核通过',id:2},{status:'审核不通过',id:4},{status:'通过后取消',id:5}];
     return (
@@ -341,7 +346,7 @@ export default class TableExampleComplex extends Component {
                            fixedFooter={this.state.fixedFooter}
                            selectable={this.state.selectable}
                            multiSelectable={this.state.multiSelectable}
-                           onRowSelection={(selectedRows)=>{this.setState({selectedRows})}}
+                           onRowSelection={(selectedRows)=>{this.state.selectedRows=selectedRows}}
                     >
                         <TableHeader displaySelectAll={this.state.showCheckboxes}
                                      adjustForCheckbox={this.state.showCheckboxes}
@@ -401,12 +406,18 @@ export default class TableExampleComplex extends Component {
                         onRequestClose={(e)=>{this.setState({map:false})}}
                 >
                     {this.state.address}
-                    <div style={{width:1200,height:1200}}>
+                    <div style={{width:950,height:750}}>
                         <ShowMap lng={this.state.lng}
                              lat={this.state.lat}/>
                     </div>
                 </Dialog>
-                </div>
+                  <Snackbar open={!!errMsg}
+                            message={errMsg}
+                            style ={{textAlign: 'center'}}
+                            autoHideDuration={3000}
+                            onRequestClose={(e)=>{this.setState({errMsg:''})}}
+                  />
+      </div>
     );
   }
 }

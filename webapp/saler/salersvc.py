@@ -21,16 +21,14 @@ def get_saler_list(q=None, mobile=None, mobiles=None,
     try:
         conn = pg.connect(**config.pg_main)
         cur = conn.cursor()
-        sql = [
-            '''
-        select s.*, ch.channel_name, d.sales_depart_name
-        from t_sales_saler s
-        left join t_sales_channel ch
-            on s.channel_id = ch.channel_id
-        left join t_sales_depart d
-            on s.sales_depart_id = d.sales_depart_id
-        where 1 = 1
-        ''',
+        sql = (
+            ' select s.*, ch.channel_name, d.sales_depart_name ',
+            ' from t_sales_saler s ',
+            ' left join t_sales_channel ch ',
+            ' on s.channel_id = ch.channel_id ',
+            ' left join t_sales_depart d ',
+            ' on s.sales_depart_id = d.sales_depart_id ',
+            ' where 1 = 1 ',
         ' and  s.mobile = %(mobile)s ' if mobile else '',
         ' and  s.mobile = any(%(mobiles)s) ' if mobiles else '',
         ' and  s.channel_id = %(channel_id)s ' if channel_id else '',
@@ -41,7 +39,7 @@ def get_saler_list(q=None, mobile=None, mobiles=None,
         ' and  (s.saler_name like %(q)s or s.mobile like %(q)s) ' if q else '' ,
         ' order by mobile desc ',
         ' limit %(limit)s offset %(offset)s ' if isinstance(page,int) and isinstance(page_size,int) else '',
-                ]
+        )
         #print mobiles, 'wtf......'
         args = {
                 'q': '%%%s%%' % (q, ) if q else None,
@@ -52,13 +50,11 @@ def get_saler_list(q=None, mobile=None, mobiles=None,
                 'limit': page_size+1 if isinstance(page_size,int) else None,
                 'offset': (page-1)*page_size if isinstance(page,int) and isinstance(page_size,int) else None,
                 'mobiles' : mobiles,
-                }        
+                }
         cur.execute(''.join(sql), args)
         #print ''.join(sql) % args
         rows = pg.fetchall(cur)
-        has_more = len(rows) > page_size
-        result = rows[:-1] if has_more else rows, has_more
-        return result
+        return rows
     finally:
         if cur: cur.close()
         if conn: conn.close()
