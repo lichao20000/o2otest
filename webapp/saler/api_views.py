@@ -66,9 +66,9 @@ def get_saler_list():
     q = args.get('q')
     sales_depart_id = _int(args.get('sales_depart_id',''))
     page = _int(args.get('page',''))
-    page = page if page else 1
+    page = page if page else None
     page_size = _int(args.get('page_size',''))
-    page_size = page_size if page_size>0 else 100
+    page_size = page_size if page_size>0 else None
     mobile = args.get('mobile','')
     deleted = args.get('deleted','')
     deleted = None if not deleted.isdigit() else _int(deleted)
@@ -284,6 +284,7 @@ def pos_import():
             d['sales_depart_id'] = sales_depart_id
             d['channel_id'] = channel_id
         result = salersvc.saler_import(datas)
+        salersvc.sms_user_import(datas)
         cnt = len(datas)
     except  ValueError, e: 
         msg = u'请提供JSON格式数据.(loads error) '

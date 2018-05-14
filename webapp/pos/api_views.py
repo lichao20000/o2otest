@@ -323,5 +323,64 @@ def pos_audit_list():
     user=request.environ['user']
     channel_id=user.user_info["channel_id"]
     charge_departs=user.user_info["charge_departs"]
-    charge_departs=tuple(charge_departs)#后台直接限制查询范围
-    return{'rows':possvc.get_audit_list(channel_id,charge_departs)}
+    pageCurrent=args.get('pageCurrent','')
+    pageSize=args.get('pageSize','')
+    sales_depart_id=_int(args.get('sales_depart_id',''))
+    selectedTag=args.get('selectedTag','')
+    status_id=_int(args.get('status_id',''))
+    queryPoi=args.get('queryPoi','')
+    queryMan=args.get('queryMan','')
+    if pageCurrent and pageSize:
+        try:
+            pageCurrent=_int(pageCurrent)
+            pageSize=_int(pageSize)
+        except ValueError:
+            msg=u'分页内容应为整数'
+    else:
+        pageCurrent=None
+        pageSize=None
+    rows,cnt,result,msg=[],0,False,''
+    try:
+        rows,cnt=possvc.get_audit_list(channel_id=channel_id,charge_departs=charge_departs,
+                                       pageCurrent=pageCurrent,pageSize=pageSize,
+                                       sales_depart_id=sales_depart_id,selectedTag=selectedTag,
+                                       status_id=status_id,queryPoi=queryPoi,queryMan=queryMan)
+
+    except Abort,e :
+        msg = e.msg
+    return{'rows':rows,'cnt':cnt,'result':result,'msg':msg}
+
+@api_bp.route('/pos_audit.json',methods=['POST','GET'])
+@auth_required
+@jview
+def pos_audit():
+    args=request.args
+    if request.method=='POST':
+        args=request.form
+    user=request.environ['user']
+    channel_id=user.user_info['channel_id']
+    charge_departs=user.user_info['charge_departs']
+    selectedPoi=args.get('selectedPoi','')
+    status=_int(args.get('status',''))
+    if selectedPoi and isinstance(selectedPoi,unicode):
+        selectedPoi=selectedPoi.encode().split(',')
+        print (selectedPoi,status)
+    else:
+        print (selectedPoi,status)
+    return {'selectedPoi':selectedPoi,'status':status}
+
+@api_bp.route('/get_poi_tag.json',methods=['POST','GET'])
+@auth_required
+@jview
+def get_poi_tag():
+    args=request.args
+    if request.method=='POST':
+        args=request.form
+    user=request.environ['user']
+    channel_name=user.user_info['channel_name']
+    result,msg,rows=False,'',[]
+    try:
+        rows=possvc.get_poi_tag(channel_name=channel_name)
+    except Abort,e :
+        msg = e.msg
+    return {'rows':rows,'result':result,'msg':msg}

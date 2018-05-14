@@ -331,8 +331,8 @@ class Plan extends React.Component{
         onChange = {e=>this.setState({salerText:e.target.value})}
       />
       <Divider />
-      <h4 style={{fontSize:14, color:'#333'}}> 促销人数</h4>
-      <TextField hintText="请输入促销人数"
+      <h4 style={{fontSize:14, color:'#333'}}> 应到人数</h4>
+      <TextField hintText="请输入应到人数"
               value = {saler_cnt}
               errorText = {errsaler_cnt}
               onChange = {(e,saler_cnt)=>{

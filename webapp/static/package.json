@@ -23,6 +23,7 @@
   "mode": "development",
   "dependencies": {
     "babel-loader": "^7.1.4",
+    "material-design-icons": "^3.0.1",
     "rc-pagination": "^1.16.3",
     "rc-select": "^8.0.5",
     "rc-slider": "^8.6.1",

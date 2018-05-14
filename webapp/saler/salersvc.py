@@ -16,7 +16,7 @@ import config
 
 def get_saler_list(q=None, mobile=None, mobiles=None,
                         channel_id=None, deleted=None,
-                        sales_depart_ids=None, page=1 , page_size=100):
+                        sales_depart_ids=None, page=None, page_size=None):
     conn, cur = None, None
     try:
         conn = pg.connect(**config.pg_main)
@@ -39,8 +39,8 @@ def get_saler_list(q=None, mobile=None, mobiles=None,
           and  s.sales_depart_id=any(%(sales_depart_ids)s)
         ''' if sales_depart_ids else '',
         ' and  (s.saler_name like %(q)s or s.mobile like %(q)s) ' if q else '' ,
-        ' order by mobile desc '
-        ''' limit %(limit)s offset %(offset)s '''
+        ' order by mobile desc ',
+        ' limit %(limit)s offset %(offset)s ' if isinstance(page,int) and isinstance(page_size,int) else '',
                 ]
         #print mobiles, 'wtf......'
         args = {
@@ -49,8 +49,8 @@ def get_saler_list(q=None, mobile=None, mobiles=None,
                 'channel_id' : channel_id,
                 'deleted': deleted,
                 'sales_depart_ids': sales_depart_ids,
-                'limit': page_size+1,
-                'offset': (page-1)*page_size,
+                'limit': page_size+1 if isinstance(page_size,int) else None,
+                'offset': (page-1)*page_size if isinstance(page,int) and isinstance(page_size,int) else None,
                 'mobiles' : mobiles,
                 }        
         cur.execute(''.join(sql), args)
@@ -123,6 +123,26 @@ def saler_import(rows):
         if cur: cur.close()
         if conn: conn.close()
 
+def sms_user_import(rows):
+    conn,cur=None,None
+    try:
+        conn=pg.connect(**config.pg_main)
+        cur=conn.cursor()
+        sql=(' insert into public.t_rp_sms_user',
+             ' (user_id,bind_mobile,full_name,reg_date,status)',
+             ' select ',
+             " nextval('public.seq_rp_sms_user_id'),'%(mobile)s',%(saler_name)s,current_timestamp,1 ",
+             ' where not exists (select 1',
+             ' from public.t_rp_sms_user',
+             " where bind_mobile='%(mobile)s')",)
+        cur.executemany(''.join(sql),rows)
+        result=cur.rowcount
+        if result>0:
+            conn.commit()
+        return result
+    finally:
+        if cur:cur.close()
+        if conn:conn.close()
 
 
 def update_saler(saler):

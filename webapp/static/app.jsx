@@ -16,8 +16,8 @@ import { MyPlan } from './plan/myplan'
 import { HomeData} from './home'
 import {AdminManager} from './user/admin-manager'
 import {AdminEditor} from './user/admin-editor'
-import {PosAudit} from './pos/pos-audit'
-
+import T from './pos/pos-audit'
+import TableExampleComplex from './plan/test'
 
 
 ReactDOM.render((
@@ -29,7 +29,7 @@ ReactDOM.render((
         <Route path="/pos/manager/:pos_id" component={SalesPositionManager}/>
         <Route path="/pos/new" exact component={NewPosition} />
         <Route path="/pos/import" exact component={PosImport} />
-        <Route path="/pos/audit" exact component={PosAudit}/>
+        <Route path="/pos/audit" component={T}/>
 
         <Route path="/saler/manager" exact component={SalerList} />
         <Route path="/saler/manager/:mobile" component={SalerEditor}/>
@@ -44,6 +44,8 @@ ReactDOM.render((
         <Route path="/admin/manager" exact component={AdminManager} />
         <Route path="/admin/manager/:user_id" component={AdminEditor}/>
         <Route path="/login_out/" component={LoginOut} />
+
+        <Route path="/test" component={TableExampleComplex}/>
     </Menu>
   </Router>
 ), document.getElementById('app'))

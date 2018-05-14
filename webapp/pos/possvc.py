@@ -272,30 +272,70 @@ def sms_user_import(data):
 
 
 
-def get_audit_list(channel_id,charge_departs):
+def get_audit_list(channel_id=None,charge_departs=None,pageCurrent=None,pageSize=None,
+                   sales_depart_id=None,selectedTag=None,status_id=None,
+                   queryPoi=None,queryMan=None):
     conn,cur=None,None
     try:
         conn=pg.connect(**config.pg_main)
         cur=conn.cursor()
-        sql=('''
-        select p.*,s.saler_name from 
-        public.t_rp_poi p
-        left join public.t_rp_sms_user u
-        on p.create_user_id=u.user_id
-        left join itd.t_sales_saler s
-        on u.bind_mobile=s.mobile
-        where 1=1
-        ''',
-        ' and s.channel_id=%(channel_id)s' if channel_id else None,
-        ' and s.sales_depart_id in %(charge_departs)s' if charge_departs else None,)
+        sql=(' select p.*, ',
+             ' public.st_AsText(p.geo_data) wkt, ',
+             ' s.saler_name,s.mobile,t.tag_label,sta.status_label ' ,
+             ' from public.t_rp_poi p ',
+             ' left join public.t_rp_sms_user u' ,
+             ' on p.create_user_id=u.user_id ',
+             ' left join itd.t_sales_saler s ',
+             ' on u.bind_mobile=s.mobile ',
+             ' left join public.t_rp_tag t ',
+             ' on p.reporter_tag=t.tag ',
+             ' left join public.t_rp_status sta ',
+             ' on p.status=sta.status ',
+             ' where 1=1 ',
+        ' and s.channel_id=%(channel_id)s' if channel_id else '',
+        ' and s.sales_depart_id=any(%(charge_departs)s)' if charge_departs else '',
+        ' and s.sales_depart_id=%(sales_depart_id)s' if sales_depart_id else '',
+        ' and p.reporter_tag=%(selectedTag)s' if selectedTag else '',
+        ' and p.status=%(status_id)s' if status_id else '',
+        ' and (p.poi_name like %(queryPoi)s or p.address like %(queryPoi)s)' if queryPoi else '',
+        ' and (u.bind_mobile like %(queryMan)s or u.full_name like %(queryMan)s)' if queryMan else '',
+        ' order by p.poi_id desc ',
+        ' limit %(limit)s offset %(offset)s ' if isinstance(pageSize,int) and isinstance(pageCurrent,int) else ''
+             )
         args = {
                 'channel_id': channel_id,
-                'charge_departs':charge_departs
+                'charge_departs':charge_departs,
+                'sales_depart_id':sales_depart_id,
+                'selectedTag':selectedTag,
+                'status_id':status_id,
+                'queryPoi':'%%%s%%'%queryPoi if queryPoi else '',
+                'queryMan':'%%%s%%'%queryMan if queryMan else '',
+                'limit':pageSize,
+                'offset':(pageCurrent-1)*pageSize if isinstance(pageSize,int) and isinstance(pageCurrent,int) else None
                 }
         #print ''.join(sql) % args
         cur.execute(''.join(sql), args)
         rows = pg.fetchall(cur)
-        return rows
+        cur.execute(''.join(sql[:-2]),args)
+        cnt = len(pg.fetchall(cur))
+        return rows,cnt
     finally:
         if cur: cur.close()
         if conn: conn.close()
+
+def get_poi_tag(channel_name):
+    conn,cur=None,None
+    try:
+        conn = pg.connect(**config.pg_main)
+        cur = conn.cursor()
+        sql=(' select * from public.t_rp_tag where 1=1 ',
+            ' and tag_label= %(channel_name)s',)
+        args={
+            'channel_name':channel_name
+        }
+        cur.execute(''.join(sql),args)
+        rows=pg.fetchall(cur)
+        return rows
+    finally:
+        if cur:cur.close()
+        if conn:conn.close()

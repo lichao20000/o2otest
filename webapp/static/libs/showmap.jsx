@@ -1,26 +1,12 @@
 import React, {Component} from 'react';
-import {
-  Table,
-  TableBody,
-  TableFooter,
-  TableHeader,
-  TableHeaderColumn,
-  TableRow,
-  TableRowColumn,
-} from 'material-ui/Table';
-import TextField from 'material-ui/TextField';
-import Paper  from 'material-ui/paper';
-import RaisedButton from 'material-ui/RaisedButton';
-import CircularProgress from 'material-ui/CircularProgress';
-import SelectField from 'material-ui/SelectField';
-import MenuItem from 'material-ui/MenuItem';
-import Select from "rc-select";
-import Pagination from 'rc-pagination';
 
-
-export default class TableExampleComplex extends Component {
+export default class ShowMap extends Component {
     constructor(props) {
-        super(props)
+        super(props);
+        this.state={
+            lng:this.props.lng,
+            lat:this.props.lat
+        }
     }
 
     componentDidMount() {
@@ -28,6 +14,7 @@ export default class TableExampleComplex extends Component {
     }
 
     initMap(){
+        let {lng,lat}=this.state;
         const el=ReactDOM.findDOMNode(this);
         if (!el){return;}
         const divMap=el.querySelector('.map');
@@ -35,6 +22,10 @@ export default class TableExampleComplex extends Component {
             lat:23.136683927297444,
             lng:113.35663921777336};
         var center=GuangZhou;
+        if (lng&&lat){
+            center.lng=lng
+            center.lat=lat
+        }
         var zoom=12;
         var map=L.map(divMap,{
             center:[center.lat,center.lng],
@@ -59,9 +50,9 @@ export default class TableExampleComplex extends Component {
     }
 
   render() {
-      return( <div className='full-page-content'>
+      return(<div className='full-page-content'>
                 <div className='map'></div>
-            </div>
+          </div>
       )
   }
 }

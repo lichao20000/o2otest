@@ -28,10 +28,6 @@ import FontIcon from 'material-ui/FontIcon';
 import {blue500, red500, greenA200} from 'material-ui/styles/colors';
 
 
-
-
-
-
 class SalerImport extends React.Component{
     constructor(props){
         super(props); 
@@ -307,8 +303,7 @@ class SalerImport extends React.Component{
                 modal={true}
                 contentStyle={{width:'100%', height:'100%', maxWidth:'none'}}
                 open={read}
-                >
-                  {this.renderRows()}
+                >{this.renderRows()}
 
                   <Dialog
                       title="确认"

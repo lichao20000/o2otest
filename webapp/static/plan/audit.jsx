@@ -252,7 +252,7 @@ class Audit extends React.Component{
                       2: '审核通过',
                       4: '审核不通过',
                       5: '已取消',
-                  }
+                  };
                   let statusText = status[r.status];
                 return(
               <TableRow key ={idx} style={{fontSize:12}}>
@@ -304,7 +304,7 @@ class Audit extends React.Component{
                             onChange={this.onPageChange}
                             current={pageCurrent}
                             pageSize={pageSize}
-                            defaultCurrent={3}
+                            defaultCurrent={1}
                             total={rowsTotal}
                             showTotal={(total)=>`总共${total}条记录`}
                         />
