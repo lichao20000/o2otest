@@ -66,9 +66,9 @@ if os.environ.get('LOGNAME') in ['yantz', 'wy']:
     domain = get_local_ip()
     _debug_ = True
 
-if os.environ.get('USERDOMAIN')=='GZJF019486':
+if os.environ.get('COMPUTERNAME')=='GZJF019486':
     pg_main = pg_production
-    pg_stand = pg_production_readonly
+    pg_stand = pg_production
     domain = get_local_ip()
     _debug_ = True
 

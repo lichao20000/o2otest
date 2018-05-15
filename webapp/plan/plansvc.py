@@ -26,7 +26,7 @@ def get_plan_list(channel_id=None, charge_departs=None,sales_depart_id=None,
         conn = pg.connect(**config.pg_main)
         cur = conn.cursor()
         sql =[ '''
-        select p.*, ch.channel_name, d.sales_depart_name,pos.pos_name,
+        select p.*, ch.channel_name, d.sales_depart_name,pos.pos_name,u.mobile as create_mobile,u.user_name as create_user,
                 (select array_agg(row_to_json(s)) 
                 from t_sales_saler s 
                 where s.mobile = any( p.saler_mobiles))
@@ -38,6 +38,8 @@ def get_plan_list(channel_id=None, charge_departs=None,sales_depart_id=None,
             on p.sales_depart_id = d.sales_depart_id
         left join t_sales_pos pos
             on p.pos_id=pos.pos_id
+        left join t_sales_user u 
+            on p.create_user_id=u.user_id
         where  1=1
         ''',
         ' and p.channel_id=%(channel_id)s ' if channel_id else '' ,
@@ -217,4 +219,30 @@ def update_plan(plan_info):
         if cur: cur.close()
         if conn: conn.close()
 
+def plan_audit(status_id,status,channel_id,charge_departs,selected_plan):
+    conn,cur=None,None
+    try:
+        conn=pg.connect(**config.pg_main)
+        cur=conn.cursor()
+        sql=(' update itd.t_sales_plan ',
+             ' set status=%(status_id)s ',
+             ' where 1=1 ',
+             ' and status=any(%(status)s) ',
+             ' and channel_id=%(channel_id)s ',
+             ' and sales_depart_id = any(%(charge_departs)s) ',
+             ' and plan_id=any(%(selected_plan)s) ',
+        )
+        args={
+            'status_id':status_id,
+            'status':status,
+            'channel_id':channel_id,
+            'charge_departs':charge_departs,
+            'selected_plan':selected_plan
+        }
+        cur.execute(''.join(sql),args)
+        conn.commit()
+        return cur.rowcount
+    finally:
+        if cur:cur.close()
+        if conn:conn.close()
 

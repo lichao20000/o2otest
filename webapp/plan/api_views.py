@@ -205,6 +205,42 @@ def get_plan_list():
                                      )
     return {'rows': rows,  'count': cnt }
 
+@api_bp.route('/plan_audit.json',methods=['POST','GET'])
+@auth_required
+@jview
+def plan_audit():
+    args=request.args
+    if request.method=='POST':
+        args=request.form
+    user=request.environ['user']
+    channel_id=user.user_info['channel_id']
+    charge_departs=user.user_info['charge_departs']
+    selected_plan=args.get('selectedPlan','')
+    status=args.get('status','')
+    cnt,msg=0,''
+    try:
+        selected_plan=selected_plan.split(',')
+        for s in range(len(selected_plan)):
+            selected_plan[s]=_int(selected_plan[s])
+        status_id=_int(status)
+        if status_id==2:
+            status=[1,4]
+        elif status_id==4:
+            status=[1,2]
+        else:
+            raise Abort(u'请求的状态错误')
+        cnt=plansvc.plan_audit(status_id=status_id,
+                               status=status,
+                               channel_id=channel_id,
+                               charge_departs=charge_departs,
+                               selected_plan=selected_plan
+                               )
+        msg='提交'+str(len(selected_plan))+'行,成功'+str(cnt)+'行。'
+    except ValueError:
+        msg=u'请求的数据错误'
+    except Abort,e:
+        msg = e.msg
+    return {'cnt':cnt,'msg':msg}
 
 
      

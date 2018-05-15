@@ -148,6 +148,8 @@ def admin_get_privs():
     AdminUser = request.environ['user']
     user_id=args.get('user_id','')
     SetUser=usersvc.get_user_local_info(user_id)
+    if not SetUser['privs']:
+        SetUser['privs']=[]
     AdminPrivs = AdminUser.user_info['privs']
     privsmanage=[False,False,False,False]
     for a in AdminPrivs:
@@ -156,6 +158,7 @@ def admin_get_privs():
         if a=='PRIV_ADMIN':
             privsmanage[1]=True
     SetPrivs = SetUser['privs']
+
     for s in SetPrivs:
         if s=='PRIV_ADMIN_SUPER':
             privsmanage[2]=True

@@ -25,11 +25,21 @@ import Pagination from 'rc-pagination';
 class Audit extends React.Component{
     constructor(props){
         super(props) ;
-        this.onQuery=this.onQuery.bind(this);
         this.state = {
+            fixedHeader: true,
+            fixedFooter: true,
+            stripedRows: false,
+            showRowHover: true,
+            selectable: true,
+            multiSelectable: true,
+            enableSelectAll: true,
+            deselectOnClickaway: false,
+            showCheckboxes: true,
+            selectedRows:[],
             status_id:'',
             loading: false,
             sending : false,
+            errMsg:'',
             rowsTotal:0,
             rows:[],
             pageSize:20,
@@ -40,16 +50,16 @@ class Audit extends React.Component{
             is_charge:'',
             sales_depart_id:'',
             queryPos:'',
+            status:null,
         }
     }
 
     componentDidMount(){
-        let {pageCurrent,pageSize}=this.state;
-        this.getData(pageCurrent,pageSize)
+        this.getData();
     }
 
-    getData(pageCurrent,pageSize){
-        let { sales_dates, pos_type, is_charge,sales_depart_id,status_id,queryPos,}=this.state;
+    getData(){
+        let { sales_dates, pos_type, is_charge,sales_depart_id,status_id,queryPos,pageCurrent,pageSize}=this.state;
         this.setState({loading:true});
      axios({
           url: '/plan/api/get_plan_list.json' ,
@@ -112,26 +122,72 @@ class Audit extends React.Component{
     }
 
     onShowSizeChange=(current,pageSize)=>{
-        this.setState({pageCurrent:current,pageSize:pageSize});
-        if(current!=this.state.pageCurrent||pageSize!=this.state.pageSize){
-            this.getData(current,pageSize)
-        }
+            this.state.pageCurrent=current;
+            this.state.pageSize=pageSize;
+            this.getData()
     };
 
     onPageChange=(page)=>{
-        this.setState({pageCurrent:page});
-        if(page!=this.state.pageCurrent){
-            this.getData(page,this.state.pageSize)
-        }
+        this.state.pageCurrent=page;
+        this.getData()
     };
 
-    onQuery(){
-        let {pageCurrent,pageSize}=this.state;
-        this.getData(pageCurrent,pageSize)
+    onAudit(){
+        let {selectedRows,rows,status}=this.state;
+        let status_id=status.status_id;//审核通过
+        let selectedPlan=[];
+        if(selectedRows instanceof Array){
+            for(let i=0;i<selectedRows.length;i++){
+                let r=rows[selectedRows[i]];
+                for(let j=0;j<status.auditstatus.length;j++){
+                    if(r.status==status.auditstatus[j]){
+                        selectedPlan.push(r.plan_id)
+                    }
+                }
+            }
+        } else if(selectedRows == 'all'){
+            for(let i=0;i<rows.length;i++){
+                let r =rows[i]
+                for(let j=0;j<status.auditstatus.length;j++){
+                    if(r.status==status.auditstatus[j]){
+                        selectedPlan.push(r.plan_id)
+                    }
+                }
+            }
+        }
+
+        if(selectedPlan.length==0||selectedRows=='none'){
+            let errMsg='未选择任何行，或已选择行的状态不允许审核通过';
+            this.setState({errMsg});
+        }else{
+            this.setState({loading:true});
+            axios({
+                url: '/plan/api/plan_audit.json',
+                transformRequest: [function (data, headers) {
+                    let _data = []
+                    for (let k in data) {
+                        _data.push(k + '=' + data[k])
+                    }
+                    return _data.join('&')
+                }],
+                data: {selectedPlan:selectedPlan,status:status_id},
+                method: 'post',
+                responseType: 'json',
+            }).then((resp => {
+                if (resp.status == 200) {
+                    this.setState({errMsg:resp.data.msg});
+                    this.getData();
+                } else {
+                    let errMsg = '审核请求失败';
+                    this.setState({errMsg})
+                }
+                this.setState({loading:true})
+            }))
+        }
     }
 
     render(){
-        let {loading, sending, rows} = this.state;
+        let {loading, sending, rows,errMsg} = this.state;
         let {pageSize,rowsTotal,pageCurrent}=this.state;
         let {dates,sales_depart_id,pos_type,is_charge,queryPos,status_id}=this.state;
         let user_info=(((window.NS||{}).userInfo||{}).user_info||{});
@@ -141,7 +197,10 @@ class Audit extends React.Component{
                 sales_departs.splice(i,1);
                 i--;}
         }
-        let headers = [ 'ID', '门店名称','状态', '促销时间', '渠道', '区分', '促销人数', '促销人员' ];
+        let status=[{status_id:1,status_label:'待审核'},
+            {status_id:2,status_label:'审核通过',auditstatus:[1,4]},
+            {status_id:4,status_label:'审核不通过',auditstatus:[1,2]}];
+        let headers = [ '创建时间', '状态','区分','排产人','门店名称','促销时间','应到人数','促销人员'];
         return (
             <div>
             <Paper style={{padding:'5px 20px', margin:'5px 0px'}} zDepth={2}>
@@ -221,81 +280,75 @@ class Audit extends React.Component{
                                    width:150,
                                    height:40,}} />
                     <RaisedButton label="查找" primary={true}
-                                  onClick = {this.onQuery}
+                                  onClick = {this.getData.bind(this)}
                                   disabled ={loading}
                                   style ={{ height:30,
                                       width: 50 ,
                                       marginLeft: 20
                                   }} />
+                    <RaisedButton label="审核通过" primary={true}
+                                  onClick = {(e)=>{this.state.status=status[1];this.onAudit()}}
+                                  disabled ={loading}
+                                  style ={{ height:30,
+                                      width: 50 ,
+                                      marginLeft: 20
+                                  }} />
+                    <RaisedButton label="审核不通过" primary={true}
+                                  onClick = {(e)=>{this.state.status=status[2];this.onAudit()}}
+                                  disabled ={loading}
+                                  style ={{ height:30,
+                                      width:110,
+                                      marginLeft:20
+                                  }} />
                 </div>
             </Paper>
         {loading ? <CircularProgress size={40} thickness={3} />:
             <div style={{padding: 10}}>
-                <Table fixedHeader={false} displaySelectAll={false}>
-          <TableHeader displaySelectAll={false} adjustForCheckbox={false}> 
-          <TableRow>
-            { headers.map((h,idx)=>{
-                return (
-                    <TableHeaderColumn key={idx}
-                        style ={{textAlign: 'center'}}
-                    >{h}</TableHeaderColumn>
-                )
-              }) 
-            }
-          </TableRow>
-          </TableHeader>
-            <TableBody displayRowCheckbox={false} stripedRows={false} 
-                        style ={{textAlign: 'center'}}
-          showRowHover={true} >
-              { rows.map((r, idx)=>{
-                  let status = { 1:'待审核',
-                      2: '审核通过',
-                      4: '审核不通过',
-                      5: '已取消',
-                  };
-                  let statusText = status[r.status];
-                return(
-              <TableRow key ={idx} style={{fontSize:12}}>
-                  <TableRowColumn style ={{textAlign: 'center'}} >
-                      <div>
-                      {r.status !=2 && <FlatButton
-                          primary={true}
-                          label='通过'
-                          onClick={(e)=>{this.commit(r.plan_id, 2)}}
-                          style={{fontSize:10, width:60 ,
-                              minWidth:30,
-                              margin:'0 10px 0 0', padding: 0 }}
-                      />
-                      }
-                    {r.status ==2 && <FlatButton
-                          label='取消'
-                          onClick={(e)=>{this.commit(r.plan_id, 4)}}
-                          style={{fontSize:10, width:60 ,
-                              minWidth:30,
-                              margin:'0 10px 0 0', padding: 0 }} />
-                      }
-                      {r.plan_id}
-                  </div>
-                  </TableRowColumn>
-                  <TableRowColumn style ={{textAlign: 'center'}} > {r.pos_id}{r.pos_name}</TableRowColumn>
-                  <TableRowColumn style ={{textAlign: 'center'}} > {statusText}</TableRowColumn>
-                  <TableRowColumn style ={{textAlign: 'center'}} > {r.sales_date}</TableRowColumn>
-                  <TableRowColumn style ={{textAlign: 'center'}} > {r.channel_name}</TableRowColumn>
-                  <TableRowColumn style ={{textAlign: 'center'}} > {r.sales_depart_name}</TableRowColumn>
-                  <TableRowColumn style ={{textAlign: 'center'}} > {r.saler_cnt}</TableRowColumn>
-                  <TableRowColumn style ={{textAlign: 'center'}} >
-                    { r.salers.map((s, i)=>{
-                        return (<div key={i}> 
-                            {s.mobile +'  '+s.saler_name}
-                            </div>)
-                    })
-                    }
-                
-                </TableRowColumn>
-              </TableRow>
-                )})
-              }
-            </TableBody>
+                <Table fixedHeader={this.state.fixedHeader}
+                       fixedFooter={this.state.fixedFooter}
+                       selectable={this.state.selectable}
+                       multiSelectable={this.state.multiSelectable}
+                       onRowSelection={(selectedRows)=>{this.state.selectedRows=selectedRows}}>
+                    <TableHeader displaySelectAll={this.state.showCheckboxes}
+                                 adjustForCheckbox={this.state.showCheckboxes}
+                                 enableSelectAll={this.state.enableSelectAll}>
+                        <TableRow>
+                            { headers.map((h,idx)=>{
+                                return (
+                                    <TableHeaderColumn key={idx} style ={{textAlign: 'center'}}
+                                    >{h}</TableHeaderColumn>
+                                )
+                            })
+                            }
+                            </TableRow>
+                    </TableHeader>
+                    <TableBody displayRowCheckbox={this.state.showCheckboxes}
+                               deselectOnClickaway={this.state.deselectOnClickaway}
+                               showRowHover={this.state.showRowHover}
+                               stripedRows={this.state.stripedRows} >
+                        { rows.map((r, idx)=>{let status = { 1:'待审核', 2: '审核通过', 4: '审核不通过', 5: '已取消',};
+                        let statusText = status[r.status];
+                        return(
+                            <TableRow key ={idx} style={{fontSize:12}}>
+                                <TableRowColumn style ={{textAlign: 'center'}} >{r.create_time}</TableRowColumn>
+                                <TableRowColumn style ={{textAlign: 'center'}} > {statusText}</TableRowColumn>
+                                <TableRowColumn style ={{textAlign: 'center'}} > {r.sales_depart_name}</TableRowColumn>
+                                <TableRowColumn style ={{textAlign: 'center'}} > {r.create_user}{r.create_mobile}</TableRowColumn>
+                                <TableRowColumn style ={{textAlign: 'center'}} > {r.pos_name}</TableRowColumn>
+                                <TableRowColumn style ={{textAlign: 'center'}} > {r.sales_date}</TableRowColumn>
+                                <TableRowColumn style ={{textAlign: 'center'}} > {r.saler_cnt}</TableRowColumn>
+                                <TableRowColumn style ={{textAlign: 'center'}} >
+                                    { r.salers.map((s, i)=>{
+                                        return (<div key={i}>
+                                            {s.mobile +'  '+s.saler_name}
+                                            </div>)
+                                    })
+                                    }
+                                    </TableRowColumn>
+                            </TableRow>
+                        )})
+                        }
+                        </TableBody>
                     <TableFooter>
                         <Pagination style={{float:'right'}}
                             selectComponentClass={Select}
@@ -309,9 +362,14 @@ class Audit extends React.Component{
                             showTotal={(total)=>`总共${total}条记录`}
                         />
                     </TableFooter>
-          </Table>
-          </div>
+                </Table>
+            </div>
         }
+        <Snackbar open={!!errMsg}
+                  message={errMsg}
+                  style ={{textAlign: 'center'}}
+                  autoHideDuration={3000}
+                  onRequestClose={(e)=>{this.setState({errMsg:''})}}/>
           </div>
         )    
     }
