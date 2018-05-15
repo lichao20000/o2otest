@@ -17,7 +17,7 @@ import config
 def get_pos_list(q=None, pos_id=None, channel_id=None,  pos_type=None,
                     pos_name=None,sales_depart_ids=None, deleted = -1,
                  located=None,is_charge=None,
-                 pageCurrent=1,pageSize=20):
+                 pageCurrent=None,pageSize=None):
     u'''
     deleted = -1 全部
     '''
@@ -50,7 +50,7 @@ def get_pos_list(q=None, pos_id=None, channel_id=None,  pos_type=None,
                  or p.pos_address like %(q)s)
                ''' if q  else ' ',
                 ' order by p.pos_id desc ',
-                ' limit %(limit)s offset %(offset)s ' if pageSize and pageCurrent else ''
+                ' limit %(limit)s offset %(offset)s ' if isinstance(pageSize,int) and isinstance(pageCurrent,int) else ''
                 )
         args = {
                 'q' : '%%%s%%'%q if q else '',
@@ -61,8 +61,8 @@ def get_pos_list(q=None, pos_id=None, channel_id=None,  pos_type=None,
                 'deleted': deleted ,
                 'pos_type':  pos_type,
                 'is_charge':is_charge,
-                'limit': pageSize if pageSize else None,
-                'offset':(pageCurrent-1)*pageSize if pageCurrent and pageSize else None
+                'limit': pageSize if isinstance(pageSize,int) else None,
+                'offset':(pageCurrent-1)*pageSize if isinstance(pageCurrent,int) and isinstance(pageSize,int) else None
                 }
         #print ''.join(sql) % args
         cur.execute(''.join(sql), args) 
@@ -340,15 +340,16 @@ def get_poi_tag(channel_name):
         if cur:cur.close()
         if conn:conn.close()
 
-def pos_audit(selectedPoi,status):
+def pos_audit(selectedPoi,status,queryStatus):
     conn,cur=None,None
     try:
         conn=pg.connect(**config.pg_main)
         cur=conn.cursor()
-        sql=(' update public.t_rp_poi set status=%(status)s where (status=1 or status=4) and poi_id=any(%(selectedPoi)s)')
+        sql=(' update public.t_rp_poi set status=%(status)s where status=any(%(queryStatus)s) and poi_id=any(%(selectedPoi)s)')
         args={
             'selectedPoi':selectedPoi,
-            'status':status
+            'status':status,
+            'queryStatus':queryStatus
         }
         cur.execute(sql,args)
         conn.commit()

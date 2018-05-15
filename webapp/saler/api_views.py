@@ -31,14 +31,11 @@ def get_file():
     user = request.environ['user']
     channel_id = user.user_info['channel_id'] 
     charge_departs = user.user_info['charge_departs']
-    has_more = True
     rows = []
-    while has_more:
-        _rows, has_more = salersvc.get_saler_list(
+    rows = salersvc.get_saler_list(
                         channel_id=channel_id, 
                         sales_depart_ids = charge_departs,
-                        deleted = 0) 
-        rows.extend(_rows)
+                        deleted = 0)
     xls  = StringIO.StringIO()
     if not excel_write(xls, rows):
        return  u'生成失败.' 
@@ -126,7 +123,7 @@ def add_saler():
             raise Abort(u'促销人员区分不能为空')
         if saler['sales_depart_id'] not in charge_departs:
             raise Abort(u'无权添加人员到该区分')
-        check,_ = salersvc.get_saler_list(mobile=mobile)
+        check= salersvc.get_saler_list(mobile=mobile)
         if len(check):
             msg = u'手机号码已存在请作更新操作（若无法查询到该记录请联系管理员）'
             raise Abort(msg)
@@ -179,7 +176,7 @@ def update_saler():
                 raise Abort(u'促销人员区分无效')
             if saler['sales_depart_id'] not in charge_departs:
                 raise Abort(u'无权修改人员到该区分')
-        check,_ = salersvc.get_saler_list(mobile=mobile)
+        check = salersvc.get_saler_list(mobile=mobile)
         if not len(check):
             raise Abort(u'要修改的记录不存在')
         check = check[0]
@@ -221,7 +218,7 @@ def _check(rows):
             row['msg'] = u'手机号重复(excel).'
             continue
         mobiles.append(data[0]) 
-        saler, _ = salersvc.get_saler_list(mobile=str(data[0]))
+        saler= salersvc.get_saler_list(mobile=str(data[0]))
         if saler:    
             row['status'] = 4
             row['msg'] = u'手机号已存在.'

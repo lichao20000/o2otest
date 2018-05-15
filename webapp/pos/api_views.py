@@ -29,7 +29,7 @@ def get_file():
     user = request.environ['user']
     channel_id = user.user_info['channel_id'] 
     charge_departs = user.user_info['charge_departs']
-    rows = possvc.get_pos_list(
+    rows,_ = possvc.get_pos_list(
                         channel_id=channel_id, 
                         sales_depart_ids = charge_departs,
                         deleted = 0) 
@@ -190,7 +190,7 @@ def add_pos():
         mobile = items.get('pos_man_mobile')
         if not mobile or len(mobile)!=11  or not mobile.isdigit():
             raise Abort(u'请提供正确的手机号.')
-        name_check = possvc.get_pos_list(pos_name=items.get('pos_name'))
+        name_check,_ = possvc.get_pos_list(pos_name=items.get('pos_name'))
         if name_check:
             raise Abort(u'促销点名称已存在.')
         items['sales_depart_id']  = _int(items.get('sales_depart_id',''))
@@ -230,7 +230,8 @@ def _check(rows):
             row['msg'] = u'名称重复(excel).'
             continue
         names.append(data[4])
-        if possvc.get_pos_list(pos_name=data[4]):
+        pos,_=possvc.get_pos_list(pos_name=data[4])
+        if pos:
             row['status'] = 4
             row['msg'] = u'名称已存在.'
             continue
@@ -362,16 +363,21 @@ def pos_audit():
     charge_departs=user.user_info['charge_departs']
     selectedPoi=args.get('selectedPoi','')
     status=_int(args.get('status',''))
+    queryStatus=[]
+    if status==2:
+        queryStatus=[1,4]
+    elif status==4:
+        queryStatus=[1,2]
     cnt,msg=0,''
     if selectedPoi and isinstance(selectedPoi,unicode):
         selectedPoi=selectedPoi.encode().split(',')
         try:
             for s in range(len(selectedPoi)):
                 selectedPoi[s]=_int(selectedPoi[s])
-            cnt=possvc.pos_audit(selectedPoi=selectedPoi,status=status)
-            msg=u'提交'+str(len(selectedPoi))+'行,成功'+str(cnt)+'行。'
+            cnt=possvc.pos_audit(selectedPoi=selectedPoi,status=status,queryStatus=queryStatus)
+            msg='提交'+str(len(selectedPoi))+'行,成功'+str(cnt)+'行。'
         except ValueError:
-            msg=u'促销点Id不符合要求'
+            msg=u'请提供正确的促销点ID'
     else:
         msg=u'促销点Id不符合要求'
     return {'cnt':cnt,'msg':msg}

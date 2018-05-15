@@ -179,7 +179,8 @@ export default class TableExampleComplex extends Component {
                 responseType: 'json',
             }).then((resp => {
                 if (resp.status == 200) {
-                    this.setState({errMsg:resp.data.msg})
+                    this.setState({errMsg:resp.data.msg});
+                    this.getData();
                 } else {
                     let errMsg = '审核请求失败';
                     this.setState({errMsg})
@@ -233,7 +234,8 @@ export default class TableExampleComplex extends Component {
                 responseType: 'json',
             }).then((resp => {
                 if (resp.status == 200) {
-                    this.setState({errMsg:resp.data.msg})
+                    this.setState({errMsg:resp.data.msg});
+                     this.getData()
                 } else {
                     let errMsg = '审核请求失败';
                     this.setState({errMsg})

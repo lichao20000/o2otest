@@ -52,17 +52,15 @@ def _check(rows):
             row['msg'] = '数据不完整'
             row['status'] = 4
             continue
-        _pos = possvc.get_pos_list(channel_id=channel_id, 
+        _pos,_ = possvc.get_pos_list(channel_id=channel_id,
                                 sales_depart_ids=charge_departs,
                                 pos_id=pos_id,
                                 deleted = 0)
-        print mobiles
         salers = salersvc.get_saler_list(channel_id=channel_id,
                                 sales_depart_ids=charge_departs, 
                                 deleted=0,
                                 mobiles = mobiles
                                 )
-        print salers
         row['salers'] = salers
         if not _pos:
             row['msg'] = '促销点不存在.'
