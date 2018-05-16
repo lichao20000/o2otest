@@ -111,6 +111,7 @@ def get_file(filename):
         'charge_departs':charge_departs
     }
     rows = sw.get_datas(sql['sql'],args)
+    print rows
     xls  = StringIO.StringIO()
     if not excel_write(xls, rows):
        return  u'生成失败.' 

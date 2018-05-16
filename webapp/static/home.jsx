@@ -17,24 +17,27 @@ class HomeData extends React.Component{
             }).catch((err)=>{
                 this.setState({loading: false})
             })
-
     }
 
     render(){
         let {loading, files }= this.state
+        let privs=(((Window.NS||{}).userInfo||{}).user_info||{}).privs||[]
         return (
             <div style={{padding: 10}}>
                 <h2>首页</h2>
                 {loading ?
-                < CircularProgress size={40} thickness={3} />:
-                    files.map((f,idx)=>{
-                            return (
-                                <div key ={idx}>
-                              <a href={`/get_file/${f}`} >下载明细：{f}</a>
-                                </div> 
-                            ) 
-                        
-                        })
+                    < CircularProgress size={40} thickness={3}/> :
+                    privs.map((p) => {
+                        if (p == "PRIV_ADMIN_DATA") {
+                            files.map((f, idx) => {
+                                return (
+                                    <div key={idx}>
+                                        <a href={`/get_file/${f}`}>下载明细：{f}</a>
+                                    </div>
+                                )
+                            })
+                        }
+                    })
                 }
             </div>
         ) 

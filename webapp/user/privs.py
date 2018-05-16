@@ -20,7 +20,8 @@ privs_all =[
             },{
             'label':u'超级管理员',
             'priv' : 'PRIV_ADMIN_SUPER'
-            },
+            },{'label':u'明细下载',
+               'priv':'PRIV_ADMIN_DATA'}
        ]
 
 PRIV_PLAN = Priv('PRIV_PLAN')
@@ -29,6 +30,7 @@ PRIV_ADMIN_SUPER = Priv('PRIV_ADMIN_SUPER')
 PRIV_PLAN_AUDIT=Priv('PRIV_PLAN_AUDIT') 
 PRIV_ADMIN_POS=Priv('PRIV_ADMIN_POS')
 PRIV_ADMIN_SALE=Priv('PRIV_ADMIN_SALE')
+PRIV_ADMIN_DATA=Priv('PRIV_ADMIN_DATA')
 
 
 PRIV_ADMIN_ANY = PRIV_ADMIN | PRIV_ADMIN_SUPER

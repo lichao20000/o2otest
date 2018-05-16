@@ -49,7 +49,6 @@ def excel_write(file_name, rows, headers=None, sheet_name='sheet1'):
             headers = [(h, h) for h in headers]
         for i, h in enumerate(headers):
             worksheet.write(0, i, h[0])
-
         for row_num, r in enumerate(rows):
             for col_num, h in enumerate(headers):
                 val = r.get(h[1],'')
