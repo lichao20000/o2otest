@@ -53,7 +53,6 @@ def excel_write(file_name, rows, headers=None, sheet_name='sheet1'):
         for row_num, r in enumerate(rows):
             for col_num, h in enumerate(headers):
                 val = r.get(h[1],'')
-                print row_num, col_num, val
                 worksheet.write(row_num+1, col_num, val)
         workbook.close()
         return True
