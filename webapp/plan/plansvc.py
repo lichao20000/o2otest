@@ -26,7 +26,8 @@ def get_plan_list(channel_id=None, charge_departs=None,sales_depart_id=None,
         conn = pg.connect(**config.pg_main)
         cur = conn.cursor()
         sql =[ '''
-        select p.*, ch.channel_name, d.sales_depart_name,pos.pos_name,u.mobile as create_mobile,u.user_name as create_user,
+        select p.*, ch.channel_name, d.sales_depart_name,pos.pos_name,pos.pos_address,
+        u.mobile as create_mobile,u.user_name as create_user,pos.lng,pos.lat,
                 (select array_agg(row_to_json(s)) 
                 from t_sales_saler s 
                 where s.mobile = any( p.saler_mobiles))

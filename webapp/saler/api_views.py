@@ -276,7 +276,7 @@ def pos_import():
         keys = ['mobile', 'saler_name', 'unit'] 
         datas = [dict(zip(keys, d))   for d in datas]
         for d in datas:
-            d['create_user_id'] = user.user_id
+            d['create_user_id'] = user.user_info['user_id']
             d['sales_depart_id'] = sales_depart_id
             d['channel_id'] = channel_id
         result = salersvc.saler_import(datas)

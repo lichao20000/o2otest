@@ -354,7 +354,7 @@ export default class TableExampleComplex extends Component {
                                      adjustForCheckbox={this.state.showCheckboxes}
                                      enableSelectAll={this.state.enableSelectAll}>
                             <TableRow>
-                                <TableHeaderColumn tooltip="Time">创建时间</TableHeaderColumn>
+                                <TableHeaderColumn  tooltip="Time">创建时间</TableHeaderColumn>
                                 <TableHeaderColumn tooltip="status">审核状态</TableHeaderColumn>
                                 <TableHeaderColumn tooltip="poi_type">类型</TableHeaderColumn>
                                 <TableHeaderColumn tooltip="Name">门店名称</TableHeaderColumn>

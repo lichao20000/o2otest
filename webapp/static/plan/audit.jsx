@@ -20,7 +20,8 @@ import IconButton from 'material-ui/IconButton';
 import MultipleDatePicker from 'react-multiple-datepicker'
 import Select from 'rc-select'
 import Pagination from 'rc-pagination';
-
+import Dialog from 'material-ui/Dialog'
+import ShowMap from'../libs/showmap'
 
 class Audit extends React.Component{
     constructor(props){
@@ -51,6 +52,12 @@ class Audit extends React.Component{
             sales_depart_id:'',
             queryPos:'',
             status:null,
+            lng:null,
+            lat:null,
+            address:null,
+            showmap:false,
+            salers:[],
+            showsalers:false,
         }
     }
 
@@ -200,7 +207,6 @@ class Audit extends React.Component{
         let status=[{status_id:1,status_label:'待审核'},
             {status_id:2,status_label:'审核通过',auditstatus:[1,4]},
             {status_id:4,status_label:'审核不通过',auditstatus:[1,2]}];
-        let headers = [ '创建时间', '状态','区分','排产人','门店名称','促销时间','应到人数','促销人员'];
         return (
             <div>
             <Paper style={{padding:'5px 20px', margin:'5px 0px'}} zDepth={2}>
@@ -313,14 +319,15 @@ class Audit extends React.Component{
                                  adjustForCheckbox={this.state.showCheckboxes}
                                  enableSelectAll={this.state.enableSelectAll}>
                         <TableRow>
-                            { headers.map((h,idx)=>{
-                                return (
-                                    <TableHeaderColumn key={idx} style ={{textAlign: 'center'}}
-                                    >{h}</TableHeaderColumn>
-                                )
-                            })
-                            }
-                            </TableRow>
+                            <TableHeaderColumn style ={{textAlign: 'center',width:'12%'}} >创建时间</TableHeaderColumn>
+                            <TableHeaderColumn style ={{textAlign: 'center',width:'7%'}} > 状态</TableHeaderColumn>
+                            <TableHeaderColumn style ={{textAlign: 'center',width:'7%'}} > 区分</TableHeaderColumn>
+                            <TableHeaderColumn style ={{textAlign: 'center',width:'11%'}} > 排产人</TableHeaderColumn>
+                            <TableHeaderColumn style ={{textAlign: 'center',width:'30%'}} > 门店名称(点击查看地图)</TableHeaderColumn>
+                            <TableHeaderColumn style ={{textAlign: 'center',width:'7%'}} > 促销时间</TableHeaderColumn>
+                            <TableHeaderColumn style ={{textAlign: 'center',width:'4%'}} > 应到人数</TableHeaderColumn>
+                            <TableHeaderColumn style ={{textAlign: 'center',width:'11%'}} > 促销人员</TableHeaderColumn>
+                        </TableRow>
                     </TableHeader>
                     <TableBody displayRowCheckbox={this.state.showCheckboxes}
                                deselectOnClickaway={this.state.deselectOnClickaway}
@@ -330,20 +337,28 @@ class Audit extends React.Component{
                         let statusText = status[r.status];
                         return(
                             <TableRow key ={idx} style={{fontSize:12}}>
-                                <TableRowColumn style ={{textAlign: 'center'}} >{r.create_time}</TableRowColumn>
-                                <TableRowColumn style ={{textAlign: 'center'}} > {statusText}</TableRowColumn>
-                                <TableRowColumn style ={{textAlign: 'center'}} > {r.sales_depart_name}</TableRowColumn>
-                                <TableRowColumn style ={{textAlign: 'center'}} > {r.create_user}{r.create_mobile}</TableRowColumn>
-                                <TableRowColumn style ={{textAlign: 'center'}} > {r.pos_name}</TableRowColumn>
-                                <TableRowColumn style ={{textAlign: 'center'}} > {r.sales_date}</TableRowColumn>
-                                <TableRowColumn style ={{textAlign: 'center'}} > {r.saler_cnt}</TableRowColumn>
-                                <TableRowColumn style ={{textAlign: 'center'}} >
-                                    { r.salers.map((s, i)=>{
-                                        return (<div key={i}>
-                                            {s.mobile +'  '+s.saler_name}
-                                            </div>)
-                                    })
+                                <TableRowColumn style ={{textAlign: 'center',width:'12%'}} >{r.create_time}</TableRowColumn>
+                                <TableRowColumn style ={{textAlign: 'center',width:'7%'}} > {statusText}</TableRowColumn>
+                                <TableRowColumn style ={{textAlign: 'center',width:'7%'}} > {r.sales_depart_name}</TableRowColumn>
+                                <TableRowColumn style ={{textAlign: 'center',width:'11%'}} > {r.create_user}{r.create_mobile}</TableRowColumn>
+                                <TableRowColumn style ={{textAlign: 'center',width:'30%'}} >
+                                    {(r.lng && r.lat) ?
+                                        <FlatButton label={r.pos_name} onClick={() => {
+                                            this.state.lng = r.lng;
+                                            this.state.lat = r.lat;
+                                            this.state.address = r.pos_address;
+                                            this.setState({showmap: true})
+                                        }}/>
+                                        :<div>{r.pos_name}</div>
                                     }
+                                </TableRowColumn>
+                                <TableRowColumn style ={{textAlign: 'center',width:'7%'}} > {r.sales_date}</TableRowColumn>
+                                <TableRowColumn style ={{textAlign: 'center',width:'4%'}} > {r.saler_cnt}</TableRowColumn>
+                                <TableRowColumn style ={{textAlign: 'center',width:'11%'}} >
+                                    <FlatButton label='点击查看' onClick={()=>{
+                                        this.state.salers=r.salers;
+                                        this.setState({showsalers:true})
+                                    }}/>
                                     </TableRowColumn>
                             </TableRow>
                         )})
@@ -365,12 +380,45 @@ class Audit extends React.Component{
                 </Table>
             </div>
         }
+        <Dialog title={"地图展示:"+this.state.address}
+                        contentStyle={{width:'100%', height:'100%', maxWidth:'none'}}
+                        actions={[<FlatButton label="关闭"
+                                                   primary={true}
+                                                   onClick={(e)=>{this.setState({showmap:false})}}
+                                        />]}
+                        open={this.state.showmap}
+                        style={{width:'50%',height:'50%',marginLeft:'25%',marginRight:'25%'}}
+                        onRequestClose={(e)=>{this.setState({showmap:false})}}
+                >
+                    <div style={{width:900,height:750}}>
+                        <ShowMap lng={this.state.lng}
+                             lat={this.state.lat}/>
+                    </div>
+                </Dialog>
+                <Dialog title={"促销人员列表"}
+                        contentStyle={{width:'100%', height:'100%', maxWidth:'none'}}
+                        actions={[<FlatButton label="关闭"
+                                                   primary={true}
+                                                   onClick={(e)=>{this.setState({showsalers:false})}}
+                                        />]}
+                        open={this.state.showsalers}
+                        style={{width:'50%',height:'50%',marginLeft:'25%',marginRight:'25%'}}
+                        onRequestClose={(e)=>{this.setState({showsalers:false})}}
+                        autoScrollBodyContent={true}
+                >
+                    { this.state.salers.map((s, i)=>{
+                        return (<div key={i}>
+                            {s.mobile +'  '+s.saler_name}
+                            </div>)
+                    })
+                    }
+                </Dialog>
         <Snackbar open={!!errMsg}
                   message={errMsg}
                   style ={{textAlign: 'center'}}
                   autoHideDuration={3000}
                   onRequestClose={(e)=>{this.setState({errMsg:''})}}/>
-          </div>
+            </div>
         )    
     }
 }

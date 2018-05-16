@@ -162,7 +162,7 @@ class SalesPositionManager extends React.Component{
           value = {pos_info['pos_type']}
           onChange = {(e,idx,v)=>(this.onChange('pos_type',e,v))}>
           {
-            ['美宜佳', '7 11', '固定点'].map((t, idx)=>(
+            ['固定促销点', '楼宇', '营业厅'].map((t, idx)=>(
             <MenuItem key ={idx} value={t} primaryText={t} />
             ))
           }
