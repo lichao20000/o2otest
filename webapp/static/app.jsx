@@ -18,7 +18,7 @@ import {AdminManager} from './user/admin-manager'
 import {AdminEditor} from './user/admin-editor'
 import T from './pos/pos-audit'
 import TableExampleComplex from './plan/test'
-
+import {AdminPostType} from './user/admin-postype'
 
 ReactDOM.render((
   <Router>
@@ -46,6 +46,8 @@ ReactDOM.render((
         <Route path="/login_out/" component={LoginOut} />
 
         <Route path="/test" component={TableExampleComplex}/>
+
+        <Route path="/pos/type" component={AdminPostType}/>
     </Menu>
   </Router>
 ), document.getElementById('app'))

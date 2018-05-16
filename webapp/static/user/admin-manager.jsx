@@ -8,6 +8,7 @@ import TextField from 'material-ui/TextField'
 import RaisedButton from 'material-ui/RaisedButton'
 import {Link} from'react-router-dom'
 
+
 class AdminManager extends React.Component{
     constructor(props){
         super(props);
@@ -54,14 +55,15 @@ class AdminManager extends React.Component{
             }
             this.setState({loading:false})
             }
-
         )
     }
 
 
     render(){
         let {channel_id,channel_name,sales_depart_id,query,loading,rows} = this.state;
-        let sales_departs=(((window.NS||{}).userInfo||{}).user_info||{}).charge_departs_info||[];
+        let user_info=((window.NS||{}).userInfo||{}).user_info||{};
+        let sales_departs=user_info.charge_departs
+        let privs=user_info.privs;
         let headers=['手机号','姓名','渠道','区分','修改'];
         return <div>
             <Paper style={{padding:'5px 20px', margin:'5px 0px'}} zDepth={2}>
@@ -109,6 +111,17 @@ class AdminManager extends React.Component{
                               width: 50 ,
                               marginLeft: 20
                           }} />
+                {privs.map((p)=>{
+                    if(p=='PRIV_ADMIN_SUPER'){
+                        return (
+                            <Link to='/pos/type'>
+                            <RaisedButton label="管理促销点类型" primary={true}
+                                          disabled={loading}
+                                          style={{height:30,width:50,marginLeft:20}}/>
+                            </Link>
+                        )
+                }})
+                }
             </Paper>
             { loading? <CircularProgress size={40} thickness={3}/>:
                 <div>

@@ -103,7 +103,14 @@ def get_file(filename):
        return  u'非法文件名.' 
     idx = names.index(filename)
     sql = sw.sqls[idx]
-    rows = sw.get_datas(sql['sql'])
+    user = request.environ['user']
+    channel_id = user.user_info['channel_id']
+    charge_departs = user.user_info['charge_departs']
+    args={
+        'channel_id':channel_id,
+        'charge_departs':charge_departs
+    }
+    rows = sw.get_datas(sql['sql'],args)
     xls  = StringIO.StringIO()
     if not excel_write(xls, rows):
        return  u'生成失败.' 

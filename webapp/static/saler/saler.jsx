@@ -145,6 +145,19 @@ class SalerList extends React.Component{
                   width: 50 ,
                   marginLeft: 20
               }} />
+              { user_info.privs.map((p)=>{
+                  if(p=='PRIV_ADMIN_SUPER'){
+                      return(
+                          <Link to='/saler/new'>
+                              <RaisedButton label="添加" primary={true}
+                                            backgroundColor="#a4c639"
+                                            onClick = {this.getData.bind(this)}
+                                            disabled ={loading}
+                                            style ={{ height:30, width: 50 , marginLeft: 20}} />
+                          </Link>)
+                  }
+              })
+              }
             <Link to='/saler/new'>
             <RaisedButton label="添加" primary={true}
               backgroundColor="#a4c639"

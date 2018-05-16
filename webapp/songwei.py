@@ -94,7 +94,16 @@ where pos_name in (select distinct poi_name from t_rp_poi where is_deleted is nu
         'sql': u'''
         select * from itd.cuxiao_num_v1 where serial_number in (select bind_mobile from t_rp_sms_user);
         '''
-        }
+        },
+    {
+        'name':u'促销人员到场分时明细（半小时）',
+        'sql':u'''
+        select ssw.pos_type,ssw.sales_id,ssw.pos_name,ssw.pos_address,ssw.channel_name,ssw.sales_depart_name,ssw.pos_unit,
+         ssw.pos_code,ssw.pos_man,ssw.pos_man_mobile,ssw.saler_name,ssw.bind_mobile,ssw.lng,ssw.lat,ssw.saler_cnt,ssw.create_date,array_to_string(ssw.sale_hour, ','),ssw.is_charge from itd.ssw_cxmx_pc_half_hour ssw left join itd.t_sales_channel c on ssw.channel_name=c.channel_name
+          left join itd.t_sales_depart d on ssw.sales_depart_name=d.sales_depart_name
+          where ssw.bind_mobile is not null and c.channel_id=%(channel_id)s and d.sales_depart_id= any(%(charge_departs)s)
+        '''
+    },
     ]
 
 

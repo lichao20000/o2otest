@@ -250,3 +250,14 @@ def admin_alter_user():
     except Abort, e :
         msg = e.msg
     return {'result': result, 'msg': msg}
+
+@api_bp.route('/get_pos_tag.json', methods=['POST','GET'])
+@auth_required(priv=PRIV_ADMIN_SUPER)
+@jview
+def get_pos_tag():
+    args=request.args
+    if request.method=='POST':
+        args=request.form
+    user=request.environ['user']
+    rows=usersvc.get_pos_tag()
+    return {'rows':rows}

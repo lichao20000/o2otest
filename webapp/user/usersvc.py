@@ -208,6 +208,19 @@ def set_user_privs(user_id, privs, op_user_id =None):
         if cur: cur.close()
         if conn: conn.close()
 
+def get_pos_tag():
+    conn,cur=None,None
+    try:
+        conn=pg.connect(**config.pg_main)
+        cur=conn.cursor()
+        sql=(' select t.* from itd.t_pos_tag t',)
+        cur.execute(''.join(sql))
+        rows=pg.fetchall(cur)
+        return rows
+    finally:
+        if cur:cur.close()
+        if conn:conn.close()
+
 
 def get_bcmaanger_info(uni_email):
     return {
