@@ -11,6 +11,26 @@ import SelectField from 'material-ui/SelectField';
 import MenuItem from 'material-ui/MenuItem';
 import Checkbox from 'material-ui/Checkbox';
 import {RadioButton, RadioButtonGroup} from 'material-ui/RadioButton';
+import Paper from 'material-ui/Paper'
+
+const style={
+    label:{
+
+    },
+    paper:{height:'100%',
+        width:'100%',
+        display:'inline-block',
+        textAlign:'center'},
+    button:{
+        margin: 12, float:'right'
+    },
+    textfiled:{
+        width:'15%',
+        display:'inline-block'
+    },
+};
+
+
 
 class AdminEditor extends React.Component {
     constructor(props) {
@@ -23,16 +43,20 @@ class AdminEditor extends React.Component {
             privs:[],
             errMsg: '',
             changeItems: [],
+            channels:[],
+            channel_id:null,
+            departs:[],
+            sales_depart_id:null,
+            user_name:null,
         }
     }
 
     componentDidMount() {
-        this.getData();
-        console.log(this.state.user)
+        this.getInfo();
+        this.getPriv();
     }
 
-
-    getData() {
+    getPriv() {
         this.setState({loading: true});
         let {user_id} = this.state;
         let args={user_id};
@@ -52,7 +76,11 @@ class AdminEditor extends React.Component {
         }).then((resp) => {
             if (resp.status == 200) {
                 if(resp.data.result){
-                    this.setState({user: resp.data.user, privs:resp.data.privs})
+                    this.setState({user: resp.data.user,
+                        privs:resp.data.privs,
+                        channel_id:resp.data.user['channel_id'],
+                        sales_depart_id:resp.data.user['sales_depart_id'],
+                        user_name:resp.data.user['user_name']})
                 } else{
                     this.setState({errMsg:resp.data.msg})
                 }
@@ -61,6 +89,35 @@ class AdminEditor extends React.Component {
             }
             this.setState({loading: false})
         })
+    }
+
+    getInfo(){
+        let privs = (((window.NS || {}).userInfo || {}).user_info || {}).privs || [];
+        function checkPrivs(p){
+            return p=='PRIV_ADMIN_SUPER'
+        }
+        if(privs.some(checkPrivs)) {
+            axios({
+                url: '/user/api/get_user_info.json',
+                transformRequest: [function (data, headers) {
+                    let _data = []
+                    for (let k in data) {
+                        _data.push(k + '=' + data[k])
+                    }
+                    return _data.join('&')
+                }],
+                data: {},
+                method: 'post',
+                responseType: 'json',
+            }).then((resp) => {
+                    if (resp.status == 200) {
+                        this.setState({channels: resp.data.channels, departs: resp.data.departs})
+                    } else {
+                        this.setState({errMsg: '获取渠道、区分数据失败'})
+                    }
+                }
+            );
+        }
     }
 
     setData(history){
@@ -114,58 +171,115 @@ class AdminEditor extends React.Component {
         this.setState({privs:privs});
     }
 
+    renderInfo(){
+        let privs = (((window.NS || {}).userInfo || {}).user_info || {}).privs || [];
+        function checkPrivs(p) {
+            return p == 'PRIV_ADMIN_SUPER'
+        }
+        let {user,changeItems,channel_id,channels,sales_depart_id,departs,user_name}=this.state;
+        if(privs.some(checkPrivs)){
+            return (
+                    <div>
+                        <TextField disabled = {true}
+                               underlineShow={true}
+                               floatingLabelText="手机"
+                               value= {user['mobile']}
+                               floatingLabelFixed={true}
+                               style={style.textfiled}/>
+                        <label>渠道</label>
+                        <SelectField floatingLabelFixed={"渠道"}
+                                     value={channel_id}
+                                     onChange={(e,key,channel_id)=>{changeItems['channel']=channel_id;
+                                     this.setState({channel_id});
+                                     }}
+                        >
+                        {
+                            channels.map((c,idx)=>(
+                                <MenuItem key={'c-'+idx} value={c.channel_id} primaryText={c.channel_name}/>
+                            ))
+                        }
+                        </SelectField>
+                        <Divider />
+                        <label>区分</label>
+                        <SelectField floatingLabelFixed={"区分"}
+                                     value={sales_depart_id}
+                                     onChange={(e,key,sales_depart_id)=>{changeItems['sales_depart_id']=sales_depart_id;
+                                     this.setState({sales_depart_id:sales_depart_id})}}
+                        >
+                        {
+                            departs.filter(function departFilter(currentValue){
+                                return currentValue['channel_id']==channel_id
+                            }).map((d,idx)=>(
+                                <MenuItem key={'d-'+idx} value={d.sales_depart_id} primaryText={d.sales_depart_name}/>
+                            ))
+                        }
+                        </SelectField>
+                        <label>姓名</label>
+                        <TextField underlineShow={false}
+                                   value= {user_name}
+                                   onChange={(e,user_name)=>{changeItems['user_name']=user_name;
+                                   this.setState({user_name})}}/>
+                    </div>
+            )
+        }else{
+            return(
+                <div>
+                    <TextField disabled = {true}
+                               underlineShow={true}
+                               floatingLabelText="手机"
+                               value= {user['mobile']}
+                               floatingLabelFixed={true}
+                               style={style.textfiled}/>
+                    <TextField disabled = {true}
+                               underlineShow={true}
+                               floatingLabelText="渠道"
+                               value= {user['channel_name']}
+                               floatingLabelFixed={true}
+                               style={style.textfiled}/>
+                    <TextField disabled = {true}
+                               underlineShow={true}
+                               floatingLabelText="区分"
+                               value= {user['sales_depart_name']}
+                               floatingLabelFixed={true}
+                               style={style.textfiled}/>
+                    <TextField disabled = {true}
+                               underlineShow={true}
+                               floatingLabelText="姓名"
+                               value= {user['user_name']}
+                               floatingLabelFixed={true}
+                               style={style.textfiled}/>
+                </div>
+            )
+        }
+    }
+
+
     render() {
         let {user,privs,errMsg,loading} = this.state;
-        let style = { margin: 12, float:'right'};
-        return (<div style={{padding: 20}}>
-            <TextField style ={{width:'100%'}}
-                       disabled = {true}
-                       underlineShow={false}
-                       floatingLabelText="手机号"
-                       value= {user['mobile']}
-                       floatingLabelFixed={true}
-                       onChange={this.fuck}/>
-            <Divider />
-            <TextField style ={{width:'100%'}}
-                       disabled = {true}
-                       underlineShow={false}
-                       floatingLabelText="渠道"
-                       value= {user['channel_name']}
-                       floatingLabelFixed={true}
-                       onChange={this.fuck}/>
-            <Divider />
-            <TextField style ={{width:'100%'}}
-                       disabled = {true}
-                       underlineShow={false}
-                       floatingLabelText="区分"
-                       value= {user['sales_depart_name']}
-                       floatingLabelFixed={true}
-                       onChange={this.fuck}/>
-            <Divider />
-            <TextField style ={{width:'100%'}}
-                       disabled = {true}
-                       underlineShow={false}
-                       floatingLabelText="姓名"
-                       value= {user['user_name']}
-                       floatingLabelFixed={true}
-                       onChange={this.fuck}/>
-            <Divider/>
-            {privs.map((p,i)=>(<Toggle label={p.label}
-                                       defaultToggled={p.state}
-                                       onToggle={(e,v)=>{this.onChange(p.priv,e,v)}}
-                                       key={'p-'+i}
-                                       style={{width:'30%'}}/>))}
-
-
+        return (
+            <div style={{padding: 20}}>
+                <Paper style={{height:'100%', width:'100%', display:'inline-block', textAlign:'center'}}>
+                    <h4>基本信息</h4>
+                    {this.renderInfo()}
+                </Paper>
+                <Paper style={style.paper}>
+                    <h4>权限信息</h4>
+                    {privs.map((p,i)=>(<Toggle label={p.label}
+                                               defaultToggled={p.state}
+                                               onToggle={(e,v)=>{this.onChange(p.priv,e,v)}}
+                                               key={'p-'+i}
+                                               style={{marginLeft:'25%',width:'25%'}}/>))
+                    }
+                </Paper>
             {loading? < CircularProgress size={40} thickness={3} />:
                 <div>
                 <Route render={({ history}) => (
                     <RaisedButton label="保存更改" primary={true}
                                   onClick = {()=>(this.setData(history))}
-                                  style={style} />
+                                  style={style.button} />
                 )} />
                 <Link to='/admin/manager'>
-                    <RaisedButton label="取消" style={style}  />
+                    <RaisedButton label="取消" style={style.button}  />
                 </Link>
             </div>
             }

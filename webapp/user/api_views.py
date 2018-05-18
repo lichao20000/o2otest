@@ -261,3 +261,14 @@ def get_pos_tag():
     user=request.environ['user']
     rows=usersvc.get_pos_tag()
     return {'rows':rows}
+
+@api_bp.route('/get_user_info.json',methods=['POST','GET'])
+@auth_required(priv=PRIV_ADMIN_SUPER)
+@jview
+def get_channel_list():
+    args=request.args
+    if request.method=='POST':
+        args=request.form
+    channels=usersvc.get_channel_list()
+    departs=usersvc.get_depart_list()
+    return {'channels':channels,'departs':departs}

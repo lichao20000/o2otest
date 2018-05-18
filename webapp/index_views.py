@@ -72,11 +72,11 @@ def upload_file():
 
 
 # 临时解决方案
-from user.privs import PRIV_ADMIN, PRIV_ADMIN_SUPER
+from user.privs import PRIV_ADMIN_DATA
 
 @app_bp.route('/get_files.json', methods=['GET', 'POST'])
 @jview
-@auth_required(priv=PRIV_ADMIN | PRIV_ADMIN_SUPER)
+@auth_required(priv=PRIV_ADMIN_DATA)
 def get_files():
    # path = os.path.join('static', 'files')
    # files = []
@@ -94,7 +94,7 @@ def get_files():
 
 @app_bp.route('/get_file/<string:filename>',
                         methods=['POST', 'GET'])
-@auth_required(priv=PRIV_ADMIN | PRIV_ADMIN_SUPER)
+@auth_required(priv=PRIV_ADMIN_DATA)
 def get_file(filename):
     import songwei as sw
     import StringIO
@@ -125,8 +125,6 @@ def get_file(filename):
     response.headers.set( 'Content-Disposition', 
             'attachment',filename=filename.encode('gbk') )
     return response
- 
-    
 
 
 

@@ -221,6 +221,34 @@ def get_pos_tag():
         if cur:cur.close()
         if conn:conn.close()
 
+def get_channel_list():
+    conn,cur=None,None
+    try:
+        conn=pg.connect(**config.pg_main)
+        cur=conn.cursor()
+        sql=(' select c.* from itd.t_sales_channel c ',
+             ' where 1=1 ')
+        cur.execute(''.join(sql))
+        channels=pg.fetchall(cur)
+        return channels
+    finally:
+        if cur:cur.close()
+        if conn:conn.close()
+
+def get_depart_list():
+    conn,cur=None,None
+    try:
+        conn=pg.connect(**config.pg_main)
+        cur=conn.cursor()
+        sql=(' select d.* from itd.t_sales_depart d ',
+             ' where 1=1 ')
+        cur.execute(''.join(sql))
+        departs=pg.fetchall(cur)
+        return departs
+    finally:
+        if cur:cur.close()
+        if conn:conn.close()
+
 
 def get_bcmaanger_info(uni_email):
     return {
@@ -228,3 +256,4 @@ def get_bcmaanger_info(uni_email):
             'full_name': u'汪阳',
             'mobile': '18620011607'
             }
+
