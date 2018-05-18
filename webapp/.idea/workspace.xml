@@ -29,7 +29,7 @@
                 </provider>
               </entry>
             </file>
-            <file leaf-file-name="plansvc.py" pinned="false" current-in-tab="true">
+            <file leaf-file-name="plansvc.py" pinned="false" current-in-tab="false">
               <entry file="file://$PROJECT_DIR$/plan/plansvc.py">
                 <provider selected="true" editor-type-id="text-editor">
                   <state relative-caret-position="800">
@@ -41,8 +41,8 @@
             <file leaf-file-name="index_views.py" pinned="false" current-in-tab="false">
               <entry file="file://$PROJECT_DIR$/index_views.py">
                 <provider selected="true" editor-type-id="text-editor">
-                  <state relative-caret-position="155">
-                    <caret line="116" column="24" selection-start-line="116" selection-start-column="24" selection-end-line="116" selection-end-column="24" />
+                  <state relative-caret-position="3103">
+                    <caret line="114" column="30" lean-forward="true" selection-start-line="114" selection-start-column="30" selection-end-line="114" selection-end-column="30" />
                     <folding>
                       <element signature="e#25#34#0" expanded="true" />
                     </folding>
@@ -83,11 +83,11 @@
                 </provider>
               </entry>
             </file>
-            <file leaf-file-name="admin-editor.jsx" pinned="false" current-in-tab="false">
+            <file leaf-file-name="admin-editor.jsx" pinned="false" current-in-tab="true">
               <entry file="file://$PROJECT_DIR$/static/user/admin-editor.jsx">
                 <provider selected="true" editor-type-id="text-editor">
-                  <state relative-caret-position="487">
-                    <caret line="267" column="69" selection-start-line="267" selection-start-column="69" selection-end-line="267" selection-end-column="69" />
+                  <state relative-caret-position="239">
+                    <caret line="175" selection-start-line="175" selection-end-line="177" selection-end-column="9" />
                     <folding>
                       <element signature="e#1#47#0" expanded="true" />
                     </folding>
@@ -142,6 +142,18 @@
           </provider>
         </entry>
       </file>
+      <file leaf-file-name="saler.jsx" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/static/saler/saler.jsx">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="191">
+              <caret line="65" column="17" selection-start-line="65" selection-start-column="17" selection-end-line="65" selection-end-column="17" />
+              <folding>
+                <element signature="e#0#115#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file leaf-file-name="privs.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/user/privs.py">
           <provider selected="true" editor-type-id="text-editor">
@@ -169,23 +181,14 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="songwei.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="songwei.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/songwei.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="444">
-              <caret line="118" column="46" selection-start-line="118" selection-start-column="46" selection-end-line="118" selection-end-column="46" />
+            <state relative-caret-position="242">
+              <caret line="115" column="23" selection-start-line="115" selection-start-column="23" selection-end-line="115" selection-end-column="23" />
               <folding>
                 <element signature="e#24#33#0" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="session_helper.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/libs/session_helper.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="535">
-              <caret line="89" column="35" selection-start-line="89" selection-start-column="35" selection-end-line="89" selection-end-column="35" />
             </state>
           </provider>
         </entry>
@@ -233,7 +236,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>salers</find>
       <find>last_update_user_id</find>
       <find>dialog</find>
       <find>salers.map</find>
@@ -261,8 +263,9 @@
       <find>selectf</find>
       <find>onChange</find>
       <find>Link</find>
-      <find>renderrow</find>
       <find>console</find>
+      <find>renderrow</find>
+      <find>添加</find>
     </findStrings>
   </component>
   <component name="IdeDocumentHistory">
@@ -291,7 +294,6 @@
         <option value="$PROJECT_DIR$/static/plan/audit.jsx" />
         <option value="$PROJECT_DIR$/static/pos/sales-editor.jsx" />
         <option value="$PROJECT_DIR$/static/app.jsx" />
-        <option value="$PROJECT_DIR$/static/saler/saler.jsx" />
         <option value="$PROJECT_DIR$/saler/salersvc.py" />
         <option value="$PROJECT_DIR$/static/user/admin-postype.jsx" />
         <option value="$PROJECT_DIR$/static/user/admin-manager.jsx" />
@@ -303,6 +305,7 @@
         <option value="$PROJECT_DIR$/index_views.py" />
         <option value="$PROJECT_DIR$/static/user/admin-editor.jsx" />
         <option value="$PROJECT_DIR$/songwei.py" />
+        <option value="$PROJECT_DIR$/static/saler/saler.jsx" />
       </list>
     </option>
   </component>
@@ -349,6 +352,12 @@
               <item name="webapp" type="b2602c69:ProjectViewProjectNode" />
               <item name="webapp" type="462c0819:PsiDirectoryNode" />
               <item name="static" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="webapp" type="b2602c69:ProjectViewProjectNode" />
+              <item name="webapp" type="462c0819:PsiDirectoryNode" />
+              <item name="static" type="462c0819:PsiDirectoryNode" />
+              <item name="saler" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="webapp" type="b2602c69:ProjectViewProjectNode" />
@@ -460,12 +469,12 @@
       <window_info anchor="bottom" id="Database Changes" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Version Control" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Python Console" order="7" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.75277776" weight="0.124678664" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.75277776" visible="true" weight="0.39978212" />
       <window_info anchor="bottom" id="Terminal" order="7" />
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.14166667" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="right" id="Database" order="3" />
-      <window_info anchor="bottom" id="Find" order="1" visible="true" weight="0.22875817" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.22875817" />
       <window_info anchor="right" id="SciView" order="3" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
@@ -609,16 +618,6 @@
           <caret line="334" column="68" selection-start-line="334" selection-start-column="68" selection-end-line="334" selection-end-column="68" />
           <folding>
             <element signature="e#0#126#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/static/saler/saler.jsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="190">
-          <caret line="146" column="19" lean-forward="true" selection-start-line="146" selection-start-column="19" selection-end-line="146" selection-end-column="19" />
-          <folding>
-            <element signature="e#0#115#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -825,17 +824,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/static/saler/saler-batch.jsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="70">
-          <caret line="185" column="17" selection-start-line="185" selection-start-column="17" selection-end-line="185" selection-end-column="17" />
-          <folding>
-            <element signature="e#0#115#0" expanded="true" />
-            <element signature="e#1039#1113#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/user/usersvc.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="4924">
@@ -854,26 +842,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-248">
           <caret line="64" column="17" selection-start-line="64" selection-start-column="17" selection-end-line="64" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/static/user/admin-editor.jsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="487">
-          <caret line="267" column="69" selection-start-line="267" selection-start-column="69" selection-end-line="267" selection-end-column="69" />
-          <folding>
-            <element signature="e#1#47#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/index_views.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="155">
-          <caret line="116" column="24" selection-start-line="116" selection-start-column="24" selection-end-line="116" selection-end-column="24" />
-          <folding>
-            <element signature="e#25#34#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -905,12 +873,53 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/index_views.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3103">
+          <caret line="114" column="30" lean-forward="true" selection-start-line="114" selection-start-column="30" selection-end-line="114" selection-end-column="30" />
+          <folding>
+            <element signature="e#25#34#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/songwei.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="444">
-          <caret line="118" column="46" selection-start-line="118" selection-start-column="46" selection-end-line="118" selection-end-column="46" />
+        <state relative-caret-position="242">
+          <caret line="115" column="23" selection-start-line="115" selection-start-column="23" selection-end-line="115" selection-end-column="23" />
           <folding>
             <element signature="e#24#33#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/saler/saler-batch.jsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="70">
+          <caret line="185" column="17" selection-start-line="185" selection-start-column="17" selection-end-line="185" selection-end-column="17" />
+          <folding>
+            <element signature="e#0#115#0" expanded="true" />
+            <element signature="e#1039#1113#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/user/admin-editor.jsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="239">
+          <caret line="175" selection-start-line="175" selection-end-line="177" selection-end-column="9" />
+          <folding>
+            <element signature="e#1#47#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/saler/saler.jsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="191">
+          <caret line="65" column="17" selection-start-line="65" selection-start-column="17" selection-end-line="65" selection-end-column="17" />
+          <folding>
+            <element signature="e#0#115#0" expanded="true" />
           </folding>
         </state>
       </provider>
