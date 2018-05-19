@@ -148,7 +148,7 @@ def update_saler(saler):
     conn, cur = None, None
     try:
         keys = (  'saler_name', 'channel_id','deleted' ,
-                'sales_depart_id', 'unit', 'update_user_id')
+                'sales_depart_id', 'unit', 'last_update_user_id')
         conn = pg.connect(**config.pg_main)
         cur = conn.cursor()
         args = {}

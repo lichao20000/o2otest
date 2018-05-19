@@ -272,3 +272,49 @@ def get_channel_list():
     channels=usersvc.get_channel_list()
     departs=usersvc.get_depart_list()
     return {'channels':channels,'departs':departs}
+
+@api_bp.route('/get_user_tag.json',methods=['POST','GET'])
+@auth_required(priv=PRIV_ADMIN_SUPER|PRIV_ADMIN)
+@jview
+def get_user_tag():
+    args=request.args
+    if request.method=='POST':
+        args=request.form
+    user_id=args.get('user_id','')
+    adminUser=request.environ['user']
+    setUser = usersvc.get_user_local_info(user_id)
+    if not setUser or \
+            adminUser.user_info['channel_id']!=setUser['channel_id'] or \
+            setUser['sales_departs_id'] not in adminUser.user_info['charge_departs']:
+        raise Abort(u'请求的用户不存在或非负责区域')
+    tags,result,msg=[],False,''
+    privsmanage = [False, False, False, False]
+    for a in adminUser.user_info['privs']:
+        if a == 'PRIV_ADMIN_SUPER':
+            privsmanage[0] = True
+        if a == 'PRIV_ADMIN':
+            privsmanage[1] = True
+    for s in setUser['privs']:
+        if s=='PRIV_ADMIN_SUPER':
+            privsmanage[2]=True
+        if s=='PRIV_ADMIN':
+            privsmanage[3]=True
+    if privsmanage[2] or (privsmanage[1] and privsmanage[3]):
+        raise Abort(u'无权限设置该用户的标签')
+    try:
+        rows=usersvc.get_pos_tag()
+        adminTags=adminUser.user_info['tags'] if adminUser.user_info['tags'] else []
+        setTags=setUser['tags'] if setUser['tags'] else []
+        for a in adminTags:
+            for r in rows:
+                for s in setTags:
+                    if a==r['tag_id'] and a==s:
+                        tags.append({'tag_id':a,'tag_label':r['tag_label'],'status':True})
+                    elif a==r['tag_id']:
+                        tags.append({'tag_id':a,'tag_label':r['tag_label'],'status':False})
+                    else:
+                        pass
+        result=True
+    except Abort,e:
+        msg=e.msg
+    return {'tags':tags,'result':result,'msg':msg}

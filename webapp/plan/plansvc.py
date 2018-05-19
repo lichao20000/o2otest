@@ -41,7 +41,7 @@ def get_plan_list(channel_id=None, charge_departs=None,sales_depart_id=None,
             on p.pos_id=pos.pos_id
         left join t_sales_user u 
             on p.create_user_id=u.user_id
-        where  1=1
+        where  1=1 and sales_date>=to_char(current_timestamp,'YYYYMMDD')
         ''',
         ' and p.channel_id=%(channel_id)s ' if channel_id else '' ,
         ' and p.sales_depart_id in %(charge_departs)s' if charge_departs else '',
@@ -247,3 +247,65 @@ def plan_audit(status_id,status,channel_id,charge_departs,selected_plan):
         if cur:cur.close()
         if conn:conn.close()
 
+def get_column():
+    conn,cur=None,None
+    try:
+        conn=pg.connect(**config.pg_main)
+        cur=conn.cursor()
+        sql='''
+SELECT col_description(a.attrelid,a.attnum) as comment,format_type(a.atttypid,a.atttypmod) as type,a.attname as name, a.attnotnull as notnull   
+FROM pg_class as c,pg_attribute as a where c.relname = 't_sales_plan' and a.attrelid = c.oid and a.attnum>0 and col_description(a.attrelid,a.attnum) is not null
+'''
+        cur.execute(sql)
+        plan_column=pg.fetchall(cur)
+        sql='''
+SELECT col_description(a.attrelid,a.attnum) as comment,format_type(a.atttypid,a.atttypmod) as type,a.attname as name, a.attnotnull as notnull   
+FROM pg_class as c,pg_attribute as a where c.relname = 't_sales_plan' and a.attrelid = c.oid and a.attnum>0 and col_description(a.attrelid,a.attnum) is not null
+'''
+        cur.execute(sql)
+        pos_column=pg.fetchall(cur)
+        sql='''
+SELECT col_description(a.attrelid,a.attnum) as comment,format_type(a.atttypid,a.atttypmod) as type,a.attname as name, a.attnotnull as notnull   
+FROM pg_class as c,pg_attribute as a where c.relname = 't_sales_plan' and a.attrelid = c.oid and a.attnum>0 and col_description(a.attrelid,a.attnum) is not null
+'''
+        cur.execute(sql)
+        saler_column=pg.fetchall(cur)
+        sql = '''
+SELECT col_description(a.attrelid,a.attnum) as comment,format_type(a.atttypid,a.atttypmod) as type,a.attname as name, a.attnotnull as notnull   
+FROM pg_class as c,pg_attribute as a where c.relname = 't_sales_plan' and a.attrelid = c.oid and a.attnum>0 and col_description(a.attrelid,a.attnum) is not null
+        '''
+        cur.execute(sql)
+        user_column=pg.fetchall(cur)
+        return plan_column,pos_column,saler_column,user_column
+    finally:
+        if cur:cur.close()
+        if conn:conn.close()
+
+def plan_export(channel_id,charge_departs,sales_dates=None,status_id=None,sales_depart_id=None):
+    conn,cur=None,None
+    try:
+        conn=pg.connect(**config.pg_main)
+        cur=conn.cursor()
+        sql=(" select c.channel_name 渠道,d.sales_depart_name 区分,plan.sales_date 促销日期, array_to_string(plan.sale_hour,',') 促销时刻, plan.create_user_id 排产人ID, plan.saler_cnt 应到人数, array_to_string(plan.saler_mobiles,',') 促销人员 from itd.t_sales_plan plan",
+             ' left join itd.t_sales_channel c on plan.channel_id=c.channel_id',
+             ' left join itd.t_sales_depart d on plan.sales_depart_id=d.sales_depart_id'
+             ' where plan.channel_id=%(channel_id)s ',
+             ' and plan.sales_depart_id=any(%(charge_departs)s) ',
+             ' and plan.sales_date=any(%(sales_dates)s) ' if sales_dates else '',
+             ' and plan.status=%(status_id)s ' if status_id else '',
+             ' and plan.sales_depart_id=%(sales_depart_id)s ' if sales_depart_id else '',
+             )
+        print sql,channel_id,charge_departs,sales_dates
+        args={
+            'channel_id':channel_id,
+            'charge_departs':charge_departs,
+            'sales_dates':sales_dates,
+            'status_id':status_id,
+            'sales_depart_id':sales_depart_id
+        }
+        cur.execute(''.join(sql),args)
+        rows=pg.fetchall(cur)
+        return rows
+    finally:
+        if cur:cur.close()
+        if conn:conn.close()

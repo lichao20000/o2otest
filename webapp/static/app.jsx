@@ -19,6 +19,7 @@ import {AdminEditor} from './user/admin-editor'
 import T from './pos/pos-audit'
 import TableExampleComplex from './plan/test'
 import {AdminPostType} from './user/admin-postype'
+import {planExport} from './plan/planExport.jsx'
 
 ReactDOM.render((
   <Router>
@@ -38,6 +39,7 @@ ReactDOM.render((
 
         <Route path="/plan/arrange" exact component={Plan} />
         <Route path="/plan/audit" exact component={Audit} />
+        <Route path="/plan/export" exact component={planExport}/>
         <Route path="/plan/mine" exact component={MyPlan} />
 
         <Route path="/admin/switch" component={AdminSwitch} />

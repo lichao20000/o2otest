@@ -102,10 +102,12 @@ select pos_type 促销点类别,is_charge 是否有租金, pos_name 促销点名
 from itd.ssw_cxmx_pc_half_hour s left join itd.t_sales_channel c on s.channel_name=c.channel_name left join itd.t_sales_depart d on s.sales_depart_name=d.sales_depart_name
 where bind_mobile is not null 
 and pos_type in (select tag_label from itd.t_pos_tag) and c.channel_id=%(channel_id)s and d.sales_depart_id=any(%(charge_departs)s)
+order by 统计时刻 desc
+limit 100000
         '''
     },
     {
-        'name':u'新版-促销人员到场分时明细(包括未按排产时间)(半小时)',
+        'name':u'新版-促销人员到场分时明细（包括未按排产时间）（半小时）',
         'sql':u'''
 select pos_type 促销点类别,is_charge 是否有租金, pos_name 促销点名称, pos_address 促销点地址, a.channel_name 渠道 , a.sales_depart_name 区分, pos_unit 单元, saler_name 促销人员, bind_mobile 促销人员手机号码, cast(create_date as varchar) 统计时刻 
 from itd.ssw_cxmx_pc_half_hour_all a
@@ -117,8 +119,30 @@ where bind_mobile is not null
 and pos_type in (select tag_label from itd.t_pos_tag)
 and b.channel_id=%(channel_id)s
 and c.sales_depart_id = any(%(charge_departs)s)
+order by 统计时刻 desc
+limit 100000
         '''
-    },
+    },{
+        'name':u'新版--未按排产时间排产人员(累计至查询时刻)',
+        'sql':'''
+select distinct a.channel_name, a.sales_depart_name, pos_name, saler_name  
+,b.channel_id
+,c.sales_depart_id
+from itd.ssw_cxmx_pc_half_hour_all a
+, itd.t_sales_channel b
+, itd.t_sales_depart c
+where
+to_char(create_date, 'YYYY-MM-DD') = to_char(now(), 'YYYY-MM-DD') 
+and a.channel_name = b.channel_name 
+and a.sales_depart_name = c.sales_depart_name
+and b.channel_id = c.channel_id
+and saler_name is not null
+and saler_name not in 
+(select distinct saler_name from itd.ssw_cxmx_pc_half_hour where to_char(create_date, 'YYYY-MM-DD') = to_char(now(), 'YYYY-MM-DD')  and saler_name is not null)
+and b.channel_id=%(channel_id)s 
+and c.sales_depart_id = any(%(charge_departs)s)
+        '''
+    }
     ]
 
 

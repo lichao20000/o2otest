@@ -5,7 +5,7 @@ import sys
 _dir = os.path.dirname(os.path.abspath(__file__))
 
 from flask import Blueprint, request, redirect, abort
-from flask import make_response, render_template
+from flask import make_response, render_template,Response
 from flask import send_file 
 from ui import jview, json_view 
 from libs.session_helper import auth_required
@@ -162,9 +162,6 @@ def get_my_plan():
     rows= plansvc.get_plan_list(status=status, create_user_id=create_user_id)
     return {'rows': rows}
 
-
-
-
      
 @api_bp.route('/get_plan_list.json', methods=['POST', 'GET'])
 @auth_required(priv=PRIV_PLAN_AUDIT | PRIV_ADMIN_SUPER)
@@ -268,3 +265,51 @@ def audit():
         msg = e.msg
     return {'result': result,  'msg': msg}
 
+@api_bp.route('/get_column.json',methods=['POST','GET'])
+@auth_required(priv=PRIV_PLAN_AUDIT)
+@jview
+def get_plan_column():
+    args=request.args
+    if request.method=='POST':
+        args=request.form
+    plan_column,pos_column,saler_column,user_column=plansvc.get_column()
+    return {
+        'plan_column':plan_column,'pos_column':pos_column,'saler_column':saler_column,'user_column':user_column
+    }
+
+@api_bp.route('/plan_export',methods=['POST','GET'])
+@auth_required(priv=PRIV_ADMIN_SUPER)
+def plan_export():
+    import StringIO
+    from libs.file_helper import excel_write
+    args=request.args
+    if request.method=='POST':
+        args=request.form
+    user=request.environ['user']
+    channel_id=user.user_info['channel_id']
+    charge_departs=user.user_info['charge_departs']
+    sales_dates=args.get('sales_dates')
+    sales_dates = None if not sales_dates else sales_dates.encode().split(',')
+    status_id=args.get('status_id')
+    status_id=status_id if status_id else None
+    sales_depart_id=args.get('sales_depart_id')
+    sales_depart_id=sales_depart_id if sales_depart_id else None
+    rows=plansvc.plan_export(channel_id=channel_id,
+                        charge_departs=charge_departs,
+                        sales_dates=sales_dates,
+                        status_id=status_id,
+                        sales_depart_id=sales_depart_id)
+    print rows
+    xls=StringIO.StringIO()
+    if not excel_write(xls,rows):
+        return u'生成失败'
+    response=Response()
+    response.status_code=200
+    response.data=xls.getvalue()
+    response.headers.set('Content-Type',
+                'application/vnd.ms-excel')
+    d = dt.now().strftime('%Y%m%d-%H%M%S')
+    filename=u'排产导出.xlsx'
+    response.headers.set( 'Content-Disposition',
+            'attachment',filename=filename.encode('gbk') )
+    return response

@@ -72,7 +72,7 @@ class SalerList extends React.Component{
                               <RaisedButton label="添加" primary={true}
                                             backgroundColor="#a4c639"
                                             onClick = {this.getData.bind(this)}
-                                            disabled ={loading}
+                                            disabled ={this.state.loading}
                                             style ={{ height:30, width: 50 , marginLeft: 20}} />
                           </Link>)
         }

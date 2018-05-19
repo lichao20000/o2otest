@@ -69,8 +69,6 @@ def upload_file():
         msg = e.msg
     return  {'rows': rows, 'result':result, 'msg':msg}
 
-
-
 # 临时解决方案
 from user.privs import PRIV_ADMIN_DATA
 
@@ -90,10 +88,7 @@ def get_files():
    return [sql['name']  for sql in sw.sqls]
 
 
-   
-
-@app_bp.route('/get_file/<string:filename>',
-                        methods=['POST', 'GET'])
+@app_bp.route('/get_file/<string:filename>',methods=['POST', 'GET'])
 @auth_required(priv=PRIV_ADMIN_DATA)
 def get_file(filename):
     import songwei as sw
@@ -111,7 +106,6 @@ def get_file(filename):
         'charge_departs':charge_departs
     }
     rows = sw.get_datas(sql['sql'],args)
-    print rows
     xls  = StringIO.StringIO()
     if not excel_write(xls, rows):
        return  u'生成失败.' 
@@ -125,6 +119,12 @@ def get_file(filename):
     response.headers.set( 'Content-Disposition', 
             'attachment',filename=filename.encode('gbk') )
     return response
+
+
+
+
+
+
 
 
 

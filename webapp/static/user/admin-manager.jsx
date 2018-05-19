@@ -8,7 +8,6 @@ import TextField from 'material-ui/TextField'
 import RaisedButton from 'material-ui/RaisedButton'
 import {Link} from'react-router-dom'
 
-
 class AdminManager extends React.Component{
     constructor(props){
         super(props);

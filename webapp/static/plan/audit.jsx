@@ -207,13 +207,14 @@ class Audit extends React.Component{
         let status=[{status_id:1,status_label:'待审核'},
             {status_id:2,status_label:'审核通过',auditstatus:[1,4]},
             {status_id:4,status_label:'审核不通过',auditstatus:[1,2]}];
+
         return (
             <div>
             <Paper style={{padding:'5px 20px', margin:'5px 0px'}} zDepth={2}>
                 <div>筛选条件：</div>
                 <div style={{display:'inline-block' ,  verticalAlign:'middle', }}>
                     <label style={{fontSize:12, color:'rgba(0, 0, 0, 0.3)'}}>排产日期</label>
-                    <MultipleDatePicker style={{display:'inline-block'}} onSubmit={(dates)=>{this.setState({dates});
+                    <MultipleDatePicker style={{display:'inline-block'}} minDate={new Date()} onSubmit={(dates)=>{this.setState({dates});
                     let sales_dates = dates.map((d)=>{let mm = d.getMonth()+1;
                     mm = mm>9 ? mm: '0' + mm;
                     let dd = d.getDate() ;
@@ -423,4 +424,4 @@ class Audit extends React.Component{
     }
 }
 
-exports.Audit = Audit 
+exports.Audit = Audit;

@@ -213,7 +213,7 @@ def get_pos_tag():
     try:
         conn=pg.connect(**config.pg_main)
         cur=conn.cursor()
-        sql=(' select t.* from itd.t_pos_tag t',)
+        sql=(' select t.* from itd.t_pos_tag t where t.deleted=0 ',)
         cur.execute(''.join(sql))
         rows=pg.fetchall(cur)
         return rows
@@ -248,6 +248,8 @@ def get_depart_list():
     finally:
         if cur:cur.close()
         if conn:conn.close()
+
+
 
 
 def get_bcmaanger_info(uni_email):

@@ -13,9 +13,12 @@ import Checkbox from 'material-ui/Checkbox';
 import {RadioButton, RadioButtonGroup} from 'material-ui/RadioButton';
 import Paper from 'material-ui/Paper'
 
+
 const style={
     label:{
-
+        fontSize:16,
+        color:'rgba(0, 0, 0, 0.3)',
+        display:'inline-block'
     },
     paper:{height:'100%',
         width:'100%',
@@ -28,6 +31,10 @@ const style={
         width:'15%',
         display:'inline-block'
     },
+    selectfield:{
+        display:'inline-block',
+        verticalAlign:'middle',
+    }
 };
 
 
@@ -48,12 +55,14 @@ class AdminEditor extends React.Component {
             departs:[],
             sales_depart_id:null,
             user_name:null,
+            tags:[],
         }
     }
 
     componentDidMount() {
         this.getInfo();
         this.getPriv();
+        this.getTag();
     }
 
     getPriv() {
@@ -120,6 +129,33 @@ class AdminEditor extends React.Component {
         }
     }
 
+    getTag(){
+        axios({
+            url: '/user/api/get_user_tag.json',
+            transformRequest: [function (data, headers) {
+                let _data = []
+                for (let k in data) {
+                    _data.push(k + '=' + data[k])
+                }
+                return _data.join('&')
+            }],
+            data: {},
+            method: 'post',
+            responseType: 'json',
+        }).then((resp)=>{
+            if(resp.status==200){
+                if(resp.data.result){this.setState({tags:resp.data.tags})}
+                else{
+                    this.setState({errMsg:resp.data.msg})
+                }
+            }else{
+                this.setState({
+                    errMsg:'请求类型数据失败'
+                })
+            }
+        })
+    }
+
     setData(history){
         this.setState({loading:true});
         let {privs,user_id} = this.state;
@@ -171,6 +207,12 @@ class AdminEditor extends React.Component {
         this.setState({privs:privs});
     }
 
+    onTagChange(e,v,tag_id){
+        let {tags}=this.state;
+        tags.filter((t)=>(t['tag_id']==tag_id))
+
+    }
+
     renderInfo(){
         let privs = (((window.NS || {}).userInfo || {}).user_info || {}).privs || [];
         function checkPrivs(p) {
@@ -180,18 +222,19 @@ class AdminEditor extends React.Component {
         if(privs.some(checkPrivs)){
             return (
                     <div>
+                        <label style={style.label}>手机</label>
                         <TextField disabled = {true}
                                underlineShow={true}
-                               floatingLabelText="手机"
                                value= {user['mobile']}
                                floatingLabelFixed={true}
                                style={style.textfiled}/>
-                        <label>渠道</label>
+                        <label style={style.label}>渠道</label>
                         <SelectField floatingLabelFixed={"渠道"}
                                      value={channel_id}
                                      onChange={(e,key,channel_id)=>{changeItems['channel']=channel_id;
                                      this.setState({channel_id});
                                      }}
+                                     style={style.selectfield}
                         >
                         {
                             channels.map((c,idx)=>(
@@ -199,12 +242,12 @@ class AdminEditor extends React.Component {
                             ))
                         }
                         </SelectField>
-                        <Divider />
-                        <label>区分</label>
+                        <label style={style.label}>区分</label>
                         <SelectField floatingLabelFixed={"区分"}
                                      value={sales_depart_id}
                                      onChange={(e,key,sales_depart_id)=>{changeItems['sales_depart_id']=sales_depart_id;
                                      this.setState({sales_depart_id:sales_depart_id})}}
+                                     style={style.selectfield}
                         >
                         {
                             departs.filter(function departFilter(currentValue){
@@ -214,8 +257,8 @@ class AdminEditor extends React.Component {
                             ))
                         }
                         </SelectField>
-                        <label>姓名</label>
-                        <TextField underlineShow={false}
+                        <label style={style.label}>姓名</label>
+                        <TextField underlineShow={true}
                                    value= {user_name}
                                    onChange={(e,user_name)=>{changeItems['user_name']=user_name;
                                    this.setState({user_name})}}/>
@@ -256,6 +299,7 @@ class AdminEditor extends React.Component {
 
     render() {
         let {user,privs,errMsg,loading} = this.state;
+        let {tags}=this.state
         return (
             <div style={{padding: 20}}>
                 <Paper style={{height:'100%', width:'100%', display:'inline-block', textAlign:'center'}}>
@@ -264,11 +308,23 @@ class AdminEditor extends React.Component {
                 </Paper>
                 <Paper style={style.paper}>
                     <h4>权限信息</h4>
-                    {privs.map((p,i)=>(<Toggle label={p.label}
+                    {
+                        privs.map((p,i)=>(<Toggle label={p.label}
                                                defaultToggled={p.state}
                                                onToggle={(e,v)=>{this.onChange(p.priv,e,v)}}
                                                key={'p-'+i}
                                                style={{marginLeft:'25%',width:'25%'}}/>))
+                    }
+                </Paper>
+                <Paper style={style.paper}>
+                    <h4>类型管理</h4>
+                    {
+                        tags.map((t,i)=>(<Toggle label={t.tag_label}
+                                    defaultToggled={t.status}
+                                    onToggle={(e,v)=>this.onTagChange(e,v,t.tag_id)}
+                                    key={'t-'+i}
+                                    style={{marginLeft:'25%',width:'25%'}}/>
+                        ))
                     }
                 </Paper>
             {loading? < CircularProgress size={40} thickness={3} />:

@@ -62,6 +62,11 @@ items = [ {
             'priv': PRIV_PLAN_AUDIT | PRIV_ADMIN_SUPER,
             },
             {
+                'label':u'排产导出',
+                'url':'/plan/export/',
+                'priv':PRIV_ADMIN_SUPER,
+            },
+            {
             'label': u'我的排产',
             'url': '/plan/mine/',
             'priv': PRIV_PLAN | PRIV_ADMIN_SUPER ,
