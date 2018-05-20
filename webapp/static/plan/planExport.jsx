@@ -182,7 +182,7 @@ class planExport extends React.Component{
                 {this.renderSaler()}
                 <RaisedButton primary={true}
                               label="导出数据"
-                              onClick={(e)=>(this.onSubmit.bind(this))}/>
+                              onClick={(e)=>(this.onSubmit())}/>
             </div>
         )
     }

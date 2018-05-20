@@ -105,12 +105,13 @@ def saler_import(rows):
         sql = ''' 
             insert into t_sales_saler (
                 mobile, saler_name, channel_id,
-                sales_depart_id, unit, create_user_id
+                sales_depart_id, unit, create_user_id,develop_id
             )values(
                 %(mobile)s, %(saler_name)s, %(channel_id)s, 
-                %(sales_depart_id)s, %(unit)s, %(create_user_id)s
+                %(sales_depart_id)s, %(unit)s, %(create_user_id)s,
+                %(develop_id)s
             )
-                '''
+            '''
         cur.executemany(sql,rows)
         if cur.rowcount == len(rows):
             conn.commit()

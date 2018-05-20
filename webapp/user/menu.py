@@ -64,7 +64,7 @@ items = [ {
             {
                 'label':u'排产导出',
                 'url':'/plan/export/',
-                'priv':PRIV_ADMIN_SUPER,
+                'priv':PRIV_ADMIN_SUPER|PRIV_PLAN_AUDIT,
             },
             {
             'label': u'我的排产',

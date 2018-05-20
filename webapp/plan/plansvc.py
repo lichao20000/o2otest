@@ -295,7 +295,6 @@ def plan_export(channel_id,charge_departs,sales_dates=None,status_id=None,sales_
              ' and plan.status=%(status_id)s ' if status_id else '',
              ' and plan.sales_depart_id=%(sales_depart_id)s ' if sales_depart_id else '',
              )
-        print sql,channel_id,charge_departs,sales_dates
         args={
             'channel_id':channel_id,
             'charge_departs':charge_departs,

@@ -278,7 +278,7 @@ def get_plan_column():
     }
 
 @api_bp.route('/plan_export',methods=['POST','GET'])
-@auth_required(priv=PRIV_ADMIN_SUPER)
+@auth_required(priv= PRIV_ADMIN_SUPER | PRIV_PLAN_AUDIT)
 def plan_export():
     import StringIO
     from libs.file_helper import excel_write
@@ -299,7 +299,6 @@ def plan_export():
                         sales_dates=sales_dates,
                         status_id=status_id,
                         sales_depart_id=sales_depart_id)
-    print rows
     xls=StringIO.StringIO()
     if not excel_write(xls,rows):
         return u'生成失败'
