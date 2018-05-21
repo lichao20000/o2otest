@@ -302,10 +302,10 @@ class PosImport extends React.Component{
               <SelectField
                       floatingLabelText="类型"
                       value = {pos_type}
-                      onChange = {(e,idx,pos_type)=>(this.setState({pos_type}))}>
+                        onChange = {(e,idx,pos_type)=>(this.setState({pos_type}))}>
                       {
-                        tags.map((t, idx)=>(
-                        <MenuItem key ={idx} value={t.tag_label} primaryText={t.tag_label} />
+                        ['固定促销点','营业厅','楼宇'].map((t, idx)=>(
+                        <MenuItem key ={idx} value={t} primaryText={t} />
                         ))
                       }
                   </SelectField>

@@ -96,7 +96,7 @@
               <entry file="file://$PROJECT_DIR$/pos/api_views.py">
                 <provider selected="true" editor-type-id="text-editor">
                   <state relative-caret-position="428">
-                    <caret line="402" column="6" lean-forward="true" selection-start-line="402" selection-start-column="6" selection-end-line="402" selection-end-column="6" />
+                    <caret line="402" column="6" selection-start-line="402" selection-start-column="6" selection-end-line="402" selection-end-column="6" />
                   </state>
                 </provider>
               </entry>
@@ -132,8 +132,8 @@
       <file leaf-file-name="sales-editor.jsx" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/static/pos/sales-editor.jsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="305">
-              <caret line="190" column="17" selection-start-line="190" selection-start-column="17" selection-end-line="190" selection-end-column="17" />
+            <state relative-caret-position="486">
+              <caret line="187" column="25" selection-start-line="187" selection-start-column="25" selection-end-line="187" selection-end-column="25" />
               <folding>
                 <element signature="e#0#115#0" expanded="true" />
               </folding>
@@ -204,8 +204,8 @@
       <file leaf-file-name="pos-batch.jsx" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/static/pos/pos-batch.jsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="336">
-              <caret line="306" column="44" lean-forward="true" selection-start-line="306" selection-start-column="44" selection-end-line="306" selection-end-column="44" />
+            <state relative-caret-position="269">
+              <caret line="305" column="23" lean-forward="true" selection-start-line="305" selection-start-column="23" selection-end-line="305" selection-end-column="23" />
               <folding>
                 <element signature="e#0#115#0" expanded="true" />
               </folding>
@@ -807,13 +807,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/saler/salersvc.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-520">
-          <caret line="123" column="18" selection-start-line="123" selection-start-column="18" selection-end-line="123" selection-end-column="18" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/static/user/admin-editor.jsx">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="363">
@@ -899,6 +892,13 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/pos/api_views.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="428">
+          <caret line="402" column="6" selection-start-line="402" selection-start-column="6" selection-end-line="402" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/static/saler/saler-editor.jsx">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="781">
@@ -909,17 +909,17 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/pos/api_views.py">
+    <entry file="file://$PROJECT_DIR$/saler/salersvc.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="428">
-          <caret line="402" column="6" lean-forward="true" selection-start-line="402" selection-start-column="6" selection-end-line="402" selection-end-column="6" />
+        <state relative-caret-position="-520">
+          <caret line="123" column="18" selection-start-line="123" selection-start-column="18" selection-end-line="123" selection-end-column="18" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/static/pos/sales-editor.jsx">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="305">
-          <caret line="190" column="17" selection-start-line="190" selection-start-column="17" selection-end-line="190" selection-end-column="17" />
+        <state relative-caret-position="486">
+          <caret line="187" column="25" selection-start-line="187" selection-start-column="25" selection-end-line="187" selection-end-column="25" />
           <folding>
             <element signature="e#0#115#0" expanded="true" />
           </folding>
@@ -928,8 +928,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/static/pos/pos-batch.jsx">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="336">
-          <caret line="306" column="44" lean-forward="true" selection-start-line="306" selection-start-column="44" selection-end-line="306" selection-end-column="44" />
+        <state relative-caret-position="269">
+          <caret line="305" column="23" lean-forward="true" selection-start-line="305" selection-start-column="23" selection-end-line="305" selection-end-column="23" />
           <folding>
             <element signature="e#0#115#0" expanded="true" />
           </folding>

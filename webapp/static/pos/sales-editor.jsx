@@ -143,7 +143,6 @@ class SalesPositionManager extends React.Component{
     let style = { margin: 12, float:'right'};
     let sales_departs = (((window.NS||{}).userInfo||{})
                           .user_info||{}).charge_departs_info||[];
-    let {tags}=this.state;
     return( 
     <div style={{padding: 20}}> 
       <TextField
@@ -190,8 +189,8 @@ class SalesPositionManager extends React.Component{
           value = {pos_info['pos_type']}
           onChange = {(e,idx,v)=>(this.onChange('pos_type',e,v))}>
           {
-            tags.map((t, idx)=>(
-            <MenuItem key ={idx} value={t.tag_label} primaryText={t.tag_label} />
+            ['固定促销点', '楼宇', '营业厅'].map((t, idx)=>(
+            <MenuItem key ={idx} value={t} primaryText={t} />
             ))
           }
         </SelectField>
