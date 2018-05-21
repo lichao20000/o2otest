@@ -397,3 +397,15 @@ def get_poi_tag():
     except Abort,e :
         msg = e.msg
     return {'rows':rows,'result':result,'msg':msg}
+
+@api_bp.route('/get_pos_tag.json',methods=['POST','GET'])
+@auth_required(priv=PRIV_ADMIN_SUPER|PRIV_ADMIN_POS)
+@jview
+def get_pos_tag():
+    args=request.args
+    if request.method=='POST':
+        args=request.form
+    user=request.environ['user']
+    tags=user.user_info['tags']
+    rows=possvc.get_pos_tag(tags)
+    return {'rows':rows}

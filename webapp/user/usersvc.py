@@ -184,24 +184,31 @@ def get_users(channel_id=None,charge_departs=None,sales_depart_id=None,query=Non
         if cur: cur.close()
         if conn: conn.close()
 
-def set_user_privs(user_id, privs, op_user_id =None):
+def set_user_all(user_id=None, adminuser_id=None,channel_id=None, sales_depart_id=None,user_name=None,privs=None,tags=None):
     conn, cur = None, None
     try:
         conn = pg.connect(**config.pg_main)
         cur = conn.cursor()
-        sql = '''
-               update t_sales_user
-               set  privs = %(privs)s ,
-                    last_update_time = current_timestamp,
-                    last_update_user_id = %(last_update_user_id)s
-                where user_id = %(user_id)s
-                '''
+        sql = ( ' update itd.t_sales_user set ',
+                ' channel_id = %(channel_id)s, ' if channel_id else '',
+                ' sales_depart_id = %(sales_depart_id)s, ' if sales_depart_id else '',
+                ' user_name = %(user_name)s, ' if user_name else ''
+                ' privs = %(privs)s ,' if privs else '',
+                ' tags = %(tags)s ,' if tags else '',
+                ' last_update_user_id = %(adminuser_id)s,',
+                ' last_update_time = current_timestamp '
+                ' where user_id=%(user_id)s ',
+        )
         args = {
                 'user_id': user_id,
-                'privs':  privs,
-                'last_update_user_id': op_user_id
+                'channel_id':channel_id,
+                'sales_depart_id':sales_depart_id,
+                'user_name': user_name,
+                'privs':privs,
+                'tags':tags,
+                'adminuser_id':adminuser_id,
                 }
-        cur.execute(sql, args)
+        cur.execute(''.join(sql), args)
         conn.commit()
         return cur.rowcount == 1
     finally:
@@ -213,7 +220,7 @@ def get_pos_tag():
     try:
         conn=pg.connect(**config.pg_main)
         cur=conn.cursor()
-        sql=(' select t.* from itd.t_pos_tag t where t.deleted=0 ',)
+        sql=(' select t.* from itd.t_sales_pos_tag t where t.deleted=0 ',)
         cur.execute(''.join(sql))
         rows=pg.fetchall(cur)
         return rows
@@ -221,28 +228,39 @@ def get_pos_tag():
         if cur:cur.close()
         if conn:conn.close()
 
-def get_channel_list():
+def get_channel_list(channel_id=None):
     conn,cur=None,None
     try:
         conn=pg.connect(**config.pg_main)
         cur=conn.cursor()
         sql=(' select c.* from itd.t_sales_channel c ',
-             ' where 1=1 ')
-        cur.execute(''.join(sql))
+             ' where 1=1 ',
+             ' and channel_id=%(channel_id)s ' if channel_id else '',)
+        args={
+            'channel_id':channel_id
+        }
+        cur.execute(''.join(sql),args)
         channels=pg.fetchall(cur)
         return channels
     finally:
         if cur:cur.close()
         if conn:conn.close()
 
-def get_depart_list():
+def get_depart_list(charge_departs=None,sales_depart_id=None):
     conn,cur=None,None
     try:
         conn=pg.connect(**config.pg_main)
         cur=conn.cursor()
         sql=(' select d.* from itd.t_sales_depart d ',
-             ' where 1=1 ')
-        cur.execute(''.join(sql))
+             ' where 1=1 ',
+             ' and sales_depart_id = any(%(charge_departs)s) ' if charge_departs else '',
+             ' and sales_depart_id = %(sales_depart_id)s ' if sales_depart_id else '',
+             )
+        args={
+            'charge_departs':charge_departs,
+            'sales_depart_id':sales_depart_id
+        }
+        cur.execute(''.join(sql),args)
         departs=pg.fetchall(cur)
         return departs
     finally:

@@ -357,3 +357,20 @@ def pos_audit(selectedPoi,status,queryStatus):
     finally:
         if cur:cur.close()
         if conn:conn.close()
+
+def get_pos_tag(tags):
+    conn,cur=None,None
+    try:
+        conn=pg.connect(**config.pg_main)
+        cur=conn.cursor()
+        sql=(' select * from itd.t_sales_pos_tag t where t.deleted=0 ',
+             ' and tag_id = any(%(tags)s)')
+        args={
+            'tags':tags
+        }
+        cur.execute(''.join(sql),args)
+        rows=pg.fetchall(cur)
+        return rows
+    finally:
+        if cur:cur.close()
+        if conn:conn.close()

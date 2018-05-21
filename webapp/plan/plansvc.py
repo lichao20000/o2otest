@@ -286,9 +286,15 @@ def plan_export(channel_id,charge_departs,sales_dates=None,status_id=None,sales_
     try:
         conn=pg.connect(**config.pg_main)
         cur=conn.cursor()
-        sql=(" select c.channel_name 渠道,d.sales_depart_name 区分,plan.sales_date 促销日期, array_to_string(plan.sale_hour,',') 促销时刻, plan.create_user_id 排产人ID, plan.saler_cnt 应到人数, array_to_string(plan.saler_mobiles,',') 促销人员 from itd.t_sales_plan plan",
+        sql=(''' 
+ select plan.pos_id 促销点ID, p.pos_name 促销点名称, p.is_charge 是否有租金,
+ c.channel_name 渠道, d.sales_depart_name 区分, 
+ p.pos_man 责任人, plan.sales_date 促销日期, array_to_string(plan.sale_hour,',') 促销时刻, 
+ plan.create_user_id 排产人ID, plan.saler_cnt 应到人数, array_to_string(plan.saler_mobiles,',') 促销人员 from itd.t_sales_plan plan
+ ''',
              ' left join itd.t_sales_channel c on plan.channel_id=c.channel_id',
-             ' left join itd.t_sales_depart d on plan.sales_depart_id=d.sales_depart_id'
+             ' left join itd.t_sales_depart d on plan.sales_depart_id=d.sales_depart_id',
+             ' left join itd.t_sales_pos p on plan.pos_id=p.pos_id',
              ' where plan.channel_id=%(channel_id)s ',
              ' and plan.sales_depart_id=any(%(charge_departs)s) ',
              ' and plan.sales_date=any(%(sales_dates)s) ' if sales_dates else '',

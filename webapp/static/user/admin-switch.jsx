@@ -190,8 +190,6 @@ class AdminSwitch  extends React.Component{
                                         autoHideDuration={3000}
                                         onRequestClose={(e)=>{this.setState({errMsg:''})}}
                                         />
-                                        
-
                                ]
                         }
 

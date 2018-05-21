@@ -34,6 +34,10 @@ const style={
     selectfield:{
         display:'inline-block',
         verticalAlign:'middle',
+    },
+    toggle:{
+        display:'inline-block',
+        width:'20%',
     }
 };
 
@@ -49,7 +53,7 @@ class AdminEditor extends React.Component {
             user: {},
             privs:[],
             errMsg: '',
-            changeItems: [],
+            changeItems:{},
             channels:[],
             channel_id:null,
             departs:[],
@@ -102,10 +106,7 @@ class AdminEditor extends React.Component {
 
     getInfo(){
         let privs = (((window.NS || {}).userInfo || {}).user_info || {}).privs || [];
-        function checkPrivs(p){
-            return p=='PRIV_ADMIN_SUPER'
-        }
-        if(privs.some(checkPrivs)) {
+        if (privs.some((p)=>(p=='PRIV_ADMIN_SUPER'))) {
             axios({
                 url: '/user/api/get_user_info.json',
                 transformRequest: [function (data, headers) {
@@ -130,16 +131,18 @@ class AdminEditor extends React.Component {
     }
 
     getTag(){
+        let {user_id}=this.state;
+        let args={user_id};
         axios({
             url: '/user/api/get_user_tag.json',
-            transformRequest: [function (data, headers) {
+            transformRequest: [function (data) {
                 let _data = []
                 for (let k in data) {
                     _data.push(k + '=' + data[k])
                 }
                 return _data.join('&')
             }],
-            data: {},
+            data: args,
             method: 'post',
             responseType: 'json',
         }).then((resp)=>{
@@ -158,18 +161,8 @@ class AdminEditor extends React.Component {
 
     setData(history){
         this.setState({loading:true});
-        let {privs,user_id} = this.state;
-        let req=[];
-        let reqstate=[];
-        for (let p of privs){
-            req.push(p['priv']);
-            if (p['state']===true){
-                reqstate.push(1)
-            }else{
-                reqstate.push(0)
-            }
-        }
-        let args={req,reqstate,user_id};
+        let {changeItems,user_id}=this.state;
+        changeItems['user_id']=user_id
         axios({
             url: '/user/api/set_user_privs.json',
             transformRequest: [function (data, headers) {
@@ -180,7 +173,7 @@ class AdminEditor extends React.Component {
                 return _data.join('&')
             }
             ],
-            data:args,
+            data:changeItems,
             method: 'post',
             responseType: 'json',
         }).then((resp) => {
@@ -188,7 +181,7 @@ class AdminEditor extends React.Component {
                 if(resp.data.result){
                     history.push('/admin/manager')
                 }else{
-                    this.setState({errMsg:resp.data.errMsg})
+                    this.setState({errMsg:resp.data.msg})
                 }
             }else{
                 this.setState({errMsg: '请求出错!'})
@@ -214,26 +207,30 @@ class AdminEditor extends React.Component {
     }
 
     renderInfo(){
-        let privs = (((window.NS || {}).userInfo || {}).user_info || {}).privs || [];
-        function checkPrivs(p) {
-            return p == 'PRIV_ADMIN_SUPER'
-        }
+        let user_info=((window.NS || {}).userInfo || {}).user_info || {};
+        let privs=user_info.privs||[];
+        let channel_name=user_info.channel_name||'';
+        let charge_departs_info=user_info.charge_departs_info||[];
         let {user,changeItems,channel_id,channels,sales_depart_id,departs,user_name}=this.state;
-        if(privs.some(checkPrivs)){
-            return (
-                    <div>
-                        <label style={style.label}>手机</label>
-                        <TextField disabled = {true}
-                               underlineShow={true}
-                               value= {user['mobile']}
-                               floatingLabelFixed={true}
-                               style={style.textfiled}/>
-                        <label style={style.label}>渠道</label>
-                        <SelectField floatingLabelFixed={"渠道"}
-                                     value={channel_id}
-                                     onChange={(e,key,channel_id)=>{changeItems['channel']=channel_id;
-                                     this.setState({channel_id});
-                                     }}
+        return (
+                <div>
+                    <label style={style.label}>手机</label>
+                    <TextField disabled = {true}
+                           underlineShow={true}
+                           value= {user['mobile']}
+                           style={style.textfiled}/>
+                    {
+                        privs.some((p)=>(p=="PRIV_ADMIN_SUPER"))?
+                        [<label key={'l-1'} style={style.label}>渠道</label>,
+                        <SelectField value={channel_id}
+                                     key={'s-1'}
+                                     onChange={(e,key,channel_id)=>{
+                                         if(channel_id!=user['channel_id']){
+                                             changeItems['channel_id']=channel_id}
+                                         else{
+                                             delete changeItems['channel_id']
+                                         }
+                                         this.setState({channel_id});}}
                                      style={style.selectfield}
                         >
                         {
@@ -241,89 +238,98 @@ class AdminEditor extends React.Component {
                                 <MenuItem key={'c-'+idx} value={c.channel_id} primaryText={c.channel_name}/>
                             ))
                         }
-                        </SelectField>
-                        <label style={style.label}>区分</label>
-                        <SelectField floatingLabelFixed={"区分"}
-                                     value={sales_depart_id}
-                                     onChange={(e,key,sales_depart_id)=>{changeItems['sales_depart_id']=sales_depart_id;
-                                     this.setState({sales_depart_id:sales_depart_id})}}
+                        </SelectField>,
+                        <label key={'l-2'} style={style.label}>区分</label>,
+                        <SelectField value={sales_depart_id}
+                                     key={'s-2'}
+                                     onChange={(e,key,sales_depart_id)=>{
+                                         if (sales_depart_id !=user['sales_depart_id']){
+                                         changeItems['sales_depart_id']=sales_depart_id}
+                                         else{
+                                             delete changeItems['sales_depart_id']
+                                         }
+                                         this.setState({sales_depart_id:sales_depart_id})}}
                                      style={style.selectfield}
                         >
                         {
-                            departs.filter(function departFilter(currentValue){
-                                return currentValue['channel_id']==channel_id
-                            }).map((d,idx)=>(
+                            departs.filter((d)=>(d['channel_id']==channel_id
+                            )).map((d,idx)=>(
                                 <MenuItem key={'d-'+idx} value={d.sales_depart_id} primaryText={d.sales_depart_name}/>
                             ))
                         }
-                        </SelectField>
-                        <label style={style.label}>姓名</label>
+                        </SelectField>,
+                        ]
+                        :[<label style={style.label}>渠道</label>,
                         <TextField underlineShow={true}
-                                   value= {user_name}
-                                   onChange={(e,user_name)=>{changeItems['user_name']=user_name;
+                                   disabled = {true}
+                                   value={channel_name}
+                                   style={style.textfiled}
+                        />,
+                        <label style={style.label}>区分</label>,
+                        <SelectField value={sales_depart_id}
+                                     onChange={(e,key,sales_depart_id)=>{
+                                         if(sales_depart_id!=user['sales_depart_id']){
+                                         changeItems['sales_depart_id']=sales_depart_id}
+                                         else{
+                                             delete changeItems['sales_depart_id']
+                                         }
+                                         this.setState({sales_depart_id:sales_depart_id})}}
+                                     style={style.selectfield}
+                        >
+                        {
+                            charge_departs_info.map((d,idx)=>(
+                                <MenuItem key={'d-'+idx} value={d.sales_depart_id} primaryText={d.sales_depart_name}/>
+                            ))
+                        }
+                        </SelectField>,
+                        ]
+                    }
+                    <label key={'l-3'} style={style.label}>姓名</label>
+                    <TextField underlineShow={true}
+                               value= {user_name}
+                               onChange={(e,user_name)=>{
+                                   if(user_name!=user['user_name']){
+                                       changeItems['user_name']=user_name;
+                                   }else{
+                                       delete changeItems['user_name']
+                                   }
                                    this.setState({user_name})}}/>
-                    </div>
-            )
-        }else{
-            return(
-                <div>
-                    <TextField disabled = {true}
-                               underlineShow={true}
-                               floatingLabelText="手机"
-                               value= {user['mobile']}
-                               floatingLabelFixed={true}
-                               style={style.textfiled}/>
-                    <TextField disabled = {true}
-                               underlineShow={true}
-                               floatingLabelText="渠道"
-                               value= {user['channel_name']}
-                               floatingLabelFixed={true}
-                               style={style.textfiled}/>
-                    <TextField disabled = {true}
-                               underlineShow={true}
-                               floatingLabelText="区分"
-                               value= {user['sales_depart_name']}
-                               floatingLabelFixed={true}
-                               style={style.textfiled}/>
-                    <TextField disabled = {true}
-                               underlineShow={true}
-                               floatingLabelText="姓名"
-                               value= {user['user_name']}
-                               floatingLabelFixed={true}
-                               style={style.textfiled}/>
                 </div>
-            )
-        }
+        )
     }
 
 
     render() {
-        let {user,privs,errMsg,loading} = this.state;
-        let {tags}=this.state
+        let {user,privs,errMsg,loading,changeItems} = this.state;
+        let {tags}=this.state;
         return (
             <div style={{padding: 20}}>
                 <Paper style={{height:'100%', width:'100%', display:'inline-block', textAlign:'center'}}>
                     <h4>基本信息</h4>
                     {this.renderInfo()}
                 </Paper>
+                <Divider/>
                 <Paper style={style.paper}>
-                    <h4>权限信息</h4>
+                    <h4>权限管理</h4>
                     {
                         privs.map((p,i)=>(<Toggle label={p.label}
-                                               defaultToggled={p.state}
-                                               onToggle={(e,v)=>{this.onChange(p.priv,e,v)}}
-                                               key={'p-'+i}
-                                               style={{marginLeft:'25%',width:'25%'}}/>))
+                                                  defaultToggled={p.state}
+                                                  onToggle={(e,v)=>{if(v==p.state){delete changeItems[p['priv']]}
+                                                  else{changeItems[p['priv']]=v}}}
+                                                  key={'p-'+i}
+                                                  style={style.toggle}/>))
                     }
                 </Paper>
+                <Divider/>
                 <Paper style={style.paper}>
                     <h4>类型管理</h4>
                     {
-                        tags.map((t,i)=>(<Toggle label={t.tag_label}
-                                    defaultToggled={t.status}
-                                    onToggle={(e,v)=>this.onTagChange(e,v,t.tag_id)}
-                                    key={'t-'+i}
-                                    style={{marginLeft:'25%',width:'25%'}}/>
+                        tags.map((t, i) => (<Toggle label={t.tag_label}
+                                                    defaultToggled={t.status}
+                                                    onToggle={(e, v)=>{if(v==t.status){delete changeItems[t['tag_id']]}
+                                                        else{changeItems[t['tag_id']]=v}}}
+                                                    key={'t-' + i}
+                                                    style={style.toggle}/>
                         ))
                     }
                 </Paper>
@@ -332,7 +338,8 @@ class AdminEditor extends React.Component {
                 <Route render={({ history}) => (
                     <RaisedButton label="保存更改" primary={true}
                                   onClick = {()=>(this.setData(history))}
-                                  style={style.button} />
+                                  style={style.button}
+                    />
                 )} />
                 <Link to='/admin/manager'>
                     <RaisedButton label="取消" style={style.button}  />

@@ -82,7 +82,7 @@ items = [ {
               'url': '/admin/switch' 
              },
             {
-                'label': u'权限管理',
+                'label': u'用户管理',
                 'url': '/admin/manager/',
                 'priv':  PRIV_ADMIN_SUPER | PRIV_ADMIN,
                 },

@@ -50,7 +50,37 @@ class PosImport extends React.Component{
           checkResult:'',
             errMsg:'',
            user_info ,
+            tags:[],
         }
+    }
+
+    componentDidMount(){
+        this.getTag()
+    }
+
+    getTag(){
+        axios({
+            url: '/pos/api/get_pos_tag.json' ,
+            transformRequest:[ function(data, headers) {
+                let _data =  []
+                for(let k in data){
+                    _data.push(k+'='+ (data[k]==null?'':data[k]))
+                }
+                return  _data.join('&')
+            }
+            ],
+            data: {},
+            method: 'post',
+            responseType:'json',
+        }).then((resp)=>{
+            if(resp.status==200){
+                this.setState({tags:resp.data.rows})
+            }else{
+                this.setState({
+                    errMsg:'请求类型数据失败'
+                })
+            }}
+        )
     }
 
     onChoose(e){
@@ -242,6 +272,7 @@ class PosImport extends React.Component{
         let {read, percentCompleted, rows, errMsg, fileName,
                 showConfirm, sales_depart_id, pos_type,
                 checked, checkResult, sending,} = this.state;
+        let {tags}=this.state;
         return (
             <div style={{padding:'30px 20px' }}>
                 <TextField
@@ -271,10 +302,10 @@ class PosImport extends React.Component{
               <SelectField
                       floatingLabelText="类型"
                       value = {pos_type}
-                        onChange = {(e,idx,pos_type)=>(this.setState({pos_type}))}>
+                      onChange = {(e,idx,pos_type)=>(this.setState({pos_type}))}>
                       {
-                        ['固定促销点','营业厅','楼宇'].map((t, idx)=>(
-                        <MenuItem key ={idx} value={t} primaryText={t} />
+                        tags.map((t, idx)=>(
+                        <MenuItem key ={idx} value={t.tag_label} primaryText={t.tag_label} />
                         ))
                       }
                   </SelectField>
