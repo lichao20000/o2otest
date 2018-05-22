@@ -23,8 +23,7 @@ def get_saler_list(q=None, mobile=None, mobiles=None,
         cur = conn.cursor()
         sql = ('''
 select s.mobile,s.saler_name,s.channel_id,s.sales_depart_id,
-s.unit,s.deleted,array_to_string(s.develop_id,','),ch.channel_name,
-d.sales_depart_name
+s.unit,s.deleted,array_to_string(s.develop_id,','),s.create_user_id,ch.channel_name,d.sales_depart_name
             ''',
             ' from t_sales_saler s ',
             ' left join t_sales_channel ch ',

@@ -273,7 +273,6 @@ def admin_alter_user():
             tags.remove(2)
         tags='{'+','.join(map(str,tags))+'}' if  tags !=SetUser['tags'] else None
         if channel_id or sales_depart_id or user_name or privs or tags:
-            print channel_id,sales_depart_id,user_name,privs,tags
             usersvc.set_user_all(user_id=user_id,
                                  adminuser_id=AdminUser.user_info['user_id'],
                                  channel_id=channel_id,

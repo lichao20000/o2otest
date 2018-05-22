@@ -307,7 +307,7 @@ class SalerEditor extends React.Component{
                 <label style={style.label}>发展人编码</label>
                 <TextField disabled={true}
                            underlineShow={true}
-                           value={saler['develop_id']}
+                           value={saler['array_to_string']}
                 />
             </div>
         );
@@ -335,8 +335,6 @@ class SalerEditor extends React.Component{
                                           onClick = {()=>(this.setData(history))}
                                           style={style} />
                         )}/>
-                        <RaisedButton label="显示更改" primary={true}
-                                      onClick={(e)=>{console.log(changeItems)}}/>
                         <Link to='/saler/manager'>
                             <RaisedButton label="取消" style={style}  />
                         </Link>
