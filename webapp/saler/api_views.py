@@ -21,6 +21,8 @@ from libs.file_helper import excel_write
 from datetime import datetime as dt
 from flask import send_file, Response
 
+from user.usersvc import get_channel_list,get_depart_list
+
 api_bp = Blueprint('saler_api_bp', __name__, template_folder='templates')
 
 
@@ -150,40 +152,36 @@ def update_saler():
     args = request.args
     if request.method == 'POST':
         args = request.form
-    keys = ( 'mobile', 'saler_name', #'channel_id',
-                'deleted','sales_depart_id', 'unit', #'create_user_id'
-                )
-    user = request.environ['user']
-    channel_id = user.user_info['channel_id'] # 限定只能添加自己渠道的
-    charge_departs = user.user_info['charge_departs']
-    saler = { 'update_user_id':user.user_id}
-    for k in keys:
-        val = args.get(k,'')
-        if val=='':
-            continue
-        saler[k] = val
+    user=request.environ['user']
+    mobile=args.get('mobile','')
+    channel_id=args.get('channel_id','')
+    channel_id=_int(channel_id) if channel_id else ''
+    sales_depart_id=args.get('sales_depart_id','')
+    sales_depart_id=_int(sales_depart_id) if sales_depart_id else ''
+    saler_name=args.get('saler_name','')
+    unit=args.get('unit','')
+    deleted=args.get('deleted','')
+    deleted=_int(deleted) if deleted else ''
+    update_user_id=user.user_id
     result, msg = False, ''
     try:
-        mobile = saler['mobile']
-        if saler.get('deleted'): 
-            deleted = _int(saler['deleted'])
-            saler['deleted'] = 1 if deleted else 0
-        if not mobile.isdigit() or len(mobile) != 11:
-            raise Abort(u'请提供正确的手机号')
-        if saler.get('sales_depart_id'):
-            saler['sales_depart_id'] = _int(saler['sales_depart_id'])
-            if not saler['sales_depart_id']:
-                raise Abort(u'促销人员区分无效')
-            if saler['sales_depart_id'] not in charge_departs:
-                raise Abort(u'无权修改人员到该区分')
-        check = salersvc.get_saler_list(mobile=mobile)
-        if not len(check):
-            raise Abort(u'要修改的记录不存在')
-        check = check[0]
-        if check['sales_depart_id'] not in charge_departs \
-                or channel_id != check['channel_id']:
-            raise Abort(u'无权修改该信息')
-        result = salersvc.update_saler(saler)
+        print sales_depart_id,user.user_info['charge_departs']
+        if  sales_depart_id and channel_id:
+            depart_info = get_depart_list(sales_depart_id=sales_depart_id)
+            if depart_info[0]['channel_id'] != channel_id:
+                raise Abort(u'设置的渠道与区分不符合')
+
+        elif sales_depart_id:
+            if sales_depart_id not in user.user_info['charge_departs']:
+                raise Abort(u'设置的区分不符合')
+
+        result = salersvc.update_saler(mobile=mobile,
+                                       channel_id=channel_id,
+                                       sales_depart_id=sales_depart_id,
+                                       saler_name=saler_name,
+                                       unit=unit,
+                                       deleted=deleted,
+                                       update_user_id=update_user_id)
     except Abort, e:
         msg = e.msg
     return {
@@ -295,7 +293,6 @@ def pos_import():
         msg = e.msg
     return {'result': result, 'msg': msg, 'cnt': cnt}    
         
-
 
 
 

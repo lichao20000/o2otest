@@ -219,11 +219,12 @@ def admin_alter_user():
     try:
         user_id=args.get('user_id','')
         SetUser = usersvc.get_user_local_info(user_id)
+        privs=copy.copy(SetUser['privs'] if SetUser['privs'] else [])
         AdminUser=request.environ['user']
         if not user_id or not SetUser:
             raise Abort(u'设置的用户不存在')
-        if 'PRIV_ADMIN_SUPER' in SetUser['privs'] or \
-                ('PRIV_ADMIN_SUPER' not in AdminUser.user_info['privs'] and 'PRIV_ADMIN' in SetUser['privs']) :
+        if 'PRIV_ADMIN_SUPER' in privs or \
+                ('PRIV_ADMIN_SUPER' not in AdminUser.user_info['privs'] and 'PRIV_ADMIN' in privs) :
             raise Abort(u'不能越级更改系统管理员的信息')
 
         channel_id = args.get('channel_id', '')
@@ -244,7 +245,6 @@ def admin_alter_user():
                 raise Abort(u'设置的渠道与区分不符合')
 
 
-        privs=copy.copy(SetUser['privs'] if SetUser['privs'] else [])
         PRIV_ADMIN = args.get('PRIV_ADMIN', None)
         if PRIV_ADMIN:privs=privsUpdate(privs,'PRIV_ADMIN',PRIV_ADMIN)
         PRIV_ADMIN_POS = args.get('PRIV_ADMIN_POS', None)
@@ -255,6 +255,8 @@ def admin_alter_user():
         if PRIV_PLAN:privs=privsUpdate(privs,'PRIV_PLAN',PRIV_PLAN)
         PRIV_ADMIN_DATA = args.get('PRIV_ADMIN_DATA', None)
         if PRIV_ADMIN_DATA:privs=privsUpdate(privs,'PRIV_ADMIN_DATA',PRIV_ADMIN_DATA)
+        PRIV_PLAN_AUDIT = args.get('PRIV_PLAN_AUDIT', None)
+        if PRIV_PLAN_AUDIT:privs=privsUpdate(privs,'PRIV_PLAN_AUDIT',PRIV_PLAN_AUDIT)
         privs = '{'+','.join(privs)+'}' if privs != SetUser['privs'] else None
 
 
@@ -298,7 +300,7 @@ def get_pos_tag():
     rows=usersvc.get_pos_tag()
     return {'rows':rows}
 
-@api_bp.route('/get_user_info.json',methods=['POST','GET'])
+@api_bp.route('/get_channels_departs.json',methods=['POST','GET'])
 @auth_required(priv=PRIV_ADMIN_SUPER)
 @jview
 def get_channel_list():

@@ -64,7 +64,7 @@ class AdminEditor extends React.Component {
     }
 
     componentDidMount() {
-        this.getInfo();
+        this.getChannelsDeparts();
         this.getPriv();
         this.getTag();
     }
@@ -104,11 +104,11 @@ class AdminEditor extends React.Component {
         })
     }
 
-    getInfo(){
+    getChannelsDeparts(){
         let privs = (((window.NS || {}).userInfo || {}).user_info || {}).privs || [];
         if (privs.some((p)=>(p=='PRIV_ADMIN_SUPER'))) {
             axios({
-                url: '/user/api/get_user_info.json',
+                url: '/user/api/get_channels_departs.json',
                 transformRequest: [function (data, headers) {
                     let _data = []
                     for (let k in data) {

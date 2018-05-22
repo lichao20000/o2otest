@@ -21,8 +21,11 @@ def get_saler_list(q=None, mobile=None, mobiles=None,
     try:
         conn = pg.connect(**config.pg_main)
         cur = conn.cursor()
-        sql = (
-            ' select s.*, ch.channel_name, d.sales_depart_name ',
+        sql = ('''
+select s.mobile,s.saler_name,s.channel_id,s.sales_depart_id,
+s.unit,s.deleted,array_to_string(s.develop_id,','),ch.channel_name,
+d.sales_depart_name
+            ''',
             ' from t_sales_saler s ',
             ' left join t_sales_channel ch ',
             ' on s.channel_id = ch.channel_id ',
@@ -142,31 +145,39 @@ def sms_user_import(rows):
         if conn:conn.close()
 
 
-def update_saler(saler):
-    u'''
-    mobile is must
-    '''
+def update_saler(mobile,
+                 channel_id=None,
+                 sales_depart_id=None,
+                 saler_name=None,
+                 unit=None,
+                 deleted=None,
+                 update_user_id=None
+                 ):
     conn, cur = None, None
     try:
-        keys = (  'saler_name', 'channel_id','deleted' ,
-                'sales_depart_id', 'unit', 'last_update_user_id')
         conn = pg.connect(**config.pg_main)
         cur = conn.cursor()
-        args = {}
-        args.update(saler)
-        items =[]
-        for k in args:
-            if k not in keys: 
-                continue
-            items.append(' %s = %%(%s)s' % (k, k)) 
         sql = ('''
                 update t_sales_saler
                     set update_time = current_timestamp,
             ''',
-            ','.join(items),
+            ' channel_id=%(channel_id)s, ' if channel_id else '',
+            ' sales_depart_id=%(sales_depart_id)s, ' if sales_depart_id else '',
+            ' saler_name=%(saler_name)s, ' if saler_name else '',
+            ' unit=%(unit)s, ' if unit else '',
+            ' deleted=%(deleted)s, ' if deleted else'',
+            ' last_update_user_id = %(update_user_id)s ' if update_user_id else '',
             ' where mobile = %(mobile)s'
             )
-        #print ''.join(sql) % args
+        args={
+            'mobile':mobile,
+            'channel_id':channel_id,
+            'sales_depart_id':sales_depart_id,
+            'saler_name':saler_name,
+            'unit':unit,
+            'deleted':deleted,
+            'update_user_id':update_user_id
+        }
         cur.execute(''.join(sql), args)
         conn.commit()
         return cur.rowcount == 1

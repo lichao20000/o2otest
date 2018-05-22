@@ -48,10 +48,12 @@ def excel_write(file_name, rows, headers=None, sheet_name='sheet1'):
                         headers.append(key)
             headers = [(h, h) for h in headers]
         for i, h in enumerate(headers):
+            print i,h[0]
             worksheet.write(0, i, h[0])
         for row_num, r in enumerate(rows):
             for col_num, h in enumerate(headers):
                 val = r.get(h[1],'')
+                print row_num+1,col_num,val
                 worksheet.write(row_num+1, col_num, val)
         workbook.close()
         return True
