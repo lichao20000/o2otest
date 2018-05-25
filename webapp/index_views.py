@@ -69,14 +69,12 @@ def upload_file():
         msg = e.msg
     return  {'rows': rows, 'result':result, 'msg':msg}
 
-
-
 # 临时解决方案
-from user.privs import PRIV_ADMIN, PRIV_ADMIN_SUPER
+from user.privs import PRIV_ADMIN_DATA
 
 @app_bp.route('/get_files.json', methods=['GET', 'POST'])
 @jview
-@auth_required(priv=PRIV_ADMIN | PRIV_ADMIN_SUPER)
+@auth_required(priv=PRIV_ADMIN_DATA)
 def get_files():
    # path = os.path.join('static', 'files')
    # files = []
@@ -90,11 +88,8 @@ def get_files():
    return [sql['name']  for sql in sw.sqls]
 
 
-   
-
-@app_bp.route('/get_file/<string:filename>',
-                        methods=['POST', 'GET'])
-@auth_required(priv=PRIV_ADMIN | PRIV_ADMIN_SUPER)
+@app_bp.route('/get_file/<string:filename>',methods=['POST', 'GET'])
+@auth_required(priv=PRIV_ADMIN_DATA)
 def get_file(filename):
     import songwei as sw
     import StringIO
@@ -103,7 +98,14 @@ def get_file(filename):
        return  u'非法文件名.' 
     idx = names.index(filename)
     sql = sw.sqls[idx]
-    rows = sw.get_datas(sql['sql'])
+    user = request.environ['user']
+    channel_id = user.user_info['channel_id']
+    charge_departs = user.user_info['charge_departs']
+    args={
+        'channel_id':channel_id,
+        'charge_departs':charge_departs
+    }
+    rows = sw.get_datas(sql['sql'],args)
     xls  = StringIO.StringIO()
     if not excel_write(xls, rows):
        return  u'生成失败.' 
@@ -113,12 +115,16 @@ def get_file(filename):
     response.headers.set('Content-Type', 
                 'application/vnd.ms-excel')
     d = dt.now().strftime('%Y%m%d-%H%M%S')
-    filename=u'%s-%s.xls' % (filename, d)
+    filename=u'%s-%s.xlsx' % (filename, d)
     response.headers.set( 'Content-Disposition', 
             'attachment',filename=filename.encode('gbk') )
     return response
- 
-    
+
+
+
+
+
+
 
 
 

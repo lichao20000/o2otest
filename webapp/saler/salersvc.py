@@ -16,21 +16,21 @@ import config
 
 def get_saler_list(q=None, mobile=None, mobiles=None,
                         channel_id=None, deleted=None,
-                        sales_depart_ids=None, page=1 , page_size=100):
+                        sales_depart_ids=None, page=None, page_size=None):
     conn, cur = None, None
     try:
         conn = pg.connect(**config.pg_main)
         cur = conn.cursor()
-        sql = [
-            '''
-        select s.*, ch.channel_name, d.sales_depart_name
-        from t_sales_saler s
-        left join t_sales_channel ch
-            on s.channel_id = ch.channel_id
-        left join t_sales_depart d
-            on s.sales_depart_id = d.sales_depart_id
-        where 1 = 1
-        ''',
+        sql = ('''
+select s.mobile,s.saler_name,s.channel_id,s.sales_depart_id,
+s.unit,s.deleted,array_to_string(s.develop_id,','),s.create_user_id,ch.channel_name,d.sales_depart_name
+            ''',
+            ' from t_sales_saler s ',
+            ' left join t_sales_channel ch ',
+            ' on s.channel_id = ch.channel_id ',
+            ' left join t_sales_depart d ',
+            ' on s.sales_depart_id = d.sales_depart_id ',
+            ' where 1 = 1 ',
         ' and  s.mobile = %(mobile)s ' if mobile else '',
         ' and  s.mobile = any(%(mobiles)s) ' if mobiles else '',
         ' and  s.channel_id = %(channel_id)s ' if channel_id else '',
@@ -39,9 +39,9 @@ def get_saler_list(q=None, mobile=None, mobiles=None,
           and  s.sales_depart_id=any(%(sales_depart_ids)s)
         ''' if sales_depart_ids else '',
         ' and  (s.saler_name like %(q)s or s.mobile like %(q)s) ' if q else '' ,
-        ' order by mobile desc '
-        ''' limit %(limit)s offset %(offset)s '''
-                ]
+        ' order by mobile desc ',
+        ' limit %(limit)s offset %(offset)s ' if isinstance(page,int) and isinstance(page_size,int) else '',
+        )
         #print mobiles, 'wtf......'
         args = {
                 'q': '%%%s%%' % (q, ) if q else None,
@@ -49,16 +49,14 @@ def get_saler_list(q=None, mobile=None, mobiles=None,
                 'channel_id' : channel_id,
                 'deleted': deleted,
                 'sales_depart_ids': sales_depart_ids,
-                'limit': page_size+1,
-                'offset': (page-1)*page_size,
+                'limit': page_size+1 if isinstance(page_size,int) else None,
+                'offset': (page-1)*page_size if isinstance(page,int) and isinstance(page_size,int) else None,
                 'mobiles' : mobiles,
-                }        
+                }
         cur.execute(''.join(sql), args)
         #print ''.join(sql) % args
         rows = pg.fetchall(cur)
-        has_more = len(rows) > page_size
-        result = rows[:-1] if has_more else rows, has_more
-        return result
+        return rows
     finally:
         if cur: cur.close()
         if conn: conn.close()
@@ -109,12 +107,13 @@ def saler_import(rows):
         sql = ''' 
             insert into t_sales_saler (
                 mobile, saler_name, channel_id,
-                sales_depart_id, unit, create_user_id
+                sales_depart_id, unit, create_user_id,develop_id
             )values(
                 %(mobile)s, %(saler_name)s, %(channel_id)s, 
-                %(sales_depart_id)s, %(unit)s, %(create_user_id)s
+                %(sales_depart_id)s, %(unit)s, %(create_user_id)s,
+                %(develop_id)s
             )
-                '''
+            '''
         cur.executemany(sql,rows)
         if cur.rowcount == len(rows):
             conn.commit()
@@ -123,39 +122,65 @@ def saler_import(rows):
         if cur: cur.close()
         if conn: conn.close()
 
+def sms_user_import(rows):
+    conn,cur=None,None
+    try:
+        conn=pg.connect(**config.pg_main)
+        cur=conn.cursor()
+        sql=(' insert into public.t_rp_sms_user',
+             ' (user_id,bind_mobile,full_name,reg_date,status)',
+             ' select ',
+             " nextval('public.seq_rp_sms_user_id'),'%(mobile)s',%(saler_name)s,current_timestamp,1 ",
+             ' where not exists (select 1',
+             ' from public.t_rp_sms_user',
+             " where bind_mobile='%(mobile)s')",)
+        cur.executemany(''.join(sql),rows)
+        result=cur.rowcount
+        if result>0:
+            conn.commit()
+        return result
+    finally:
+        if cur:cur.close()
+        if conn:conn.close()
 
 
-def update_saler(saler):
-    u'''
-    mobile is must
-    '''
+def update_saler(mobile,
+                 channel_id=None,
+                 sales_depart_id=None,
+                 saler_name=None,
+                 unit=None,
+                 deleted=None,
+                 update_user_id=None
+                 ):
     conn, cur = None, None
     try:
-        keys = (  'saler_name', 'channel_id','deleted' ,
-                'sales_depart_id', 'unit', 'update_user_id')
         conn = pg.connect(**config.pg_main)
         cur = conn.cursor()
-        args = {}
-        args.update(saler)
-        items =[]
-        for k in args:
-            if k not in keys: 
-                continue
-            items.append(' %s = %%(%s)s' % (k, k)) 
         sql = ('''
                 update t_sales_saler
                     set update_time = current_timestamp,
             ''',
-            ','.join(items),
+            ' channel_id=%(channel_id)s, ' if channel_id else '',
+            ' sales_depart_id=%(sales_depart_id)s, ' if sales_depart_id else '',
+            ' saler_name=%(saler_name)s, ' if saler_name else '',
+            ' unit=%(unit)s, ' if unit else '',
+            ' deleted=%(deleted)s, ' if deleted else'',
+            ' last_update_user_id = %(update_user_id)s ' if update_user_id else '',
             ' where mobile = %(mobile)s'
             )
-        #print ''.join(sql) % args
+        args={
+            'mobile':mobile,
+            'channel_id':channel_id,
+            'sales_depart_id':sales_depart_id,
+            'saler_name':saler_name,
+            'unit':unit,
+            'deleted':deleted,
+            'update_user_id':update_user_id
+        }
         cur.execute(''.join(sql), args)
         conn.commit()
         return cur.rowcount == 1
     finally:
         if cur: cur.close()
         if conn: conn.close()
-
-
 

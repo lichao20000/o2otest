@@ -18,7 +18,7 @@ import FontIcon from 'material-ui/FontIcon';
 import ActionCheckCircle from 'material-ui/svg-icons/action/check-circle';
 import ActionDone from 'material-ui/svg-icons/action/done';
 import AlertError from 'material-ui/svg-icons/alert/error';
-
+import Slider,{Range} from 'rc-slider'
 
 
 class Plan extends React.Component{
@@ -39,9 +39,50 @@ class Plan extends React.Component{
       saler_cnt:'',
       errMsg:'',
       dates:[],
+      slidervalue:[0,24],
+      hours:[],
+      texthours:'',
     }
   }
-  
+
+  componentDidMount(){
+    this.initSalers();
+  }
+
+  initSalers() {
+      this.setState({loading: true});
+      let args = {q:'',deleted:0};
+      axios({
+          url: '/saler/api/get_saler_list.json',
+          transformRequest: [function (data, headers) {
+              let _data = []
+              for (let k in data) {
+                  _data.push(k + '=' + (data[k] == null ? '' : data[k]))
+              }
+              return _data.join('&')
+          }],
+          data:args,
+          method: 'post',
+          responseType: 'json',
+      }).then((resp)=>{
+        if (resp.status==200){
+          if(resp.data.salers instanceof Array){
+            let text='';
+            let salers=resp.data.salers;
+            for(let s=0;s<salers.length;s++){
+                text=salers[s].mobile+''+salers[s].saler_name+''+'\n'+text
+            }
+            this.setState({salerText:text})
+          }else{
+            let errMsg='请求促销人员数据失败';
+              this.setState({errMsg})
+          }this.setState({loading:false})
+        }
+      })
+  }
+
+
+
   onChoose(e){
     let file = e.target.files[0];
     this.setState({file: file, fileName:file.name, sending: true})
@@ -65,15 +106,16 @@ class Plan extends React.Component{
           }
         }
         let rows = _rows.map((r, idx)=>{
-          let mobiles = r[2].split(/\D/).filter((d)=>{
+          let mobiles = r[3].split(/\D/).filter((d)=>{
             console.info(d)
             return d.match(/^\d+/) && d.length==11
           })
           return {
-            pos_id: r[1] ,
+            pos_id: r[2] ,
             sales_date: r[0],
-            saler_cnt: r[3],
-            saler_mobiles: mobiles
+            saler_cnt: r[4],
+            saler_mobiles: mobiles,
+              sale_hour:r[1]
           } 
         })
         let percentCompleted = 0;
@@ -104,8 +146,8 @@ class Plan extends React.Component{
       responseType:'json',
     }).then( (resp) =>{
       if(resp.status == 200){
-        if(resp.data instanceof Array){
-          let options = resp.data.map((d)=>{
+        if(resp.data.rows instanceof Array){
+          let options = resp.data.rows.map((d)=>{
             d.label = 'ID '+d.pos_id +':'+ d.pos_name;
             d.value = d.pos_id
             return d
@@ -169,23 +211,96 @@ class Plan extends React.Component{
     this.setState({salerText})
   }
 
+  onSliderChange=(value)=>{
+    this.setState({slidervalue:value});
+  };
+
+  sortNumber=(a,b)=>{return a-b};
+
+  onAddTime(e){
+    e.preventDefault();
+    let {slidervalue,hours}=this.state;
+    let length=slidervalue[1]-slidervalue[0];
+      for(let i=0;i<length;i++){
+        let match=false;
+        for(let h=0;h<hours.length;h++){
+          if(hours[h]==(slidervalue[0]+i)){
+            match=true;
+            break
+          }}
+          if(match==false){hours.push(slidervalue[0]+i)}
+      }
+      this.setState({texthours:hours.sort(this.sortNumber).toString()})
+  };
+
+  onTextArea(e){
+    this.setState({texthours:e.target.value});
+    let va=e.target.value.split(',');
+    if (va.length>25){
+      let errMsg='输入促销时间异常，请清空后重新添加';
+      this.setState({errMsg})
+    }
+    else{
+      let hours=[];
+    for(let i=0;i<va.length;i++){
+      if(va[i]!=''){
+          if (0<=parseInt(va[i])<=24){
+              hours.push(parseInt(va[i]))
+          }else{
+            let errMsg='输入促销时间异常，请清空后重新添加';
+            this.setState({errMsg})
+          }
+          if (isNaN(parseInt(va[i]))){
+            let errMsg='输入促销时间异常，请清空后重新添加';
+            this.setState({errMsg})
+          }
+      }
+      this.setState({hours:hours})
+    }}
+  }
+
   renderForm(){
     let {tabid, imported, fileName, sending, salerText,saler_cnt,
-        loading, posText ,errsaler_cnt }= this.state
+        loading, posText ,errsaler_cnt,hours,texthours }= this.state;
+    let slider={defaultvalue:[0,24],min:0,max:24,step:1};
+    let marks={};
+    for(let i=0;i<25;i++){
+      marks[i]=i.toString()
+    }
     return (<div>
-      <h4 style={{fontSize:14, color:'#333'}}> 促销时间</h4>
+      <h4 style={{fontSize:14, color:'#333'}}> 促销日期</h4>
       <div className='multi-date'>
       <MultipleDatePicker
         onSubmit={dates=>this.setState({dates})}
         minDate={new Date()}/>
+          <Divider />
       </div>
+        <div style={{fontSize:14}}>
+            <h4 style={{fontSize:14, color:'#333'}}> 促销时间</h4>
+          <Range dot
+                 defaultValue={slider.defaultvalue}
+                 min={slider.min}
+                 max={slider.max}
+                 onAfterChange={this.onSliderChange}
+                 marks={marks}/>
+            <RaisedButton style={{marginTop:20}}
+                          label='添加时间'
+                          primary={true}
+                          onClick={this.onAddTime.bind(this)}/>
+          <textarea style={{minWidth:'100%',
+              minHeight: 100, marginBottom:10}}
+                    value={texthours}
+                    placeholder='请在此填写促销的具体小时逗号隔开，例如：9,10,11,15,16,17'
+                    onChange={this.onTextArea.bind(this)}/>
+        </div>
+      <Divider />
       <div style={{fontSize:14}}>
-          <label style={{ marginRight: 20}}> 促销点 </label>
+          <h4 style={{fontSize:14, color:'#333'}}> 促销点</h4>
           <a style ={{fontSize: 12}} href='/pos/api/get_file'>我的促销点</a>
       </div>
       <AsyncSelect
         value ={null}
-        placeholder='输入 名称/位置 搜索'
+        placeholder='请输入 名称/位置 进行搜索'
         styles={{control:styles=>({...styles, backgroundColor:'#fff',fontSize:10, borderRadius:0 })}}
         noResultsText='搜索无结果'
         onChange={this.onChoosePos.bind(this)}
@@ -193,31 +308,31 @@ class Plan extends React.Component{
          />
       <textarea style={{minWidth:'100%',
           minHeight: 100, marginBottom:10}}
-          placeholder='促销点的系统ID(pos_id)(可以在上方搜索),区分范围内的促销点多条换行隔开'
+          placeholder='请输入促销点的系统ID(pos_id)(可以在上方搜索),区分范围内的促销点多条换行隔开,例如:1000 XX营业厅'
           value = {posText}
           onChange = {e=>this.setState({posText:e.target.value})}
       />
       <Divider />
       <div style={{fontSize:14}}>
-          <label style={{color:'#333', marginRight: 20}}>  促销人员 </label>
+          <h4 style={{fontSize:14, color:'#333'}}> 促销人员</h4>
           <a  style={{fontSize:12}} href='/saler/api/get_file'>我的促销人员</a>
       </div>
       <AsyncSelect
         value={null}
-        placeholder='输入 姓名/电话 搜索'
+        placeholder='请输入 姓名/电话 搜索'
         styles={{control:styles=>({...styles, backgroundColor:'#fff',fontSize:10, borderRadius:0 })}}
         onChange={this.onChooseSaler.bind(this)}
         loadOptions={this.getSaler.bind(this)}
          />
       <textarea style={{minWidth:'100%',
         minHeight: 100}}
-        placeholder='促销人员的手机号(11位)多条换行隔开'
+        placeholder='请输入促销人员的手机号(11位)多条换行隔开,例如:18620000000 张三'
         value={salerText}
         onChange = {e=>this.setState({salerText:e.target.value})}
       />
       <Divider />
-      <h4 style={{fontSize:14, color:'#333'}}> 促销人数</h4>
-      <TextField hintText="促销人数"
+      <h4 style={{fontSize:14, color:'#333'}}> 应到人数</h4>
+      <TextField hintText="请输入应到人数"
               value = {saler_cnt}
               errorText = {errsaler_cnt}
               onChange = {(e,saler_cnt)=>{
@@ -264,13 +379,15 @@ class Plan extends React.Component{
         {percentCompleted}%</div>]:
         <RaisedButton  primary={true} label='选择文件'
         disabled = {sending || loading}
-        onClick={(e)=>{this.refs['fileExcel'].click(e)}} /> 
+        onClick={(e)=>{this.refs['fileExcel'].click(e)}} />
       }
       <label style={{fontSize:14, color:'#333'}}> {fileName} </label>
       <div>
         <label style={{fontSize:14, color:'#880'}}>导入说明 </label>
         <div style={{fontSize:14, color:'#f00'}}>
-        请按照以下图片显示要求提供导入的excel表(系统只读第一个sheet,第一行为表头)
+        请按照以下图片显示要求提供导入的
+            <a href="/static/files/import-plan-sample.xlsx" download>样例表格</a>
+            (系统只读第一个sheet,第一行为表头)
           <a href='/static/images/import-plan-tips.png'
             target='_blank' >点我看大图</a>
         </div>
@@ -293,8 +410,8 @@ class Plan extends React.Component{
   renderRows(){
     let { rows, imported, checked} = this.state;
     let headers = ['序号','','促销点系统ID',
-          '促销时间', '促销人员手机号', '促销人数']
-    let iconStyle ={verticalAlign:'middle', marginRight:'5'}
+          '促销日期','促销时间点','促销人员手机号','促销人数'];
+    let iconStyle ={verticalAlign:'middle', marginRight:'5'};
     return (
       <div style={{    overflow: 'hidden', }}>
         <Table fixedHeader={true} 
@@ -336,6 +453,7 @@ class Plan extends React.Component{
                 </TableRowColumn>
                 <TableRowColumn><div style={style}>{_t}</div></TableRowColumn>
                 <TableRowColumn>{r['sales_date']}</TableRowColumn>
+                  <TableRowColumn>{r['sale_hour']}</TableRowColumn>
                 <TableRowColumn>
                   { r['saler_mobiles'].map((m,i)=>{
                     let salers = r.salers||[];
@@ -364,7 +482,7 @@ class Plan extends React.Component{
 
 
   getRows(){
-    let {posText,saler_cnt,salerText, dates, imported, read } = this.state;
+    let {posText,saler_cnt,salerText, dates, imported, read,texthours } = this.state;
     if(!imported){
       if(!saler_cnt|| !saler_cnt.match(/^\d+$/)){
         this.setState({errsaler_cnt:'请填写正确的数字'})
@@ -415,7 +533,8 @@ class Plan extends React.Component{
           let pos_id = pos_ids[i]
           let status = 1
           let sales_date = sales_dates[j]
-          rows.push({ pos_id, saler_mobiles,saler_cnt, status, sales_date})
+            let sale_hour=texthours
+          rows.push({ pos_id, saler_mobiles,saler_cnt, status, sales_date,sale_hour})
         }
       }
       this.setState({rows})
@@ -425,7 +544,6 @@ class Plan extends React.Component{
             let errMsg='请选择要导入的文件'
             this.setState({errMsg})
         }
-    
     }
   }
 
@@ -446,6 +564,7 @@ class Plan extends React.Component{
       this.onCheck()
     }
   }
+
   onCommit(){
     this.setState({sending: true})
     axios({
@@ -490,7 +609,6 @@ class Plan extends React.Component{
         if(resp.data.result){
           let  _rows = resp.data.rows;
           let {rows} = this.state;
-          let idxs = _rows.map((c)=>(c.idx))
           let saler_cnt = _rows.filter((r)=>(r.status==3)).length;
           let checkResult = `可导入数据${saler_cnt}, 共${rows.length}`
           this.setState({rows:_rows, checked: true, checkResult}) 
@@ -547,7 +665,7 @@ class Plan extends React.Component{
     return (
       <div style ={{padding: 10}}>
         <h3>促销排产 </h3>
-        <Toggle label='Excel导入' toggled={imported} 
+        <Toggle label='Excel导入切换' toggled={imported}
           style={{width:150}}
           disabled = {sending || loading}
           onToggle ={(e, imported)=>{this.setState({imported})}} />

@@ -5,7 +5,7 @@ import sys
 _dir = os.path.dirname(os.path.abspath(__file__))
 
 from flask import Blueprint, request, redirect, abort
-from flask import make_response, render_template
+from flask import make_response, render_template,Response
 from flask import send_file 
 from ui import jview, json_view 
 from libs.session_helper import auth_required
@@ -32,6 +32,7 @@ def _check(rows):
         pos_id = row.get('pos_id')
         mobiles = row.get('saler_mobiles')
         sales_date = row.get('sales_date')
+        sale_hour=row.get('sale_hour')
         if _int(sales_date) < _int(dt.now().strftime('%Y%m%d')):
             row['msg'] = u'排产日期不能小于当前时间'
             row['status'] = 4
@@ -51,26 +52,44 @@ def _check(rows):
             row['msg'] = '数据不完整'
             row['status'] = 4
             continue
-        _pos = possvc.get_pos_list(channel_id=channel_id, 
+        _pos,_ = possvc.get_pos_list(channel_id=channel_id,
                                 sales_depart_ids=charge_departs,
                                 pos_id=pos_id,
                                 deleted = 0)
-        salers,_ = salersvc.get_saler_list(channel_id=channel_id,
+        salers = salersvc.get_saler_list(channel_id=channel_id,
                                 sales_depart_ids=charge_departs, 
                                 deleted=0,
                                 mobiles = mobiles
                                 )
         row['salers'] = salers
         if not _pos:
-            row['msg'] = '促销点非法.'
+            row['msg'] = '促销点不存在.'
             row['status'] = 4
             continue
         row['pos'] = _pos[0]
         if not salers or len(salers)!=len(mobiles):
-            row['msg'] = '促销人员非法.'
+            row['msg'] = '促销人员不存在.'
             row['status'] = 4
             continue
         row['status'] = 3
+        if sale_hour and len(sale_hour)<100:
+            sale_hour=sale_hour.split(',')
+            for h in range(len(sale_hour)):
+                if sale_hour[h] in sale_hour[h+1:]:
+                    row['msg']='促销时间重复'
+                    row['status']=4
+                try:
+                    s=int(sale_hour[h])
+                except:
+                    s=0
+                    row['msg']='促销时间不是整数'
+                    row['status']=4
+                if s not in range(0,24):
+                    row['msg']='促销时间范围超出0-23'
+                    row['status']=4
+        else:
+            row['msg']='促销时间错误！'
+            row['status']=4
     return rows
 
 
@@ -140,10 +159,8 @@ def get_my_plan():
     status = [1, 2, 4, 5]
     user = request.environ['user']
     create_user_id = user.user_id
-    rows, has_more= plansvc.get_plan_list(status=status, create_user_id=create_user_id)
-    return {'rows': rows,  'has_more': has_more }
-
-
+    rows= plansvc.get_plan_list(status=status, create_user_id=create_user_id)
+    return {'rows': rows}
 
      
 @api_bp.route('/get_plan_list.json', methods=['POST', 'GET'])
@@ -153,13 +170,74 @@ def get_plan_list():
     args = request.args
     if request.method == 'POST':
         args = request.form
-    status = re.findall(r'\d+', args.get('status', ''))
-    status = map(int, status)
-    if not status:
-        status = [1]
-    rows, has_more= plansvc.get_plan_list(status=status)
-    return {'rows': rows,  'has_more': has_more }
+    user=request.environ['user']
+    channel_id=user.user_info['channel_id']
+    charge_departs=tuple(user.user_info['charge_departs'])
+    pageCurrent=_int(args.get('pageCurrent',''))
+    pageSize=_int(args.get('pageSize',''))
+    sales_dates= args.get('sales_dates','')
+    status_id=args.get('status_id','')
+    status_id = None if not status_id else status_id.encode().split(',')
+    if status_id:
+        for s in range(len(status_id)):
+            status_id[s]=_int(status_id[s])
+    sales_dates = None if not sales_dates else sales_dates.encode().split(',')
+    sales_depart_id=_int(args.get('sales_depart_id',''))
+    pos_type = args.get('pos_type','')
+    pos_type=None if not pos_type else pos_type
+    is_charge = args.get('is_charge')
+    is_charge=None if not is_charge else is_charge
+    queryPos=args.get('queryPos')
+    queryPos=None if not queryPos else queryPos
+    rows, cnt= plansvc.get_plan_list(status=status_id,
+                                     channel_id=channel_id,
+                                     page=pageCurrent,
+                                     page_size=pageSize,
+                                     sales_date=sales_dates,
+                                     charge_departs=charge_departs,
+                                     sales_depart_id=sales_depart_id,
+                                     pos_type=pos_type,
+                                     is_charge=is_charge,
+                                     queryPos=queryPos,
+                                     )
+    return {'rows': rows,  'count': cnt }
 
+@api_bp.route('/plan_audit.json',methods=['POST','GET'])
+@auth_required
+@jview
+def plan_audit():
+    args=request.args
+    if request.method=='POST':
+        args=request.form
+    user=request.environ['user']
+    channel_id=user.user_info['channel_id']
+    charge_departs=user.user_info['charge_departs']
+    selected_plan=args.get('selectedPlan','')
+    status=args.get('status','')
+    cnt,msg=0,''
+    try:
+        selected_plan=selected_plan.split(',')
+        for s in range(len(selected_plan)):
+            selected_plan[s]=_int(selected_plan[s])
+        status_id=_int(status)
+        if status_id==2:
+            status=[1,4]
+        elif status_id==4:
+            status=[1,2]
+        else:
+            raise Abort(u'请求的状态错误')
+        cnt=plansvc.plan_audit(status_id=status_id,
+                               status=status,
+                               channel_id=channel_id,
+                               charge_departs=charge_departs,
+                               selected_plan=selected_plan
+                               )
+        msg='提交'+str(len(selected_plan))+'行,成功'+str(cnt)+'行。'
+    except ValueError:
+        msg=u'请求的数据错误'
+    except Abort,e:
+        msg = e.msg
+    return {'cnt':cnt,'msg':msg}
 
 
      
@@ -187,3 +265,50 @@ def audit():
         msg = e.msg
     return {'result': result,  'msg': msg}
 
+@api_bp.route('/get_column.json',methods=['POST','GET'])
+@auth_required(priv=PRIV_PLAN_AUDIT)
+@jview
+def get_plan_column():
+    args=request.args
+    if request.method=='POST':
+        args=request.form
+    plan_column,pos_column,saler_column,user_column=plansvc.get_column()
+    return {
+        'plan_column':plan_column,'pos_column':pos_column,'saler_column':saler_column,'user_column':user_column
+    }
+
+@api_bp.route('/plan_export',methods=['POST','GET'])
+@auth_required(priv= PRIV_ADMIN_SUPER | PRIV_PLAN_AUDIT)
+def plan_export():
+    import StringIO
+    from libs.file_helper import excel_write
+    args=request.args
+    if request.method=='POST':
+        args=request.form
+    user=request.environ['user']
+    channel_id=user.user_info['channel_id']
+    charge_departs=user.user_info['charge_departs']
+    sales_dates=args.get('sales_dates')
+    sales_dates = None if not sales_dates else sales_dates.encode().split(',')
+    status_id=args.get('status_id')
+    status_id=status_id if status_id else None
+    sales_depart_id=args.get('sales_depart_id')
+    sales_depart_id=sales_depart_id if sales_depart_id else None
+    rows=plansvc.plan_export(channel_id=channel_id,
+                        charge_departs=charge_departs,
+                        sales_dates=sales_dates,
+                        status_id=status_id,
+                        sales_depart_id=sales_depart_id)
+    xls=StringIO.StringIO()
+    if not excel_write(xls,rows):
+        return u'生成失败'
+    response=Response()
+    response.status_code=200
+    response.data=xls.getvalue()
+    response.headers.set('Content-Type',
+                'application/vnd.ms-excel')
+    d = dt.now().strftime('%Y%m%d-%H%M%S')
+    filename=u'排产导出.xlsx'
+    response.headers.set( 'Content-Disposition',
+            'attachment',filename=filename.encode('gbk') )
+    return response

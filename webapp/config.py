@@ -2,7 +2,7 @@
 import os
 
 pg_local = {
-    'host' : 'localhost',
+    'host' : '10.117.227.230',
     'database': 'o2o',
     'user': 'o2o',
     'password': 'o2o',
@@ -19,7 +19,6 @@ session_storage_production = {
             'port': 6379 
             }
         }
-
 
 pg_production = {
         'host':'132.96.64.32',
@@ -55,7 +54,6 @@ pg_main = pg_production
 pg_stand= pg_production_readonly
 domain = 'o2o.gz.gd.unicom.local'
 
-#domain = '132.97.135.12'
 port = 9020
 _debug_ = False
 session_force_use_redis = False
@@ -68,10 +66,14 @@ if os.environ.get('LOGNAME') in ['yantz', 'wy'] or os.environ.get('COMPUTERNAME'
     domain = get_local_ip()
     _debug_ = True
 
+if os.environ.get('COMPUTERNAME')=='GZJF019486':
+    pg_main = pg_production
+    pg_stand = pg_production
+    domain = get_local_ip()
+    _debug_ = True
 
 
-
-OAuth2 = dict( 
+OAuth2 = dict(
     client_id= 'o2o_sales' ,
     client_secret = '5774b10f439a11e8b837001a640940be',
     auth_uri = '%s:%s/u/oauth2/' % (domain,port if _debug_ else 80),

@@ -97,3 +97,15 @@ div.auth2{
 }
 
 
+.full-page-content
+{
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.full-page-content > .map
+{
+    width: 100%;
+    height: 100%;
+}

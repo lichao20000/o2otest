@@ -16,7 +16,10 @@ items = [ {
            # 'label':'促销点查询' ,
            # 'url': '/pos/scan'
            # },
-            {
+            {'label':'待审核促销点',
+             'url':'/pos/audit',
+             'priv':PRIV_ADMIN_SUPER,
+            },{
             'label':'促销点管理' ,
             'url': '/pos/manager/',
             'priv': PRIV_ADMIN_POS | PRIV_ADMIN_SUPER,
@@ -59,6 +62,11 @@ items = [ {
             'priv': PRIV_PLAN_AUDIT | PRIV_ADMIN_SUPER,
             },
             {
+                'label':u'排产导出',
+                'url':'/plan/export/',
+                'priv':PRIV_ADMIN_SUPER|PRIV_PLAN_AUDIT,
+            },
+            {
             'label': u'我的排产',
             'url': '/plan/mine/',
             'priv': PRIV_PLAN | PRIV_ADMIN_SUPER ,
@@ -73,11 +81,11 @@ items = [ {
               'priv':  PRIV_ADMIN_SUPER,
               'url': '/admin/switch' 
              },
-           # {
-           #     'label': u'权限管理',
-           #     'url': '/sys/manager/',
-           #     'priv':  PRIV_ADMIN_SUPER,
-           #     },
+            {
+                'label': u'用户管理',
+                'url': '/admin/manager/',
+                'priv':  PRIV_ADMIN_SUPER | PRIV_ADMIN,
+                },
             ]
          },
       {

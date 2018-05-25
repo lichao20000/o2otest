@@ -25,16 +25,43 @@ class SalesPositionManager extends React.Component{
       sending: false,
       pos_id: props.match.params.pos_id, pos_info:{}, errMsg:'',
       changeItems: [],
+        tags:[],
     }
   }
   
   componentDidMount(){
-    this.getData()
+      this.getData();
+      this.getTag()
   }
   
   componentWillUnmout(){
     this.unmount = true;
   }
+
+  getTag(){
+      axios({
+          url: '/pos/api/get_pos_tag.json' ,
+          transformRequest:[ function(data, headers) {
+              let _data =  []
+              for(let k in data){
+                  _data.push(k+'='+ (data[k]==null?'':data[k]))
+              }
+              return  _data.join('&')}
+              ],
+          data: {},
+          method: 'post',
+          responseType:'json',
+        }).then((resp)=>{
+            if(resp.status==200){
+                this.setState({tags:resp.data.rows})
+            }else{
+                this.setState({
+                    errMsg:'请求类型数据失败'
+                })
+            }}
+            )
+  }
+
 
   setData(history){
    this.setState({sending: true})
@@ -89,8 +116,8 @@ class SalesPositionManager extends React.Component{
           responseType:'json',
       }).then( (resp) =>{
           if(resp.status == 200){
-               if(resp.data instanceof Array){
-                   this.setState({pos_info: resp.data[0]})
+               if(resp.data.rows instanceof Array){
+                   this.setState({pos_info: resp.data.rows[0]})
                }else{
                   this.setState({ errMsg: '请求数据出错'})
                }
@@ -162,7 +189,7 @@ class SalesPositionManager extends React.Component{
           value = {pos_info['pos_type']}
           onChange = {(e,idx,v)=>(this.onChange('pos_type',e,v))}>
           {
-            ['美宜佳', '7 11', '固定点'].map((t, idx)=>(
+            ['固定促销点', '楼宇', '营业厅'].map((t, idx)=>(
             <MenuItem key ={idx} value={t} primaryText={t} />
             ))
           }

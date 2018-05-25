@@ -7,7 +7,7 @@ _dir = os.path.abspath(os.path.join(__file__, '..'))
 _updir = os.path.abspath(os.path.join(_dir, '..'))
 if _updir not in sys.path:
     sys.path.insert(0, _updir)
-
+import xlsxwriter
 
 def excel_reader(file_path=None , book =None):
     w_book = None
@@ -33,8 +33,13 @@ def excel_write(file_name, rows, headers=None, sheet_name='sheet1'):
     # by the item in the  rows  as the key
     # if headers is none the display col is key
     try:
-        book = xlwt.Workbook(encoding = 'ascii')
-        sheet = book.add_sheet(sheet_name)
+        if type(file_name) in (str, unicode):
+            path, fname = os.path.split(file_name)
+            if not path:
+                path = _dir
+                file_name=os.path.join(path, fname).encode('utf-8')
+        workbook = xlsxwriter.Workbook(file_name)
+        worksheet=workbook.add_worksheet()
         if not headers:
             headers = []
             for row in rows:
@@ -43,20 +48,15 @@ def excel_write(file_name, rows, headers=None, sheet_name='sheet1'):
                         headers.append(key)
             headers = [(h, h) for h in headers]
         for i, h in enumerate(headers):
-            sheet.write(0, i, h[0])
+            worksheet.write(0, i, h[0])
         for row_num, r in enumerate(rows):
             for col_num, h in enumerate(headers):
                 val = r.get(h[1],'')
-                sheet.write(row_num+1, col_num, val)
-        if type(file_name) in (str, unicode):
-            path, fname = os.path.split(file_name)
-            if not path:
-                path = _dir
-            book.save(os.path.join(path, fname).encode('utf-8'))
-        else:
-            book.save(file_name)
+                worksheet.write(row_num+1, col_num, val)
+        workbook.close()
         return True
-    except Exception, e:
+    except Exception,e:
+        print e
         return False
 
 

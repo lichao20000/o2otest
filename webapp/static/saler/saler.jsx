@@ -62,12 +62,33 @@ class SalerList extends React.Component{
       })
     }
 
+    renderAddSaler(){
+        let privs = (((window.NS||{}).userInfo||{}).user_info||{}).privs||[];
+        function checkPrivs(p) {
+            return p == 'PRIV_ADMIN_SUPER'
+        }
+        if(privs.some(checkPrivs)){
+            return (      <Link to='/saler/new'>
+                              <RaisedButton label="添加" primary={true}
+                                            backgroundColor="#a4c639"
+                                            onClick = {this.getData.bind(this)}
+                                            disabled ={this.state.loading}
+                                            style ={{ height:30, width: 50 , marginLeft: 20}} />
+                          </Link>)
+        }
+    }
+
     render(){
       let {loading, sending, rows,
           query, deleted, sales_depart_id, } = this.state;
+      let user_info = (((window.NS||{}).userInfo||{}).user_info||{});
       let headers = ['手机号','姓名', '渠道', '区分','单元','状态','创建人ID']
-      let sales_departs = (((window.NS||{}).userInfo||{})
-                          .user_info||{}).charge_departs_info||[];
+      let sales_departs = user_info.charge_departs_info.concat();
+      for(let i=0;i<sales_departs.length;i++){
+            if(sales_departs[i].parent_id==0){
+                sales_departs.splice(i,1)
+            }
+      }
       return (
         <div>
           <Paper style={{padding:'5px 20px', margin:'5px 0px'}} zDepth={2}>
@@ -140,16 +161,7 @@ class SalerList extends React.Component{
                   width: 50 ,
                   marginLeft: 20
               }} />
-            <Link to='/saler/new'>
-            <RaisedButton label="添加" primary={true}
-              backgroundColor="#a4c639"
-              onClick = {this.getData.bind(this)}
-              disabled ={loading}
-              style ={{ height:30,
-                  width: 50 ,
-                  marginLeft: 20
-              }} />
-            </Link>
+              {this.renderAddSaler()}
           </Paper>
         { loading ? <CircularProgress size={40} thickness={3} />:
           <div>

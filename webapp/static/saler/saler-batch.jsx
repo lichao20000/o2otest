@@ -28,10 +28,6 @@ import FontIcon from 'material-ui/FontIcon';
 import {blue500, red500, greenA200} from 'material-ui/styles/colors';
 
 
-
-
-
-
 class SalerImport extends React.Component{
     constructor(props){
         super(props); 
@@ -67,7 +63,7 @@ class SalerImport extends React.Component{
       axios.post('/upload/read_excel', dataForm, config)
         .then((resp)=>{
           let read = resp.data.result;
-          let rows = []
+          let rows = [];
           if(read){
             rows = resp.data.rows;
             if(rows.length){
@@ -85,7 +81,6 @@ class SalerImport extends React.Component{
       })
     }
 
-
     onNext(){
         let {checked, rows} = this.state
         if(!checked){
@@ -97,12 +92,11 @@ class SalerImport extends React.Component{
     onCancel(){
         this.setState({showConfirm:false, checked: false, read: false, fileName:'', checkResult:''}) 
         this.refs['fileExcel'].value=null;
-    
     }
 
     onCommit(){ // 确定提交了
         this.setState({showConfirm: false, sending: true})
-        let {rows, sales_depart_id,} = this.state;
+        let {rows} = this.state;
         let args = rows.filter((r)=>(r.status==3));
         axios({
               url: '/saler/api/saler_import.json' ,
@@ -110,7 +104,7 @@ class SalerImport extends React.Component{
                   for(let k in data){ _data.push(k+'='+ data[k]) }
                   return  _data.join('&')
               } ],
-              data: {rows: JSON.stringify(args), sales_depart_id,},
+              data: {rows: JSON.stringify(args)},
               method: 'post',
               responseType:'json',
           }).then( (resp) =>{
@@ -128,101 +122,110 @@ class SalerImport extends React.Component{
           })
     }
 
-    onCheck(){
-      let {rows, }= this.state;
 
-      rows.map((r)=>{
-            if(!r.data[0] || !r.data[1] ) {
-                r.status = 4
-                r.msg = '必填项.'
+    onCheck(){
+        let {rows}= this.state;
+        let charge_departs=(((window.NS||{}).userInfo||{}).user_info||{}).charge_departs||[];
+        rows.map((r)=>{
+            console.log(r.data);
+            if(!r.data[0] || !r.data[1] || ! r.data[2] ) {
+                r.status = 4;
+                r.msg = '必填项'
             }
-            if(!r.data[0] || r.data[0].toString().length !=11 
-                          || !r.data[0].toString().match(/^\d+$/)){
-                r.status = 4
-                r.msg = '手机号.'
+            if(!charge_departs.some((d)=>(d==r.data[0])))
+            {
+                r.status = 4;
+                r.msg= '区分ID不符合要求.'
             }
-        })
-    this.setState({sending:true, rows})
-    let args = rows.filter((r)=>(r.status==1));
-    axios({
-          url: '/saler/api/check_import.json' ,
-          transformRequest:[ function(data, headers) { let _data =  []
-              for(let k in data){ _data.push(k+'='+ data[k]) }
-              return  _data.join('&')
-          } ],
+            if(!r.data[1] || r.data[1].toString().length !=11 || !r.data[1].toString().match(/^\d+$/)){
+                r.status = 4;
+                r.msg = '手机号异常'
+            }
+            if(!!r.data[3]&&r.data[3].toString().split(',').some((d)=>{
+                return (!d.match(/^\d+$/))||d.length!=10})){
+                r.status = 4;
+                r.msg='发展人编码为10位数字'
+            }
+        });
+        this.setState({sending:true, rows});
+        let args = rows.filter((r)=>(r.status==1));
+        axios({
+            url: '/saler/api/check_import.json' ,
+            transformRequest:[ function(data, headers) { let _data =  []
+                for(let k in data){ _data.push(k+'='+ data[k]) }
+                return  _data.join('&')
+            }],
           data: {rows: JSON.stringify(args)},
           method: 'post',
           responseType:'json',
-      }).then( (resp) =>{
-          if(resp.status == 200){
-               if(resp.data.result){
-                   let  _rows = resp.data.rows;
-                   let {rows} = this.state;
-                   let idxs = _rows.map((c)=>(c.idx))
-                   _rows.map((row,_)=>{
+        }).then((resp)=>{
+            if(resp.status == 200){
+                if(resp.data.result){
+                    let  _rows = resp.data.rows;
+                    let {rows} = this.state;
+                    let idxs = _rows.map((c)=>(c.idx));
+                    _rows.map((row,_)=>{
                        rows[row.idx] = row
-                   })
-                   let cnt = _rows.filter((r)=>(r.status==3)).length;
-                   let checkResult = `可导入数据${cnt}, 共${rows.length}`
-                    this.setState({rows, checked: true, checkResult}) 
-               }else{
-                   this.setState({errMsg: resp.data.msg})
-               }
-          }else{
-              this.setState({ errMsg: '请求出错!'})
-          }
-          if(!this.unmount){ this.setState({sending: false}) }
-      })
+                    });
+                    let cnt = _rows.filter((r)=>(r.status==3)).length;
+                    let checkResult = `可导入数据${cnt}, 共${rows.length}`
+                    this.setState({rows, checked: true, checkResult})
+                }else{
+                    this.setState({errMsg: resp.data.msg})}
+            }else{
+                this.setState({ errMsg: '请求出错!'})}
+            if(!this.unmount){ this.setState({sending: false}) }
+        })
     }
 
-
     renderRows(){
-      let {rows, read, sending}  = this.state;
-      let headers = ['序号',' ','手机号', '姓名','单元'];
-      let iconStyle ={verticalAlign:'middle', marginRight:'5'}
-      return (
-       <div style={{    overflow: 'hidden', }}>
-        <Table fixedHeader={true} displaySelectAll={false} height={'500px'}>
-          <TableHeader displaySelectAll={false} adjustForCheckbox={false}> 
-          <TableRow>
-            { headers.map((h,idx)=>{
-                return (
-                <TableHeaderColumn key={idx} >{h}</TableHeaderColumn>
-                )
-              }) 
-            }
-          </TableRow>
-          </TableHeader>
-            <TableBody displayRowCheckbox={false} stripedRows={false} 
-          showRowHover={true} >
-           
-          { rows.map((r, idx)=>{
-                return(
-              <TableRow key ={idx} style={{fontSize:12}}>
-                <TableRowColumn>
-                  {r.status==1&& <ActionCheckCircle color='#ccc' style={iconStyle}/> }
-                  {r.status==2&& <CircularProgress thickness={2} style={iconStyle} size={18}/>}
-                  {r.status==3&& <ActionCheckCircle color='#0d0' style={iconStyle}/> }
-                  {r.status==4&&  <AlertError color='red' style={iconStyle}/> }
-                  {r.idx+1}
-                </TableRowColumn>
-                <TableRowColumn >
-                    <label style={{'color':'red', fontSize:10}}>{r.msg}</label> 
-                </TableRowColumn>
-                <TableRowColumn>{r.data[0]}</TableRowColumn>
-                <TableRowColumn>{r.data[1]}</TableRowColumn>
-                <TableRowColumn>{r.data[2]}</TableRowColumn>
-              </TableRow>
-                )})
-              }
-            </TableBody>
-          </Table>
-          </div>)
+        let {rows, read, sending}  = this.state;
+        let headers = ['序号',' ','区分','手机号', '姓名','发展人编码','单元'];
+        let iconStyle ={verticalAlign:'middle', marginRight:'5'};
+        return (
+            <div style={{    overflow: 'hidden', }}>
+                <Table fixedHeader={true} displaySelectAll={false} height={'500px'}>
+                    <TableHeader displaySelectAll={false} adjustForCheckbox={false}>
+                        <TableRow>
+                            { headers.map((h,idx)=>{
+                                return (
+                                    <TableHeaderColumn key={idx} >{h}</TableHeaderColumn>
+                                )
+                            })}
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody displayRowCheckbox={false}
+                               stripedRows={false}
+                               showRowHover={true} >
+                        {
+                            rows.map((r, idx)=>{
+                            return(
+                                <TableRow key ={idx} style={{fontSize:12}}>
+                                    <TableRowColumn>
+                                        {r.status==1&& <ActionCheckCircle color='#ccc' style={iconStyle}/> }
+                                        {r.status==2&& <CircularProgress thickness={2} style={iconStyle} size={18}/>}
+                                        {r.status==3&& <ActionCheckCircle color='#0d0' style={iconStyle}/> }
+                                        {r.status==4&&  <AlertError color='red' style={iconStyle}/> }
+                                        {r.idx+1}
+                                        </TableRowColumn>
+                                    <TableRowColumn >
+                                        <label style={{'color':'red', fontSize:10}}>{r.msg}</label>
+                                    </TableRowColumn>
+                                    <TableRowColumn>{r.data[0]}</TableRowColumn>
+                                    <TableRowColumn>{r.data[1]}</TableRowColumn>
+                                    <TableRowColumn>{r.data[2]}</TableRowColumn>
+                                    <TableRowColumn>{r.data[3]}</TableRowColumn>
+                                    <TableRowColumn>{r.data[4]}</TableRowColumn>
+                                </TableRow>
+                            )})
+                        }
+                        </TableBody>
+                </Table>
+            </div>)
     }
 
     render(){
         let user_info = (((window.NS||{}).userInfo||{}).user_info||{});
-        let sales_departs = user_info.charge_departs_info;
         let {read, percentCompleted, rows, errMsg, fileName,
                 showConfirm, sales_depart_id,
                 checked, checkResult, sending,} = this.state;
@@ -237,114 +240,94 @@ class SalerImport extends React.Component{
                     onChange={this.fuck}
                     floatingLabelFixed={true} />
                 <Divider />
-
-                <SelectField
-                    floatingLabelText="区分"
-                    value = {sales_depart_id}
-                    onChange = {(e,idx,sales_depart_id)=>(this.setState({sales_depart_id}))}>
-                    {
-                        sales_departs.map((d, i)=>(
-                            <MenuItem key ={'f-'+i} value={d.sales_depart_id} 
-                                primaryText={d.sales_depart_name} />
-                        ))
-                    }
-                    </SelectField>
-                    <div>
+                <div>
                     <input ref='fileExcel' type='file' id='file' 
                     onChange={this.onChoose.bind(this)}
                     style={{display:'none'}}/>
-              { sending?
-                [ <CircularProgress
-                  mode="determinate"
-                  size={20}
-                  thickness = {2} 
-                  style ={{dsplay:'inline-block'}} value={percentCompleted} key = 'c' />, <div key='l' 
-                    style={{fontSize:12, color:'#888',display:'inline-block', width:60, textAlign:'center'}}>
-                {percentCompleted}%</div>]
+                </div>
+                <div>
+                    <label style={{fontSize:14, color:'#888'}}>区分对应的ID</label>
+                    {user_info.charge_departs_info.filter((d)=>(d.parent_id!=0)).map((d,idx)=>{
+                        return (
+                            <div key = {idx}>
+                                <label style={{fontSize:14, color:'#333'}}>{d.sales_depart_name}</label>
+                                <label style={{fontSize:14, color:'#333',marginLeft:20}}>{d.sales_depart_id}</label>
+                            </div>
+                        )})
+                    }
+                </div>
+                { sending?
+                    [ <CircularProgress mode="determinate"
+                                        size={20} thickness = {2}
+                                        style ={{dsplay:'inline-block'}} value={percentCompleted} key = 'c' />,
+                        <div key='l'
+                             style={{fontSize:12, color:'#888',display:'inline-block', width:60, textAlign:'center'}}>
+                            {percentCompleted}%</div>,]
                     :<RaisedButton  primary={true} label='选择文件'
                         onClick = {(e)=>{ this.refs['fileExcel'].click(e)}}
-                    /> 
-              }
-              <label style={{fontSize:14, color:'#333'}}> {fileName} </label>
-                  <div>
-                  <label style={{fontSize:14, color:'#88'}}>导入说明 </label>
-                  <div style={{fontSize:14, color:'#f00'}}>
-                     请按照以下图片显示要求提供导入的excel表(系统只读第一个sheet,第一行为表头)
-                    <a href='/static/images/import-saler-tips.png'
-                    target='_blank' >点我看大图</a>
-                  </div>
-                  <div className='import-saler-tips'> </div>
-                  </div>
-                </div>
-              {
-              <Dialog
-                title="即将要导入的数据"
-                actions={sending?
-                        [<div  style ={{height:38 , paddingRight:80}}>
-                            <CircularProgress thickness={2} size={18} />
-                            <label style={{fontSize:14, color:'#ff5722'}}> 数据{checked?'导入':'检查'}中...</label>
-                            <div style ={{width:80, textAligin: 'center'}}> </div>
-                                    
+                    />
+                }
+                <label style={{fontSize:14, color:'#333'}}> {fileName} </label>
+                <div>
+                    <label style={{fontSize:14, color:'#88'}}>导入说明 </label>
+                    <div style={{fontSize:14, color:'#f00'}}>
+                        请按照以下图片提示，将数据填写到
+                        <a href="/static/files/import_saler-sample.xlsx" download>样例表格</a>
+                        再导入(只有第一个Sheet,第一行为表头)
+                        <a href='/static/images/import-saler-tips.png'
+                           target='_blank' >点我看大图</a>
                     </div>
-                            ]
-                        : [ 
-                            checked?<label> {checkResult}</label>:null,
+                    <div className='import-saler-tips'> </div>
+                </div>
+                {
+                    <Dialog title="即将要导入的数据"
+                            actions={sending? [
+                                <div  style ={{height:38 , paddingRight:80}}>
+                                    <CircularProgress thickness={2} size={18} />
+                                    <label style={{fontSize:14, color:'#ff5722'}}> 数据{checked?'导入':'检查'}中...</label>
+                                    <div style ={{width:80, textAligin: 'center'}}> </div>
+                                </div>]
+                                :[
+                                    checked?<label> {checkResult}</label>:null,
+                                    <FlatButton label="取消"
+                                                primary={true}
+                                                onClick={this.onCancel.bind(this)}/>,
+                                    <FlatButton label="下一步"
+                                                primary={true}
+                                                onClick={this.onNext.bind(this)}
+                                    />, ]}
+                            modal={true}
+                            contentStyle={{width:'100%', height:'100%', maxWidth:'none'}}
+                            open={read}
+                    >{this.renderRows()}
+                    <Dialog
+                        title="确认"
+                        actions={ [ <FlatButton
+                            label="取消"
+                            primary={true}
+                            onClick={this.onCancel.bind(this)}
+                        />,
                             <FlatButton
-                  label="取消"
-                  primary={true}
-                  onClick={this.onCancel.bind(this)}
-                  />,
-                  <FlatButton
-                  label="下一步"
-                  primary={true}
-                  onClick={this.onNext.bind(this)}
-                  />, ]}
-                modal={true}
-                contentStyle={{width:'100%', height:'100%', maxWidth:'none'}}
-                open={read}
-                >
-                  {this.renderRows()}
-
-                  <Dialog
-                      title="确认"
-                      actions={ [ <FlatButton
-                          label="取消"
-                          primary={true}
-                          onClick={this.onCancel.bind(this)}
-                      />,
-                          <FlatButton
-                              label="提交"
-                              primary={true}
-                              onClick={this.onCommit.bind(this)}
-                          />, ]} 
+                                label="提交"
+                                primary={true}
+                                onClick={this.onCommit.bind(this)}
+                            />, ]}
                       modal={false}
                       open={showConfirm}
                       onRequestClose={()=>this.setState({showConfirm:false})}
                   >
                       { checkResult } , 提交前请检查区分和类型信息是否正确？
                   </Dialog>
-
                 </Dialog>
               }
-              {/*
-            <AlertError color='red'/>
-            <ActionDone color='green'/>
-            <ActionCheckCircle color='#0d0'/>
-            <CircularProgress thickness={2} size={18} />
-            */
-              }
-          <Snackbar 
-            open={!!errMsg}
-            message={errMsg}
-            autoHideDuration={3000}
-            onRequestClose={(e)=>{this.setState({errMsg:''})}}
-            />
-         
+              <Snackbar open={!!errMsg} message={errMsg}
+                        autoHideDuration={3000}
+                        onRequestClose={(e)=>{this.setState({errMsg:''})}}
+              />
             </div>
         )
-
     }
 }
 
-exports.SalerImport = SalerImport
+exports.SalerImport = SalerImport;
 

@@ -34,7 +34,7 @@ def get_datas(sql, args=None):
 sqls = [{
         'name': u'促销人员实况--分时',
         'sql':  '''
-select 促销点类别,渠道类型,促销点名称,促销点地址,当前在现场促销人员,促销人员手机号码, substring(cast(当前时刻 as varchar) from 1 for 16)促销时间点  from  itd.ssw_o2o_every_time order by 渠道类型
+select 促销点类别,渠道类型,促销点名称,促销点地址,当前在现场促销人员,促销人员手机号码, substring(cast(当前时刻 as varchar) from 1 for 16)促销时间点  from  itd.ssw_o2o_every_time order by 促销时间点 desc limit 100000
     '''.decode('utf-8'),
         }, 
         {'name':u'促销人员实况--今日',
@@ -94,7 +94,55 @@ where pos_name in (select distinct poi_name from t_rp_poi where is_deleted is nu
         'sql': u'''
         select * from itd.cuxiao_num_v1 where serial_number in (select bind_mobile from t_rp_sms_user);
         '''
-        }
+        },
+    {
+        'name':u'新版-促销人员到场分时明细(半小时)',
+        'sql':u'''
+select pos_type 促销点类别,is_charge 是否有租金, pos_name 促销点名称, pos_address 促销点地址, s.channel_name 渠道, s.sales_depart_name 区分, pos_unit 单元, saler_name 促销人员, bind_mobile 促销人员手机号码, cast(create_date AS varchar) 统计时刻 
+from itd.ssw_cxmx_pc_half_hour s left join itd.t_sales_channel c on s.channel_name=c.channel_name left join itd.t_sales_depart d on s.sales_depart_name=d.sales_depart_name
+where bind_mobile is not null 
+and pos_type in (select tag_label from itd.t_pos_tag) and c.channel_id=%(channel_id)s and d.sales_depart_id=any(%(charge_departs)s)
+order by 统计时刻 desc
+limit 100000
+        '''
+    },
+    {
+        'name':u'新版-促销人员到场分时明细（包括未按排产时间）（半小时）',
+        'sql':u'''
+select pos_type 促销点类别,is_charge 是否有租金, pos_name 促销点名称, pos_address 促销点地址, a.channel_name 渠道 , a.sales_depart_name 区分, pos_unit 单元, saler_name 促销人员, bind_mobile 促销人员手机号码, cast(create_date as varchar) 统计时刻 
+from itd.ssw_cxmx_pc_half_hour_all a
+left join itd.t_sales_channel b
+on a.channel_name=b.channel_name
+left join itd.t_sales_depart c 
+on a.sales_depart_name=c.sales_depart_name
+where bind_mobile is not null 
+and pos_type in (select tag_label from itd.t_pos_tag)
+and b.channel_id=%(channel_id)s
+and c.sales_depart_id = any(%(charge_departs)s)
+order by 统计时刻 desc
+limit 100000
+        '''
+    },{
+        'name':u'新版--未按排产时间排产人员(累计至查询时刻)',
+        'sql':'''
+select distinct a.channel_name, a.sales_depart_name, pos_name, saler_name  
+,b.channel_id
+,c.sales_depart_id
+from itd.ssw_cxmx_pc_half_hour_all a
+, itd.t_sales_channel b
+, itd.t_sales_depart c
+where
+to_char(create_date, 'YYYY-MM-DD') = to_char(now(), 'YYYY-MM-DD') 
+and a.channel_name = b.channel_name 
+and a.sales_depart_name = c.sales_depart_name
+and b.channel_id = c.channel_id
+and saler_name is not null
+and saler_name not in 
+(select distinct saler_name from itd.ssw_cxmx_pc_half_hour where to_char(create_date, 'YYYY-MM-DD') = to_char(now(), 'YYYY-MM-DD')  and saler_name is not null)
+and b.channel_id=%(channel_id)s 
+and c.sales_depart_id = any(%(charge_departs)s)
+        '''
+    }
     ]
 
 

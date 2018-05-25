@@ -29,7 +29,7 @@ def get_file():
     user = request.environ['user']
     channel_id = user.user_info['channel_id'] 
     charge_departs = user.user_info['charge_departs']
-    rows = possvc.get_pos_list(
+    rows,_ = possvc.get_pos_list(
                         channel_id=channel_id, 
                         sales_depart_ids = charge_departs,
                         deleted = 0) 
@@ -63,27 +63,41 @@ def get_pos_list():
     pos_id = _int(args.get('pos_id',''))
     pos_type = args.get('pos_type','')
     pos_name  = args.get('pos_name','')
-
     sales_depart_id = _int(args.get('sales_depart_id',''))
-
     deleted = args.get('deleted','')
+    pageCurrent=args.get('pageCurrent','')
+    pageSize=args.get('pageSize','')
+    pageSize=None if not pageSize else _int(pageSize)
+    pageCurrent=None if not pageCurrent else _int(pageCurrent)
     deleted = -1 if not deleted.isdigit() else _int(deleted)
-
     channel_id = user.user_info['channel_id'] 
     charge_departs = user.user_info['charge_departs']
-        
+    located=args.get('located','')
+    located=_int(located) if located else None
+    is_charge=args.get('is_charge','')
+    if is_charge:
+        if _int(is_charge)==0:
+            is_charge='无租金'
+        elif _int(is_charge)==1:
+            is_charge='有租金'
+        else:
+            is_charge=None
     if sales_depart_id :
         ids = [sales_depart_id] if sales_depart_id in charge_departs else []
     else:
         ids = charge_departs
-    rows = possvc.get_pos_list(q=q,
+    rows,cnt = possvc.get_pos_list(q=q,
                         channel_id=channel_id, 
                         pos_id = pos_id, 
                         pos_type=pos_type,
                         pos_name =pos_name,
                         sales_depart_ids=ids,
-                        deleted=deleted)
-    return rows
+                        deleted=deleted,
+                        pageCurrent=pageCurrent,
+                        pageSize=pageSize,
+                        located=located,
+                        is_charge=is_charge)
+    return {'rows':rows,'cnt':cnt}
  
 
 
@@ -125,7 +139,7 @@ def update_pos():
         mobile = items.get('pos_man_mobile') 
         if mobile and (len(mobile)!=11  or not mobile.isdigit()):
             raise Abort(u'手机号码不正确.')
-        pos = possvc.get_pos_list(pos_id = pos_id) 
+        pos,cnt = possvc.get_pos_list(pos_id = pos_id)
         if not pos:
             raise Abort(u'更新项不存在.')
         pos =pos[0]
@@ -176,7 +190,7 @@ def add_pos():
         mobile = items.get('pos_man_mobile')
         if not mobile or len(mobile)!=11  or not mobile.isdigit():
             raise Abort(u'请提供正确的手机号.')
-        name_check = possvc.get_pos_list(pos_name=items.get('pos_name'))
+        name_check,_ = possvc.get_pos_list(pos_name=items.get('pos_name'))
         if name_check:
             raise Abort(u'促销点名称已存在.')
         items['sales_depart_id']  = _int(items.get('sales_depart_id',''))
@@ -189,7 +203,6 @@ def add_pos():
     except Abort, e:
         msg = e.msg
     return {'result': result, 'pos_id': pos_id, 'msg': msg}
-
 
 
 def _check(rows):
@@ -212,16 +225,20 @@ def _check(rows):
             row['status'] = 4
             row['msg'] = u'手机号.'
             continue 
-        if data[4] in names:
+        if data[4] in names :
             row['status'] = 4
             row['msg'] = u'名称重复(excel).'
             continue
-        names.append(data[4]) 
-        if possvc.get_pos_list(pos_name=data[4]):
+        names.append(data[4])
+        pos,_=possvc.get_pos_list(pos_name=data[4])
+        if pos:
             row['status'] = 4
             row['msg'] = u'名称已存在.'
             continue
-        row['status'] = 3 
+        if not (data[8]==u'有租金' or data[8]==u'无租金'):
+            row['status']=4
+            row['msg']=u'租金类型不正确'
+        row['status'] = 3
 
 
 
@@ -264,30 +281,131 @@ def pos_import():
     rows = args.get('rows','')
     sales_depart_id = _int(args.get('sales_depart_id', ''))
     pos_type = args.get('pos_type','')
-    result, msg, cnt  = False, '' , 0
+    result, msg, cnt ,result_sms_users = False, '' , 0, 0
     # 单元	促销点ID	代码点	门店名称	门店地址	负责人姓名	负责人电话
     try:
         if not pos_type :
             raise Abort(u'请指定类型.')
         rows = json.loads(rows)
-        _check(rows) 
+        _check(rows)
         rows = filter(lambda r :r.get('status')==3, rows)
-        datas = [r['data'][:8] for r in rows]
+        datas = [r['data'][:9] for r in rows]
         keys = ['sales_depart_id','pos_unit', 'sales_id', 'pos_code', 
-                'pos_name', 'pos_address', 'pos_man', 'pos_man_mobile'] 
+                'pos_name', 'pos_address', 'pos_man', 'pos_man_mobile','is_charge']
         datas = [dict(zip(keys, d))   for d in datas]
+        update_sms_users=[]
         for d in datas:
             d['create_user_id'] = user.user_id
             d['channel_id'] = channel_id
             d['pos_type'] = pos_type
-        result =  possvc.pos_import(datas)
-        cnt = len(datas)
+            match=False
+            for u in update_sms_users:
+                if u.has_key('pos_man_mobile') and u['pos_man_mobile']==d['pos_man_mobile']:
+                    match=True
+                    break
+            if not match:
+                update_sms_users.append(d)
+        result = possvc.pos_import(datas)
+        result_sms_users=possvc.sms_user_import(update_sms_users)
     except  ValueError, e: 
         msg = u'请提供JSON格式数据.(loads error) '
     except Abort,e :
         msg = e.msg
-    return {'result': result, 'msg': msg, 'cnt': cnt}    
+    return {'result': result, 'msg': msg, 'cnt': cnt, 'result_sms_users':result_sms_users}
         
 
+@api_bp.route('/pos_audit_list.json',methods=['POST','GET'])
+@auth_required
+@jview
+def pos_audit_list():
+    args=request.args
+    if request.method=='POST':
+        args=request.form
+    user=request.environ['user']
+    channel_id=user.user_info["channel_id"]
+    charge_departs=user.user_info["charge_departs"]
+    pageCurrent=args.get('pageCurrent','')
+    pageSize=args.get('pageSize','')
+    sales_depart_id=_int(args.get('sales_depart_id',''))
+    selectedTag=args.get('selectedTag','')
+    status_id=_int(args.get('status_id',''))
+    queryPoi=args.get('queryPoi','')
+    queryMan=args.get('queryMan','')
+    if pageCurrent and pageSize:
+        try:
+            pageCurrent=_int(pageCurrent)
+            pageSize=_int(pageSize)
+        except ValueError:
+            msg=u'分页内容应为整数'
+    else:
+        pageCurrent=None
+        pageSize=None
+    rows,cnt,result,msg=[],0,False,''
+    try:
+        rows,cnt=possvc.get_audit_list(channel_id=channel_id,charge_departs=charge_departs,
+                                       pageCurrent=pageCurrent,pageSize=pageSize,
+                                       sales_depart_id=sales_depart_id,selectedTag=selectedTag,
+                                       status_id=status_id,queryPoi=queryPoi,queryMan=queryMan)
 
+    except Abort,e :
+        msg = e.msg
+    return{'rows':rows,'cnt':cnt,'result':result,'msg':msg}
 
+@api_bp.route('/pos_audit.json',methods=['POST','GET'])
+@auth_required
+@jview
+def pos_audit():
+    args=request.args
+    if request.method=='POST':
+        args=request.form
+    user=request.environ['user']
+    channel_id=user.user_info['channel_id']
+    charge_departs=user.user_info['charge_departs']
+    selectedPoi=args.get('selectedPoi','')
+    status=_int(args.get('status',''))
+    queryStatus=[]
+    if status==2:
+        queryStatus=[1,4]
+    elif status==4:
+        queryStatus=[1,2]
+    cnt,msg=0,''
+    if selectedPoi and isinstance(selectedPoi,unicode):
+        selectedPoi=selectedPoi.encode().split(',')
+        try:
+            for s in range(len(selectedPoi)):
+                selectedPoi[s]=_int(selectedPoi[s])
+            cnt=possvc.pos_audit(selectedPoi=selectedPoi,status=status,queryStatus=queryStatus)
+            msg='提交'+str(len(selectedPoi))+'行,成功'+str(cnt)+'行。'
+        except ValueError:
+            msg=u'请提供正确的促销点ID'
+    else:
+        msg=u'促销点Id不符合要求'
+    return {'cnt':cnt,'msg':msg}
+
+@api_bp.route('/get_poi_tag.json',methods=['POST','GET'])
+@auth_required
+@jview
+def get_poi_tag():
+    args=request.args
+    if request.method=='POST':
+        args=request.form
+    user=request.environ['user']
+    channel_name=user.user_info['channel_name']
+    result,msg,rows=False,'',[]
+    try:
+        rows=possvc.get_poi_tag(channel_name=channel_name)
+    except Abort,e :
+        msg = e.msg
+    return {'rows':rows,'result':result,'msg':msg}
+
+@api_bp.route('/get_pos_tag.json',methods=['POST','GET'])
+@auth_required(priv=PRIV_ADMIN_SUPER|PRIV_ADMIN_POS)
+@jview
+def get_pos_tag():
+    args=request.args
+    if request.method=='POST':
+        args=request.form
+    user=request.environ['user']
+    tags=user.user_info['tags']
+    rows=possvc.get_pos_tag(tags)
+    return {'rows':rows}

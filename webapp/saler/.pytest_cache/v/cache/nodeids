@@ -1,0 +1,5 @@
+[
+  "saler_test.py::UserTest::test_add_saler", 
+  "saler_test.py::UserTest::test_get_saler_list", 
+  "saler_test.py::UserTest::test_update_saler"
+]

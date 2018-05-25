@@ -1,5 +1,5 @@
 import { Table, TableBody, TableHeader, TableHeaderColumn, 
-  TableRow, TableRowColumn,
+  TableRow, TableRowColumn,TableFooter
 } from 'material-ui/Table';
 import { HashRouter as Router, Route, Link } from 'react-router-dom'
 
@@ -14,13 +14,15 @@ import SelectField from 'material-ui/SelectField';
 import MenuItem from 'material-ui/MenuItem';
 import Checkbox from 'material-ui/Checkbox';
 import {RadioButton, RadioButtonGroup} from 'material-ui/RadioButton';
-
-
+import Select from 'rc-select'
+import Pagination from 'rc-pagination';
+import FontIcon from 'material-ui/FontIcon'
 
 
 class SalesPosition extends React.Component{
     constructor(props){
-        super(props); 
+        super(props);
+        this.onQuery=this.onQuery.bind(this);
         this.state = {
           loading: false,
           sending: false,
@@ -30,18 +32,24 @@ class SalesPosition extends React.Component{
           deleted: 0,
           rows: [],
           errMsg:'',
+            pageCurrent:1,
+            pageSize:20,
+            rowsTotal:0,
+            located:'', //0未定位，1已定位
+            is_charge:'',//0无租金，1有租金
         }
     }
 
     componentDidMount(){
-      this.getData()
+        let {pageCurrent,pageSize}=this.state;
+        this.getData(pageCurrent,pageSize)
     }
 
-    getData(){
+    getData(pageCurrent,pageSize){
       this.setState({loading: true})
-      let {sales_depart_id, pos_type, query, deleted, undeleted} = this.state;
+      let {sales_depart_id, pos_type, query, deleted,located,is_charge} = this.state;
       query = query==''?null: query;
-      let args = {sales_depart_id, pos_type, query, deleted};
+      let args = {sales_depart_id, pos_type, query, deleted, pageCurrent, pageSize,located,is_charge};
       axios({
           url: '/pos/api/get_pos_list.json' ,
           transformRequest:[ function(data, headers) {
@@ -57,8 +65,9 @@ class SalesPosition extends React.Component{
           responseType:'json',
       }).then( (resp) =>{
           if(resp.status == 200){
-               if(resp.data instanceof Array){
-                   this.setState({rows: resp.data})
+               if(resp.data.rows instanceof Array){
+                   let {cnt,rows}=resp.data;
+                   this.setState({rows:rows,rowsTotal:cnt})
                }else{
                   this.setState({ errMsg: '请求数据出错'})
                }
@@ -69,14 +78,46 @@ class SalesPosition extends React.Component{
       })
     }
 
+    onShowSizeChange=(current,pageSize)=>{
+        this.setState({pageCurrent:current,pageSize:pageSize});
+        if(current!=this.state.pageCurrent||pageSize!=this.state.pageSize){
+            this.getData(current,pageSize)
+        }
+    };
+
+    onPageChange=(page)=>{
+        this.setState({pageCurrent:page});
+        if(page!=this.state.pageCurrent){
+            this.getData(page,this.state.pageSize)
+        }
+    };
+
+    onQuery(){
+        let{pageCurrent,pageSize}=this.props;
+        this.getData(pageCurrent,pageSize)
+    }
+
     render(){
       let {loading, sending, rows,
-        query, deleted, undeleted, sales_depart_id,pos_type,
+        query, deleted, undeleted, sales_depart_id,pos_type,located,is_charge
       } = this.state;
-      let headers = ['系统ID','类型', '促销点ID', '门店名称', '门店地址', '代码点',
-        '区分', '单元', '责任人','责任人电话'  ]
-      let sales_departs = (((window.NS||{}).userInfo||{})
-                          .user_info||{}).charge_departs_info||[];
+      let {pageCurrent,pageSize,rowsTotal}=this.state;
+      let headers = ['系统ID','类型', '门店名称', '门店地址', '代码点',
+        '区分', '单元', '责任人','定位','租金'  ]
+        let user_info=(((window.NS||{}).userInfo||{}).user_info||{});
+    let sales_departs = user_info.charge_departs_info.concat();
+    for(let i=0;i<sales_departs.length;i++){
+        if(sales_departs[i].parent_id==0){sales_departs.splice(i,1)}
+    }
+      let privs=(((window.NS||{}).userInfo||{})
+                          .user_info||{}).privs||[];
+      let showAdd=false;
+      for(let p in privs){
+          if (p=='PRIV_ADMIN_SUPER'){
+              showAdd=true;
+              break
+          }
+      }
       return (
         <div>
           <Paper style={{padding:'5px 20px', margin:'5px 0px'}} zDepth={2}>
@@ -148,11 +189,42 @@ class SalesPosition extends React.Component{
                     height:40,}} >
                 <MenuItem  value={null} primaryText={'请选择'} />
                 {
-                  ['美宜佳', '7 11', '固定点'].map((t, idx)=>(
+                  ['固定促销点','营业厅','楼宇'].map((t, idx)=>(
                     <MenuItem key ={idx} value={t} primaryText={t} />
                   ))
                 }
             </SelectField>
+            </div>
+              <div style={{display:'inline-block',marginRight:20}}>
+                  <label style={{fontSize:12,color:'rgba(0, 0, 0, 0.3)'}}>定位</label>
+                  <SelectField value={located}
+                               onChange={(e,i,located)=>{this.setState({located})}}
+                               labelStyle={{fontSize:12,lineHeight:4,textAlign:'center'}}
+                               style={{display:'inline-block',lineHeight:24,verticalAlign:'middle',width:150,height:40}}
+                  >
+                      <MenuItem  value={''} primaryText={'请选择'} />
+                      {
+                  [{label:'未定位',mark:0},{label:'已定位',mark:1}].map((t, idx)=>(
+                    <MenuItem key ={idx} value={t.mark} primaryText={t.label} />
+                  ))
+                      }
+                  </SelectField>
+              </div>
+            <div style={{display:'inline-block',marginRight:20}}>
+                <label style={{fontSize:12,color:'rgba(0, 0, 0, 0.3)'}}>租金</label>
+                <SelectField value={is_charge}
+                             onChange={(e,i,is_charge)=>{this.setState({is_charge})}}
+                               labelStyle={{fontSize:12,lineHeight:4,textAlign:'center'}}
+                               style={{display:'inline-block',lineHeight:24,verticalAlign:'middle',width:150,height:40}}
+                >
+                    <MenuItem  value={''} primaryText={'请选择'} />
+                      {
+                  [{label:'无租金',mark:0},{label:'有租金',mark:1}].map((t, idx)=>(
+                    <MenuItem key ={idx} value={t.mark} primaryText={t.label} />
+                  ))
+                      }
+
+                </SelectField>
             </div>
            <TextField hintText="门店名称/地址"
               value = {query}
@@ -163,21 +235,22 @@ class SalesPosition extends React.Component{
                     width:150,
                     height:40,}} />
             <RaisedButton label="查找" primary={true}
-              onClick = {this.getData.bind(this)}
+              onClick = {this.onQuery}
               disabled ={loading}
               style ={{ height:30,
-                  width: 50 ,
+                  width: 50,
                   marginLeft: 20
               }} />
             <Link to='/pos/new'>
-            <RaisedButton label="添加" primary={true}
+                {showAdd?
+            (<RaisedButton label="添加" primary={true}
               backgroundColor="#a4c639"
               onClick = {this.getData.bind(this)}
               disabled ={loading}
               style ={{ height:30,
                   width: 50 ,
                   marginLeft: 20
-              }} />
+              }} />):<div> </div>}
             </Link>
 
 
@@ -190,7 +263,7 @@ class SalesPosition extends React.Component{
           <TableRow>
             { headers.map((h,idx)=>{
                 return (
-                <TableHeaderColumn key={idx} >{h}</TableHeaderColumn>
+                <TableHeaderColumn key={idx} style={{textAlign:'center'}}>{h}</TableHeaderColumn>
                 )
               }) 
             }
@@ -201,22 +274,35 @@ class SalesPosition extends React.Component{
               { rows.map((r, idx)=>{
                 return(
               <TableRow key ={idx} style={{fontSize:12}}>
-                <TableRowColumn> 
+                  <TableRowColumn style={{textAlign:'center'}}>
                   <Link to={'/pos/manager/'+r.pos_id}> {r.pos_id} </Link>
-                </TableRowColumn>
-                <TableRowColumn tootips='wthf..'>{r.pos_type}</TableRowColumn>
-                <TableRowColumn>{r.sales_id}</TableRowColumn>
-                <TableRowColumn>{r.pos_name}</TableRowColumn>
-                <TableRowColumn>{r.pos_address}</TableRowColumn>
-                <TableRowColumn>{r.pos_code}</TableRowColumn>
-                <TableRowColumn>{r.sales_depart_name}</TableRowColumn>
-                <TableRowColumn>{r.pos_unit}</TableRowColumn>
-                <TableRowColumn>{r.pos_man}</TableRowColumn>
-                <TableRowColumn>{r.pos_man_mobile}</TableRowColumn>
+                  </TableRowColumn>
+                  <TableRowColumn tootips='wthf..' style={{textAlign:'center'}} >{r.pos_type}</TableRowColumn>
+                  <TableRowColumn style={{textAlign:'center'}}>{r.pos_name}</TableRowColumn>
+                  <TableRowColumn style={{textAlign:'center'}}>{r.pos_address}</TableRowColumn>
+                  <TableRowColumn style={{textAlign:'center'}}>{r.pos_code}</TableRowColumn>
+                  <TableRowColumn style={{textAlign:'center'}}>{r.sales_depart_name}</TableRowColumn>
+                  <TableRowColumn style={{textAlign:'center'}}>{r.pos_unit}</TableRowColumn>
+                  <TableRowColumn style={{textAlign:'center'}}>{r.pos_man}{r.pos_man_mobile}</TableRowColumn>
+                  <TableRowColumn style={{textAlign:'center'}}>{(r.geo_data||r.lng||r.lat)?<span>已定位</span>:<span>未定位</span>}</TableRowColumn>
+                  <TableRowColumn style={{textAlign:'center'}}>{r.is_charge}</TableRowColumn>
               </TableRow>
                 )})
               }
             </TableBody>
+              <TableFooter>
+                  <Pagination style={{float:'right'}}
+                            selectComponentClass={Select}
+                            showSizeChanger
+                            onShowSizeChange={this.onShowSizeChange}
+                            onChange={this.onPageChange}
+                            current={pageCurrent}
+                            pageSize={pageSize}
+                            defaultCurrent={3}
+                            total={rowsTotal}
+                            showTotal={(total)=>`总共${total}条记录`}
+                        />
+              </TableFooter>
           </Table>
           </div>
         }
@@ -327,8 +413,11 @@ class SalesPositionManager extends React.Component{
   render(){
     let {loading, sending, pos_id, pos_info, errMsg, changeItems} =this.state;
     let style = { margin: 12, float:'right'};
-    let sales_departs = (((window.NS||{}).userInfo||{})
-                          .user_info||{}).charge_departs_info||[];
+    let user_info=(((window.NS||{}).userInfo||{}).user_info||{});
+    let sales_departs = user_info.charge_departs_info.concat();
+    for(let i=0;i<sales_departs.length;i++){
+        if(sales_departs[i].parent_id==0){sales_departs.splice(i,1)}
+    }
     return( 
     <div style={{padding: 20}}> 
       <TextField
@@ -375,7 +464,7 @@ class SalesPositionManager extends React.Component{
           value = {pos_info['pos_type']}
           onChange = {(e,idx,v)=>(this.onChange('pos_type',e,v))}>
           {
-            ['美宜佳', '7 11', '固定点'].map((t, idx)=>(
+            ['固定促销点'].map((t, idx)=>(
             <MenuItem key ={idx} value={t} primaryText={t} />
             ))
           }

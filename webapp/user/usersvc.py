@@ -152,41 +152,120 @@ def set_user_sales_info(user_id, channel_id, sales_depart_id, op_user_id=None):
 
 def get_all_privs():
     return privs_all
-    
 
-
-def set_user_privs(user_id, privs, op_user_id =None):
+def get_users(channel_id=None,charge_departs=None,sales_depart_id=None,query=None):
     conn, cur = None, None
     try:
         conn = pg.connect(**config.pg_main)
         cur = conn.cursor()
-        sql = '''
-               update t_sales_user
-               set  privs = %(privs)s ,
-                    last_update_time = current_timestamp,
-                    last_update_user_id = %(last_update_user_id)s
-                where user_id = %(user_id)s
-                '''
+        sql=['''
+            select u.*,c.channel_name,d.sales_depart_name from t_sales_user u
+                left join t_sales_channel c
+                on u.channel_id=c.channel_id
+                left join t_sales_depart d
+                on u.sales_depart_id=d.sales_depart_id
+            where 1 = 1 
+            ''',
+            ' and u.sales_depart_id in %(charge_departs)s' if charge_departs else ''
+            ' and u.channel_id = %(channel_id)s' if channel_id else '',
+            ' and u.sales_depart_id = %(sales_depart_id)s' if sales_depart_id else '',
+            ' and (u.user_name like %(query)s or u.mobile like %(query)s) ' if query else '',
+             ]
+        args={
+            'channel_id': channel_id,
+            'charge_departs': charge_departs,
+            'sales_depart_id': sales_depart_id,
+            'query': '%%%s%%' % (query,) if query else None}
+        cur.execute(''.join(sql),args)
+        rows=pg.fetchall(cur)
+        result=rows
+        return result
+    finally:
+        if cur: cur.close()
+        if conn: conn.close()
+
+def set_user_all(user_id=None, adminuser_id=None,channel_id=None, sales_depart_id=None,user_name=None,privs=None,tags=None):
+    conn, cur = None, None
+    try:
+        conn = pg.connect(**config.pg_main)
+        cur = conn.cursor()
+        sql = ( ' update itd.t_sales_user set ',
+                ' channel_id = %(channel_id)s, ' if channel_id else '',
+                ' sales_depart_id = %(sales_depart_id)s, ' if sales_depart_id else '',
+                ' user_name = %(user_name)s, ' if user_name else ''
+                ' privs = %(privs)s ,' if privs else '',
+                ' tags = %(tags)s ,' if tags else '',
+                ' last_update_user_id = %(adminuser_id)s,',
+                ' last_update_time = current_timestamp '
+                ' where user_id=%(user_id)s ',
+        )
         args = {
                 'user_id': user_id,
-                'privs':  privs,
-                'last_update_user_id': op_user_id
+                'channel_id':channel_id,
+                'sales_depart_id':sales_depart_id,
+                'user_name': user_name,
+                'privs':privs,
+                'tags':tags,
+                'adminuser_id':adminuser_id,
                 }
-        cur.execute(sql, args)
+        cur.execute(''.join(sql), args)
         conn.commit()
         return cur.rowcount == 1
     finally:
         if cur: cur.close()
         if conn: conn.close()
 
+def get_pos_tag():
+    conn,cur=None,None
+    try:
+        conn=pg.connect(**config.pg_main)
+        cur=conn.cursor()
+        sql=(' select t.* from itd.t_sales_pos_tag t where t.deleted=0 ',)
+        cur.execute(''.join(sql))
+        rows=pg.fetchall(cur)
+        return rows
+    finally:
+        if cur:cur.close()
+        if conn:conn.close()
 
+def get_channel_list(channel_id=None):
+    conn,cur=None,None
+    try:
+        conn=pg.connect(**config.pg_main)
+        cur=conn.cursor()
+        sql=(' select c.* from itd.t_sales_channel c ',
+             ' where 1=1 ',
+             ' and channel_id=%(channel_id)s ' if channel_id else '',)
+        args={
+            'channel_id':channel_id
+        }
+        cur.execute(''.join(sql),args)
+        channels=pg.fetchall(cur)
+        return channels
+    finally:
+        if cur:cur.close()
+        if conn:conn.close()
 
-
-def get_user_privs(user_id):
-    user_info = get_user_local_info(user_id)
-    if not user_info:
-        return None
-    return user_info['privs']
+def get_depart_list(charge_departs=None,sales_depart_id=None):
+    conn,cur=None,None
+    try:
+        conn=pg.connect(**config.pg_main)
+        cur=conn.cursor()
+        sql=(' select d.* from itd.t_sales_depart d ',
+             ' where 1=1 ',
+             ' and sales_depart_id = any(%(charge_departs)s) ' if charge_departs else '',
+             ' and sales_depart_id = %(sales_depart_id)s ' if sales_depart_id else '',
+             )
+        args={
+            'charge_departs':charge_departs,
+            'sales_depart_id':sales_depart_id
+        }
+        cur.execute(''.join(sql),args)
+        departs=pg.fetchall(cur)
+        return departs
+    finally:
+        if cur:cur.close()
+        if conn:conn.close()
 
 
 
@@ -197,3 +276,4 @@ def get_bcmaanger_info(uni_email):
             'full_name': u'汪阳',
             'mobile': '18620011607'
             }
+

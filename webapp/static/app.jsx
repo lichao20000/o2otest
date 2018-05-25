@@ -14,8 +14,12 @@ import { Plan } from './plan/plan'
 import { Audit } from './plan/audit'
 import { MyPlan } from './plan/myplan'
 import { HomeData} from './home'
-
-
+import {AdminManager} from './user/admin-manager'
+import {AdminEditor} from './user/admin-editor'
+import T from './pos/pos-audit'
+import TableExampleComplex from './plan/test'
+import {AdminPostType} from './user/admin-postype'
+import {planExport} from './plan/planExport.jsx'
 
 ReactDOM.render((
   <Router>
@@ -26,6 +30,7 @@ ReactDOM.render((
         <Route path="/pos/manager/:pos_id" component={SalesPositionManager}/>
         <Route path="/pos/new" exact component={NewPosition} />
         <Route path="/pos/import" exact component={PosImport} />
+        <Route path="/pos/audit" component={T}/>
 
         <Route path="/saler/manager" exact component={SalerList} />
         <Route path="/saler/manager/:mobile" component={SalerEditor}/>
@@ -34,10 +39,17 @@ ReactDOM.render((
 
         <Route path="/plan/arrange" exact component={Plan} />
         <Route path="/plan/audit" exact component={Audit} />
+        <Route path="/plan/export" exact component={planExport}/>
         <Route path="/plan/mine" exact component={MyPlan} />
 
         <Route path="/admin/switch" component={AdminSwitch} />
+        <Route path="/admin/manager" exact component={AdminManager} />
+        <Route path="/admin/manager/:user_id" component={AdminEditor}/>
         <Route path="/login_out/" component={LoginOut} />
+
+        <Route path="/test" component={TableExampleComplex}/>
+
+        <Route path="/pos/type" component={AdminPostType}/>
     </Menu>
   </Router>
 ), document.getElementById('app'))
