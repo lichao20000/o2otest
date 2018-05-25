@@ -64,11 +64,12 @@ def set_user_base_info(user_info):
         cur = conn.cursor()
         sql = '''
             insert into t_sales_user
-                    (user_id, user_name, mobile ) 
-            select  %(user_id)s, %(user_name)s, %(mobile)s
+                    (user_id, user_name, mobile,privs ) 
+            select  %(user_id)s, %(user_name)s, %(mobile)s, %(privs)s
              where not exists 
                     (select 1 from t_sales_user where user_id=%(user_id)s)
                     '''
+        user_info['privs'] = []
         cur.execute(sql, user_info)
         if cur.rowcount!=1:
             sql = ''' 

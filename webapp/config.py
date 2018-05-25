@@ -60,7 +60,7 @@ session_force_use_redis = False
 
 
 
-if os.environ.get('LOGNAME') in ['yantz', 'wy'] or os.environ.get('COMPUTERNAME') in ['gzjf']:
+if os.environ.get('LOGNAME') in ['yantz', 'wy'] or os.environ.get('COMPUTERNAME') in ['GZJF020415']:
     #pg_main = pg_local
     #pg_stand = pg_local
     domain = get_local_ip()
