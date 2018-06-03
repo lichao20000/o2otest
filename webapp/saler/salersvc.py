@@ -156,6 +156,7 @@ def update_saler(mobile,
     try:
         conn = pg.connect(**config.pg_main)
         cur = conn.cursor()
+        print deleted
         sql = ('''
                 update t_sales_saler
                     set update_time = current_timestamp,
@@ -168,6 +169,7 @@ def update_saler(mobile,
             ' last_update_user_id = %(update_user_id)s ' if update_user_id else '',
             ' where mobile = %(mobile)s'
             )
+        sqll="update t_sales_saler set deleted = '%s'" %deleted
         args={
             'mobile':mobile,
             'channel_id':channel_id,
@@ -178,6 +180,7 @@ def update_saler(mobile,
             'update_user_id':update_user_id
         }
         cur.execute(''.join(sql), args)
+        cur.execute(sqll)
         conn.commit()
         return cur.rowcount == 1
     finally:
