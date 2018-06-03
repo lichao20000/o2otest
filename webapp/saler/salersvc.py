@@ -54,7 +54,7 @@ s.unit,s.deleted,array_to_string(s.develop_id,','),s.create_user_id,ch.channel_n
                 'mobiles' : mobiles,
                 }
         cur.execute(''.join(sql), args)
-        #print ''.join(sql) % args
+        # print ''.join(sql) % args
         rows = pg.fetchall(cur)
         return rows
     finally:
@@ -156,8 +156,10 @@ def update_saler(mobile,
     try:
         conn = pg.connect(**config.pg_main)
         cur = conn.cursor()
-        print deleted
-        print mobile
+        cr=conn.cursor()
+        # print deleted
+        # print mobile
+        # print channel_id
         sql = ('''
                 update t_sales_saler
                     set update_time = current_timestamp,
@@ -182,8 +184,10 @@ def update_saler(mobile,
             'update_user_id':update_user_id
         }
         cur.execute(''.join(sql), args)
-        cur.execute(sqll)
         conn.commit()
+        cr.execute(sqll)
+        conn.commit()
+        cr.close()
         return cur.rowcount == 1
     finally:
         if cur: cur.close()
