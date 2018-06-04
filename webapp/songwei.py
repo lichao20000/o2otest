@@ -142,26 +142,7 @@ and saler_name not in
 and b.channel_id=%(channel_id)s 
 and c.sales_depart_id = any(%(charge_departs)s)
         '''
-    },{
-
-
-        'name': u'新版-产能明细'
-        'sql': u'''
-            select channel_name 渠道, sales_depart_name 区分, saler_name 发展人名称, mobile 发展人号码, develop_staff_id 发展人发展编码, serial_number 发展号码, in_date 发展时间 from (
-select distinct a.channel_name, a.sales_depart_name, a.saler_name, c.mobile, b.develop_staff_id, b.serial_number, b.in_date, a.create_date,
-to_char(b.in_date,'yyyy-mm-dd hh24:')||(case when to_char(b.in_date,'MI') < '30' then '00' else '30' end)||':00' in_date_half
-from itd.ssw_cxmx_pc_half_hour a, itd.t_sales_detail_product b, itd.t_sales_saler_product_id c
-where c.mobile = a.bind_mobile
-and b.develop_staff_id = c.develop_staff_id
-and to_char(b.in_date,'yyyymmdd hh24') = to_char(a.create_date,'yyyymmdd hh24')
-and cast(extract(hour from b.in_date) as int) = any(a.sale_hour)
---and to_char(a.create_date,'yyyymmdd') = '20180526'
-) a
-where in_date_half = to_char(create_date,'yyyy-mm-dd hh24:MI:ss')
-order by in_date desc limit 100000;
-            '''
-            }
-
+    },
     ]
 
 
