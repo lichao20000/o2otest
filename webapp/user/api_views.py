@@ -1,6 +1,9 @@
 # *- coding: utf-8 -*-
 import os
 import sys
+import psycopg2,codecs,csv
+from werkzeug.utils import secure_filename
+import datetime
 
 
 _dir = os.path.dirname(os.path.abspath(__file__))
@@ -22,7 +25,8 @@ from privs import PRIV_ADMIN_SUPER,PRIV_ADMIN_ANY,PRIV_ADMIN
 from privs import privs_all
 
 import copy
-
+reload(sys)
+sys.setdefaultencoding('utf-8')
 api_bp = Blueprint('user_api_bp', __name__, template_folder='templates')
 
 @api_bp.route('/menus.json', methods=['POST', 'GET'])
@@ -359,3 +363,215 @@ def get_user_tag():
     except Abort,e:
         msg=e.msg
     return {'tags':tags,'result':result,'msg':msg}
+
+
+@api_bp.route('/shangchuan',methods=['POST','GET'])
+@auth_required(priv=PRIV_ADMIN_SUPER|PRIV_ADMIN)
+@jview
+def shangchuan():
+    base_path = os.path.abspath(os.path.dirname(__file__))
+    print os.getcwd()
+    nowTime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    upload_path = os.path.join(base_path, 'static/uploads/')
+    UPLOAD_FOLDER = upload_path
+    if request.method == 'POST':
+        file=request.files['fileAttach']
+        file_name = upload_path + secure_filename(file.filename)
+        yanzheng=os.path.splitext(file_name)[1]
+        if yanzheng!='.csv':
+            return '格式错误！'
+        else:
+            conn = psycopg2.connect(database="gi_db", user="wangy", password="wangy1607", host="132.96.64.32",port="5432")
+            file.save(file_name)
+            e = os.path.basename(file_name)
+            print e
+            g = os.getcwd()+'/user/static/uploads/%s' % e
+            cwd=os.getcwd()
+            with open(g)as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    a='%s' % row['mobile']
+                    b = '%s' % row['develop_staff_id']
+                    c = '%s' % row['saler_type']
+                    d = '%s' % row['create_user_id']
+                    sql1 = "SELECT count(develop_staff_id) FROM itd.t_sales_all_develop_id where develop_staff_id ='%s'" % b
+                    sql2 = "SELECT count(develop_staff_id) FROM itd.t_sales_saler_product_id where develop_staff_id ='%s'" % b
+                    r1 = conn.cursor()
+                    r1.execute(sql1)
+                    panduan1 = r1.fetchone()
+                    r1.close()
+                    r2 = conn.cursor()
+                    r2.execute(sql2)
+                    panduan2 = r2.fetchone()
+                    r2.close()
+                    # print panduan1[0]
+                    # print panduan2[0]
+                    if len(a)!=11:
+                        return "该手机号不是11位！'%s'"%a
+                    elif panduan1[0] == 0:
+                        return "无此发展人编码！'%s'"%b
+                    # print a
+                    # print b
+                    # print c
+                    # print d
+                    elif panduan2[0] == 1:
+                        return "已存在此发展人编码！'%s'"%b
+                    else:
+                        sql = 'insert into  itd.t_sales_saler_product_id (mobile,develop_staff_id,saler_type,update_time,create_user_id) values (\'%s\',\'%s\',\'%s\',\'%s\',\'%s\')' % (a, b, c, nowTime, d)
+                        cr=conn.cursor()
+                        cr.execute(sql)
+                        conn.commit()
+                        cr.close()
+                # for key in reader:
+                #     for k in key.items():
+                #         try:
+                #             print k[0]
+                #         except:
+                #             pass
+                #         else:
+                #             conn.commit()
+                #         conn.commit()
+            conn.close()
+    return '测试'
+@api_bp.route('/download',methods=['POST','GET'])
+@auth_required(priv=PRIV_ADMIN_SUPER|PRIV_ADMIN)
+@jview
+def download():
+    base_path = os.path.abspath(os.path.dirname(__file__))
+    # os.chdir(base_path)
+    homedir = os.getcwd()
+    print homedir
+    upload_path = os.path.join(base_path, 'static/uploads/')
+    UPLOAD_FOLDER = upload_path
+    if request.method == 'GET':
+        conn = psycopg2.connect(database="gi_db", user="wangy", password="wangy1607", host="132.96.64.32", port="5432")
+        sql = '''select channel_name 渠道, sales_depart_name 区分, saler_name 发展人名称, mobile 发展人号码, develop_staff_id 发展人发展编码, serial_number 发展号码, in_date 发展时间 from (
+                select distinct a.channel_name, a.sales_depart_name, a.saler_name, c.mobile, b.develop_staff_id, b.serial_number, b.in_date, a.create_date,
+                to_char(b.in_date,'yyyy-mm-dd hh24:')||(case when to_char(b.in_date,'MI') < '30' then '00' else '30' end)||':00' in_date_half
+                from itd.ssw_cxmx_pc_half_hour a, itd.t_sales_detail_product b, itd.t_sales_saler_product_id c
+                where c.mobile = a.bind_mobile
+                and b.develop_staff_id = c.develop_staff_id
+                and to_char(b.in_date,'yyyymmdd hh24') = to_char(a.create_date,'yyyymmdd hh24')
+                and cast(extract(hour from b.in_date) as int) = any(a.sale_hour)
+                --and to_char(a.create_date,'yyyymmdd') = '20180526' 
+                ) a
+                where in_date_half = to_char(create_date,'yyyy-mm-dd hh24:MI:ss')
+                order by in_date desc limit 100000;'''
+        cr = conn.cursor()
+        cr.execute(sql)
+        cs = cr.fetchall()
+        f = codecs.open('static/download/yonghushuju.csv', 'w', 'utf_8_sig')
+        writer = csv.writer(f)
+        writer.writerow(['渠道', '区分', '发展人名称', '发展人号码', '发展人发展编码', '发展号码', '发展时间'])
+        data = cs
+        writer.writerows(data)
+        g ='static/download/yonghushuju.csv'
+        f.close()
+        cr.close()
+        conn.close()
+    return g
+
+@api_bp.route('/yecu',methods=['POST','GET'])
+@auth_required(priv=PRIV_ADMIN_SUPER|PRIV_ADMIN)
+@jview
+def yecu():
+    base_path = os.path.abspath(os.path.dirname(__file__))
+    # os.chdir(base_path)
+    homedir = os.getcwd()
+    print homedir
+    upload_path = os.path.join(base_path, 'static/uploads/')
+    UPLOAD_FOLDER = upload_path
+    if request.method == 'GET':
+        conn = psycopg2.connect(database="gi_db", user="wangy", password="wangy1607", host="132.96.64.32", port="5432")
+        sql = '''select channel_name 渠道, sales_depart_name 区分, saler_name 促销人员, bind_mobile 促销人员号码,sales_date 促销日期
+        ,     sales_pos 促销点名称、地址与时刻 
+        ,hours 促销时长
+        from (
+        select channel_name, sales_depart_name, saler_name, bind_mobile,sales_date
+        ,array_to_string (array_agg(sales_pos), ';') sales_pos
+        , count(hh) hours 
+        from(
+        select channel_name,sales_depart_name,saler_name,bind_mobile,sales_date,hh
+        ,array_to_string(array_agg('促销点名称：' || pos_name || '、地址：'|| pos_address || '、促销时刻:' || hh ), ';') sales_pos
+        from (
+        select distinct channel_name, sales_depart_name, saler_name, bind_mobile,to_char(create_date, 'YYYYMMDD') sales_date,pos_name,
+        case when pos_address = '' then '未上传地址' else pos_address end pos_address
+        , extract(hour from create_date) hh
+        from itd.ssw_cxmx_pc_half_hour
+        where 
+        saler_name is not null 
+        and extract(hour from create_date) >= 17
+        group by channel_name, sales_depart_name, saler_name, bind_mobile, create_date,pos_name,pos_address
+        )a group by channel_name,sales_depart_name,saler_name,bind_mobile,sales_date,hh
+        )a group by channel_name, sales_depart_name, saler_name, bind_mobile,sales_date
+        )a
+        where sales_date >= '20180519'
+        and hours >= 3
+        order by sales_date desc,channel_name, sales_depart_name  
+        limit 10000'''
+        cr = conn.cursor()
+        cr.execute(sql)
+        cs = cr.fetchall()
+        f = codecs.open('static/download/yecurenyuan.csv', 'w', 'utf_8_sig')
+        writer = csv.writer(f)
+        writer.writerow(['渠道','区分','促销人员','促销人员号码','促销日期','促销点名称、地址与时刻','促销时长'])
+        data = cs
+        writer.writerows(data)
+        g ='static/download/yecurenyuan.csv'
+        f.close()
+        cr.close()
+        conn.close()
+        print 'success'
+    return g
+
+@api_bp.route('/shichang',methods=['POST','GET'])
+@auth_required(priv=PRIV_ADMIN_SUPER|PRIV_ADMIN)
+@jview
+def shichang():
+    base_path = os.path.abspath(os.path.dirname(__file__))
+    # os.chdir(base_path)
+    homedir = os.getcwd()
+    print homedir
+    upload_path = os.path.join(base_path, 'static/uploads/')
+    UPLOAD_FOLDER = upload_path
+    if request.method == 'GET':
+        conn = psycopg2.connect(database="gi_db", user="wangy", password="wangy1607", host="132.96.64.32", port="5432")
+        sql = '''select channel_name 渠道, sales_depart_name 区分, saler_name 促销人员, bind_mobile 促销人员号码,sales_date 促销日期
+,sales_pos 促销点名称、地址与时刻 
+,hours 促销时长
+from (
+select channel_name, sales_depart_name, saler_name, bind_mobile,sales_date
+,array_to_string (array_agg(sales_pos), ';') sales_pos
+, count(hh) hours 
+from(
+select channel_name,sales_depart_name,saler_name,bind_mobile,sales_date,hh
+,array_to_string(array_agg('促销点名称：' || pos_name || '、地址：'|| pos_address || '、促销时刻:' || hh ), ';') sales_pos
+from (
+select distinct channel_name, sales_depart_name, saler_name, bind_mobile,to_char(create_date, 'YYYYMMDD') sales_date,pos_name,
+case when pos_address = '' then '未上传地址' else pos_address end pos_address
+, extract(hour from create_date) hh
+from itd.ssw_cxmx_pc_half_hour
+where 
+saler_name is not null 
+--and extract(hour from create_date) >= 17
+group by channel_name, sales_depart_name, saler_name, bind_mobile, create_date,pos_name,pos_address
+)a group by channel_name,sales_depart_name,saler_name,bind_mobile,sales_date,hh
+)a group by channel_name, sales_depart_name, saler_name, bind_mobile,sales_date
+)a
+--where sales_date >= '20180519'
+--and hours >= 3
+order by sales_date desc,channel_name, sales_depart_name  '''
+        cr = conn.cursor()
+        cr.execute(sql)
+        cs = cr.fetchall()
+        f = codecs.open('static/download/cuxiaoshichang.csv', 'w', 'utf_8_sig')
+        writer = csv.writer(f)
+        writer.writerow(['渠道','区分','促销人员','促销人员号码','促销日期','促销点名称、地址与时刻','促销时长'])
+        data = cs
+        writer.writerows(data)
+        g ='static/download/cuxiaoshichang.csv'
+        f.close()
+        cr.close()
+        conn.close()
+        print 'success'
+    return g

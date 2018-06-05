@@ -664,7 +664,7 @@ class Plan extends React.Component{
           }= this.state
     return (
       <div style ={{padding: 10}}>
-        <h3>促销排产 </h3>
+        <h3>促销排产</h3>
         <Toggle label='Excel导入切换' toggled={imported}
           style={{width:150}}
           disabled = {sending || loading}

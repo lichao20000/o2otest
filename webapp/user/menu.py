@@ -66,11 +66,17 @@ items = [ {
                 'url':'/plan/export/',
                 'priv':PRIV_ADMIN_SUPER|PRIV_PLAN_AUDIT,
             },
+
             {
             'label': u'我的排产',
             'url': '/plan/mine/',
             'priv': PRIV_PLAN | PRIV_ADMIN_SUPER ,
-            }
+            },
+            {
+                'label': u'编码导入、产能、夜促销人员下载',
+                'url': '/plan/NameForm',
+                'priv': PRIV_ADMIN_SUPER|PRIV_ADMIN ,
+            },
           ],
         } , 
        {

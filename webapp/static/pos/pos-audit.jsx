@@ -265,7 +265,7 @@ export default class TableExampleComplex extends Component {
         let charge_departs=(((window.NS||{}).userInfo||{}).user_info||{}).charge_departs_info||[];
         let status=[{status:'待审核',id:1},{status:'审核通过',id:2},{status:'审核不通过',id:4},{status:'通过后取消',id:5}];
     return (
-        <div>
+                <div>
                 <Paper style={{padding:'5px 20px', margin:'5px 0px'}} zDepth={2}>
                     <div>筛选条件：</div>
                     <div style={{display:'inline-block' ,  verticalAlign:'middle'}}>

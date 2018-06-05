@@ -14,6 +14,7 @@ class HomeData extends React.Component{
         axios.post('/get_files.json',)
             .then((resp)=>{
                 this.setState({files: resp.data||[], loading:false})
+                console.log(this.state.files)
             }).catch((err)=>{
                 this.setState({loading: false})
             })
@@ -21,7 +22,7 @@ class HomeData extends React.Component{
 
     render(){
         let {loading, files }= this.state
-        let user_info=((window.NS||{}).userInfo||{}).user_info||{};
+ let user_info=((window.NS||{}).userInfo||{}).user_info||{};
         let privs=user_info.privs;
         let download='';
         for (let i=0;i<privs.length;i++){
@@ -43,7 +44,7 @@ class HomeData extends React.Component{
                     download
                 }
             </div>
-        ) 
+        )
     }
 }
 
