@@ -38,7 +38,7 @@ class HomeData extends React.Component{
         }
         return (
             <div style={{padding: 10}}>
-                <h2>首页</h2>
+                <h2>首页测试</h2>
                 {loading ?
                     < CircularProgress size={40} thickness={3}/> :
                     download

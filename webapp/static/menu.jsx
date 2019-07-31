@@ -102,7 +102,7 @@ class Menu extends React.Component{
                         </SelectableList>
                     </Drawer>     
                     <div >
-                        <AppBar title="o2o促销管理" 
+                        <AppBar title="佣金薪酬审查"
                         style = {{'position': 'fixed', 'top': 0, 'left': 0}} 
                             onLeftIconButtonClick={ (event)=>{this.setState({showMenu:!showMenu})}}/>
 
